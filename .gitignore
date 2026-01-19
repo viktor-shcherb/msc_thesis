@@ -1,10 +1,18 @@
-/*.aux
-/*.bbl
-/*.bcf
-/*.run.xml
-/*.toc
-/*.blg
-/*.log
-/*.out
-/*.pdf
-/*.rubbercache
+# LaTeX auxiliary files
+thesis.aux
+thesis.bbl
+thesis.bcf
+thesis.run.xml
+thesis.toc
+thesis.blg
+thesis.log
+thesis.out
+thesis.rubbercache
+thesis.fdb_latexmk
+thesis.fls
+thesis.lof
+thesis.lot
+thesis.synctex.gz
+
+# macOS
+.DS_Store
