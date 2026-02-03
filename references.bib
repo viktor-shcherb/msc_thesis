@@ -1,57 +1,153 @@
-@string{SP="IEEE Security and Privacy Magazine"}
-@string{CODASPY="ACM Conference on Data and Application Security and Privacy"}
-@string{ATC="Usenix Annual Technical Conference"}
-@string{CSUR="ACM Computing Surveys"}
-@string{RTSS="Real-Time Systems Symposium"}
-@string{arXiv="arXiv Technical Report"}
-@string{LangSec="Language-theoretic Security IEEE Security and Privacy Workshop"}
-@string{CCS="ACM Conference on Computer and Communication Security"}
-@string{IOTSP="Workshop on the Internet of Things Security and Privacy"}
-@string{NDSS="Network and Distributed System Security Symposium"}
-@string{ISPASS="International Symposium on Performance Analysis of Systems and Software"}
-@string{CCC="Chaos Communication Congress"}
-@string{NSPW="New Security Paradigms Workshop"}
-@string{BHEU="BlackHat Europe"}
-@string{TR="Technical Report"}
-@string{PLDI="ACM International Conference on Programming Language Design and Implementation"}
-@string{EuroSP="IEEE European Symposium on Security and Privacy"}
-@string{SS3P="Open Textbook"}
-@string{DIMVA="Conference on Detection of Intrusions and Malware and Vulnerability Assessment"}
-@string{ISMM="ACM SIGPLAN International Symposium on Memory Management"}
-@string{ESSoS="Int'l. Symp. on Eng. Secure Software and Systems"}
-@string{SEC="Usenix Security Symposium"}
-@string{IMC="ACM Internet Measurement Conference"}
-@string{TSE="IEEE Transactions on Software Engineering"}
-@string{CC="International Conference on Compiler Construction"}
-@string{STM="International Workshop on Security and Trust Management"}
-@string{ArmsRace="The Continuing Arms Race"}
-@string{TRB="Transportation Research Board"}
-@string{FEAST="Forming an Ecosystem Around Software Transformation"}
-@string{DSN="IEEE/IFIP International Conference on Dependable Systems and Networks"}
-@string{SyScan360="Symposium on Security for Asia Network + 360"}
-@string{BalCCon="Balkan Computer Congress"}
-@string{DSAL="AOSD workshop on Domain-Specific Aspect Languages"}
-@string{ESORICS="European Symposium on Research in Computer Security"}
-@string{WOOT="Usenix Workshop on Offensive Technologies"}
-@string{TIFS="IEEE Transactions on Information Forensics and Security"}
-@string{HotSWUp="Usenix Workshop on Hot Topics in Software Upgrades"}
-@string{AsiaCCS="ACM Symp. on InformAtion, Computer and Communications Security"}
-@string{AMAS-BT="Workshop on Architectural and Microarchitectural Support for Binary Translation"}
-@string{PPREW="Program Protection and Reverse Engineering Workshop"}
-@string{SYSTOR="ACM International Systems and Storage Conference"}
-@string{VEE="ACM International Conference on Virtual Execution Environments"}
-@string{OSDI="Usenix Symposium on Operating Systems Design and Implementation"}
-@string{Oakland="IEEE International Symposium on Security and Privacy"}
-@string{PST="IEEE Conference on Privacy, Security, and Trust"}
 @string{ICML="International Conference on Machine Learning"}
 @string{NeurIPS="Advances in Neural Information Processing Systems"}
 @string{ACL="Annual Meeting of the Association for Computational Linguistics"}
 @string{EMNLP="Conference on Empirical Methods in Natural Language Processing"}
 @string{FindingsEMNLP="Findings of the Association for Computational Linguistics: EMNLP"}
+@string{FindingsACL="Findings of the Association for Computational Linguistics: ACL"}
 @string{NAACL="Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies"}
 @string{TMLR="Transactions on Machine Learning Research"}
-
-@inproceedings{shi23icml,
+@string{ICLR="International Conference on Learning Representations"}
+@string{COLM="Conference on Language Modeling"}
+@string{TACL="Transactions of the Association for Computational Linguistics"}
+@string{arXiv="arXiv Technical Report"}
+@inproceedings{2017-12-attention-is-all-you-need,
+  author = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and {\L}ukasz Kaiser and Illia Polosukhin},
+  title = {{Attention Is All You Need}},
+  year = {2017},
+  booktitle = NeurIPS,
+  pages = {5998--6008},
+  volume = {30},
+  keywords = {conference},
+}
+@inproceedings{2019-07-specialized-attention-heads-pruning,
+  author = {Elena Voita and David Talbot and Fedor Moiseev and Rico Sennrich and Ivan Titov},
+  title = {{Analyzing Multi-Head Self-Attention: Specialized Heads Do the Heavy Lifting, the Rest Can Be Pruned}},
+  year = {2019},
+  booktitle = ACL,
+  pages = {5797--5808},
+  keywords = {conference},
+}
+@inproceedings{2019-08-bert-attention-analysis,
+  author = {Kevin Clark and Urvashi Khandelwal and Omer Levy and Christopher D. Manning},
+  title = {{What Does BERT Look At? An Analysis of BERT's Attention}},
+  year = {2019},
+  booktitle = {Proceedings of the 2019 ACL Workshop BlackboxNLP: Analyzing and Interpreting Neural Networks for NLP},
+  pages = {276--286},
+  keywords = {workshop},
+}
+@inproceedings{2019-11-dark-secrets-of-bert,
+  author = {Olga Kovaleva and Alexey Romanov and Anna Rogers and Anna Rumshisky},
+  title = {{Revealing the Dark Secrets of BERT}},
+  year = {2019},
+  booktitle = EMNLP,
+  pages = {4365--4374},
+  keywords = {conference},
+}
+@inproceedings{2019-12-sixteen-heads-better-than-one,
+  author = {Paul Michel and Omer Levy and Graham Neubig},
+  title = {{Are Sixteen Heads Really Better than One?}},
+  year = {2019},
+  booktitle = NeurIPS,
+  keywords = {conference},
+}
+@misc{2020-04-longformer-long-document-transformer,
+  author = {Iz Beltagy and Matthew E. Peters and Arman Cohan},
+  title = {{Longformer: The Long-Document Transformer}},
+  year = {2020},
+  eprint = {2004.05150},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
+@inproceedings{2020-07-quantifying-attention-flow,
+  author = {Samira Abnar and Willem Zuidema},
+  title = {{Quantifying Attention Flow in Transformers}},
+  year = {2020},
+  booktitle = ACL,
+  pages = {4190--4197},
+  keywords = {conference},
+}
+@inproceedings{2021-05-long-range-arena,
+  author = {Yi Tay and Mostafa Dehghani and Samira Abnar and Yikang Shen and Dara Bahri and Philip Pham and Jinfeng Rao and Liu Yang and Sebastian Ruder and Donald Metzler},
+  title = {{Long Range Arena: A Benchmark for Efficient Transformers}},
+  year = {2021},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2021-11-ff-layers-key-value-memories,
+  author = {Mor Geva and Roei Schuster and Jonathan Berant and Omer Levy},
+  title = {{Transformer Feed-Forward Layers Are Key-Value Memories}},
+  year = {2021},
+  booktitle = EMNLP,
+  pages = {5484--5495},
+  keywords = {conference},
+}
+@misc{2021-12-transformer-circuits-framework,
+  author = {Nelson Elhage and Neel Nanda and Catherine Olsson and Tom Henighan and Nicholas Joseph and Ben Mann and Amanda Askell and Yuntao Bai and Anna Chen and Tom Conerly and Nova DasSarma and Dawn Drain and Deep Ganguli and Zac Hatfield-Dodds and Danny Hernandez and Andy Jones and Jackson Kernion and Liane Lovitt and Kamal Ndousse and Dario Amodei and Tom Brown and Jack Clark and Jared Kaplan and Sam McCandlish and Chris Olah},
+  title = {{A Mathematical Framework for Transformer Circuits}},
+  year = {2021},
+  howpublished = {Transformer Circuits Thread},
+  url = {https://transformer-circuits.pub/2021/framework/index.html},
+  keywords = {informal},
+}
+@misc{2022-03-in-context-learning-induction-heads,
+  author = {Catherine Olsson and Nelson Elhage and Neel Nanda and Nicholas Joseph and Nova DasSarma and Tom Henighan and Ben Mann and Amanda Askell and Yuntao Bai and Anna Chen and Tom Conerly and Dawn Drain and Deep Ganguli and Zac Hatfield-Dodds and Danny Hernandez and Scott Johnston and Andy Jones and Jackson Kernion and Liane Lovitt and Kamal Ndousse and Dario Amodei and Tom Brown and Jack Clark and Jared Kaplan and Sam McCandlish and Chris Olah},
+  title = {{In-context Learning and Induction Heads}},
+  year = {2022},
+  eprint = {2209.11895},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+  keywords = {preprint},
+}
+@inproceedings{2022-04-alibi-train-short-test-long,
+  author = {Ofir Press and Noah A. Smith and Mike Lewis},
+  title = {{Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation}},
+  year = {2022},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2022-12-chain-of-thought-prompting,
+  author = {Jason Wei and Xuezhi Wang and Dale Schuurmans and Maarten Bosma and Brian Ichter and Fei Xia and Ed H. Chi and Quoc V. Le and Denny Zhou},
+  title = {{Chain-of-Thought Prompting Elicits Reasoning in Large Language Models}},
+  year = {2022},
+  booktitle = NeurIPS,
+  keywords = {conference},
+}
+@inproceedings{2022-12-scrolls-long-language-sequences,
+  author = {Uri Shaham and Elad Segal and Maor Ivgi and Avia Efrat and Ori Yoran and Adi Haviv and Ankit Gupta and Wenhan Xiong and Mor Geva and Jonathan Berant and Omer Levy},
+  title = {{SCROLLS: Standardized CompaRison Over Long Language Sequences}},
+  year = {2022},
+  booktitle = EMNLP,
+  pages = {12007--12021},
+  keywords = {conference},
+}
+@misc{2023-02-llama-open-efficient-foundation,
+  author = {Hugo Touvron and Thibaut Lavril and Gautier Izacard and Xavier Martinet and Marie-Anne Lachaux and Timoth\'{e}e Lacroix and Baptiste Rozi\`{e}re and Naman Goyal and Eric Hambro and Faisal Azhar and Aurelien Rodriguez and Armand Joulin and Edouard Grave and Guillaume Lample},
+  title = {{LLaMA: Open and Efficient Foundation Language Models}},
+  year = {2023},
+  eprint = {2302.13971},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
+@misc{2023-06-pi-positional-interpolation,
+  author = {Shouyuan Chen and Sherman Wong and Liangjian Chen and Yuandong Tian},
+  title = {{Extending Context Window of Large Language Models via Position Interpolation}},
+  year = {2023},
+  eprint = {2306.15595},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
+@misc{2023-06-rope-ntk,
+  author = {bloc97},
+  title = {{NTK-Aware Scaled RoPE allows LLaMA models to have extended (8k+) context size without any fine-tuning and minimal perplexity degradation}},
+  year = {2023},
+  howpublished = {Reddit post, r/LocalLLaMA},
+  url = {https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/},
+  keywords = {informal},
+}
+@inproceedings{2023-07-gsm-ic-irrelevant-context,
   author = {Freda Shi and Xinyun Chen and Kanishka Misra and Nathan Scales and David Dohan and Ed H. Chi and Nathanael Sch\"{a}rli and Denny Zhou},
   title = {{Large Language Models Can Be Easily Distracted by Irrelevant Context}},
   year = {2023},
@@ -61,42 +157,31 @@
   series = {Proceedings of Machine Learning Research},
   keywords = {conference},
 }
-
-@inproceedings{dinesh20oakland,
-  author = {Sushant Dinesh and Nathan Burow and Dongyan Xu and Mathias Payer},
-  title = {{RetroWrite: Statically Instrumenting COTS Binaries for Fuzzing and Sanitization}},
-  year = {2020},
-  booktitle = Oakland,
-  keywords = {conference},
+@misc{2023-07-llama-2-open-foundation-chat,
+  author = {Hugo Touvron and Louis Martin and Kevin Stone and Peter Albert and Amjad Almahairi and Yasmine Babaei and Nikolay Bashlykov and Soumya Batra and Prajjwal Bhargava and Shruti Bhosale and Dan Bikel and Lukas Blecher and Cristian Canton Ferrer and Moya Chen and Guillem Cucurull and David Esiobu and Jude Fernandes and Jeremy Fu and Wenyin Fu and Brian Fuller and Cynthia Gao and Vedanuj Goswami and Naman Goyal and Anthony Hartshorn and Saghar Hosseini and Rui Hou and Hakan Inan and Marcin Kardas and Viktor Kerkez and Madian Khabsa and Isabel Kloumann and Artem Korenev and Punit Singh Koura and Marie-Anne Lachaux and Thibaut Lavril and Jenya Lee and Diana Liskovich and Yinghai Lu and Yuning Mao and Xavier Martinet and Todor Mihaylov and Pushkar Mishra and Igor Molybog and Yixin Nie and Andrew Poulton and Jeremy Reizenstein and Rashi Rungta and Kalyan Saladi and Alan Schelten and Ruan Silva and Eric Michael Smith and Ranjan Subramanian and Xiaoqing Ellen Tan and Binh Tang and Ross Taylor and Adina Williams and Jian Xiang Kuan and Puxin Xu and Zheng Yan and Iliyan Zarov and Yuchen Zhang and Angela Fan and Melanie Kambadur and Sharan Narang and Aurelien Rodriguez and Robert Stojnic and Sergey Edunov and Thomas Scialom},
+  title = {{Llama 2: Open Foundation and Fine-Tuned Chat Models}},
+  year = {2023},
+  eprint = {2307.09288},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
 }
-
-@inproceedings{kuratov24neurips,
-  author = {Yuri Kuratov and Aydar Bulatov and Petr Anokhin and Ivan Rodkin and Dmitry Sorokin and Artyom Sorokin and Mikhail Burtsev},
-  title = {{BABILong: Testing the Limits of LLMs with Long Context Reasoning-in-a-Haystack}},
-  year = {2024},
+@misc{2023-11-needle-in-a-haystack,
+  author = {Greg Kamradt},
+  title = {{Needle In A Haystack -- Pressure Testing LLMs}},
+  year = {2023},
+  howpublished = {GitHub repository},
+  url = {https://github.com/gkamradt/LLMTest_NeedleInAHaystack},
+  keywords = {informal},
+}
+@inproceedings{2023-12-landmark-attention-infinite-context,
+  author = {Amirkeivan Mohtashami and Martin Jaggi},
+  title = {{Random-Access Infinite Context Length for Transformers}},
+  year = {2023},
   booktitle = NeurIPS,
   keywords = {conference},
 }
-
-@inproceedings{bai24acl,
-  author = {Yushi Bai and Xin Lv and Jiajie Zhang and Hongchang Lyu and Jiankai Tang and Zhidian Huang and Zhengxiao Du and Xiao Liu and Aohan Zeng and Lei Hou and Yuxiao Dong and Jie Tang and Juanzi Li},
-  title = {{LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding}},
-  year = {2024},
-  booktitle = ACL,
-  pages = {3119--3137},
-  keywords = {conference},
-}
-
-@inproceedings{shaham22emnlp,
-  author = {Uri Shaham and Elad Segal and Maor Ivgi and Avia Efrat and Ori Yoran and Adi Haviv and Ankit Gupta and Wenhan Xiong and Mor Geva and Jonathan Berant and Omer Levy},
-  title = {{SCROLLS: Standardized CompaRison Over Long Language Sequences}},
-  year = {2022},
-  booktitle = EMNLP,
-  pages = {12007--12021},
-  keywords = {conference},
-}
-
-@inproceedings{shaham23emnlp,
+@inproceedings{2023-12-zeroscrolls-zero-shot-long-text,
   author = {Uri Shaham and Maor Ivgi and Avia Efrat and Jonathan Berant and Omer Levy},
   title = {{ZeroSCROLLS: A Zero-Shot Benchmark for Long Text Understanding}},
   year = {2023},
@@ -104,8 +189,39 @@
   pages = {7977--7989},
   keywords = {conference},
 }
-
-@inproceedings{wang24naacl,
+@article{2024-01-roformer-rope,
+  author = {Jianlin Su and Yu Lu and Shengfeng Pan and Ahmed Murtadha and Bo Wen and Yunfeng Liu},
+  title = {{RoFormer: Enhanced Transformer with Rotary Position Embedding}},
+  year = {2024},
+  journal = {Neurocomputing},
+  volume = {568},
+  pages = {127063},
+  keywords = {journal},
+}
+@article{2024-02-lost-in-the-middle,
+  author = {Nelson F. Liu and Kevin Lin and John Hewitt and Ashwin Paranjape and Michele Bevilacqua and Fabio Petroni and Percy Liang},
+  title = {{Lost in the Middle: How Language Models Use Long Contexts}},
+  year = {2024},
+  journal = TACL,
+  volume = {12},
+  pages = {157--173},
+  keywords = {journal},
+}
+@inproceedings{2024-05-attention-sinks-streaming,
+  author = {Guangxuan Xiao and Yuandong Tian and Beidi Chen and Song Han and Mike Lewis},
+  title = {{Efficient Streaming Language Models with Attention Sinks}},
+  year = {2024},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2024-05-yarn-context-extension,
+  author = {Bowen Peng and Jeffrey Quesnelle and Honglu Fan and Enrico Shippole},
+  title = {{YaRN: Efficient Context Window Extension of Large Language Models}},
+  year = {2024},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2024-06-ada-leval-length-adaptable-benchmark,
   author = {Chonghua Wang and Haodong Duan and Songyang Zhang and Dahua Lin and Kai Chen},
   title = {{Ada-LEval: Evaluating Long-Context LLMs with Length-Adaptable Benchmarks}},
   year = {2024},
@@ -113,8 +229,23 @@
   pages = {3712--3724},
   keywords = {conference},
 }
-
-@inproceedings{an24acl,
+@inproceedings{2024-08-found-in-the-middle,
+  author = {Cheng-Yu Hsieh and Yung-Sung Chuang and Chun-Liang Li and Zifeng Wang and Long T. Le and Abhishek Kumar and James Glass and Alexander Ratner and Chen-Yu Lee and Ranjay Krishna and Tomas Pfister},
+  title = {{Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization}},
+  year = {2024},
+  booktitle = FindingsACL,
+  pages = {14982--14995},
+  keywords = {conference},
+}
+@inproceedings{2024-08-infinitebench-long-context-evaluation,
+  author = {Xinrong Zhang and Yingfa Chen and Shengding Hu and Zihang Xu and Junhao Chen and Moo Khai Hao and Xu Han and Zhen Leng Thai and Shuo Wang and Zhiyuan Liu and Maosong Sun},
+  title = {{{$\infty$}Bench: Extending Long Context Evaluation Beyond 100K Tokens}},
+  year = {2024},
+  booktitle = ACL,
+  pages = {15262--15277},
+  keywords = {conference},
+}
+@inproceedings{2024-08-l-eval-standardized-evaluation,
   author = {Chenxin An and Shansan Gong and Ming Zhong and Xingjian Zhao and Mukai Li and Jun Zhang and Lingpeng Kong and Xipeng Qiu},
   title = {{L-Eval: Instituting Standardized Evaluation for Long Context Language Models}},
   year = {2024},
@@ -122,8 +253,44 @@
   pages = {14388--14411},
   keywords = {conference},
 }
-
-@inproceedings{bai25acl,
+@inproceedings{2024-08-longbench-bilingual-benchmark,
+  author = {Yushi Bai and Xin Lv and Jiajie Zhang and Hongchang Lyu and Jiankai Tang and Zhidian Huang and Zhengxiao Du and Xiao Liu and Aohan Zeng and Lei Hou and Yuxiao Dong and Jie Tang and Juanzi Li},
+  title = {{LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding}},
+  year = {2024},
+  booktitle = ACL,
+  pages = {3119--3137},
+  keywords = {conference},
+}
+@inproceedings{2024-10-ruler-context-size,
+  author = {Cheng-Ping Hsieh and Simeng Sun and Samuel Kriman and Shantanu Acharya and Dima Rekesh and Fei Jia and Yang Zhang and Boris Ginsburg},
+  title = {{RULER: What's the Real Context Size of Your Long-Context Language Models?}},
+  year = {2024},
+  booktitle = COLM,
+  keywords = {conference},
+}
+@inproceedings{2024-12-babilong-long-context-reasoning,
+  author = {Yuri Kuratov and Aydar Bulatov and Petr Anokhin and Ivan Rodkin and Dmitry Sorokin and Artyom Sorokin and Mikhail Burtsev},
+  title = {{BABILong: Testing the Limits of LLMs with Long Context Reasoning-in-a-Haystack}},
+  year = {2024},
+  booktitle = NeurIPS,
+  keywords = {conference},
+}
+@article{2025-03-longiclbench-long-in-context-learning,
+  author = {Tianle Li and Ge Zhang and Quy Duc Do and Xiang Yue and Wenhu Chen},
+  title = {{Long-context {LLM}s Struggle with Long In-context Learning}},
+  year = {2025},
+  journal = TMLR,
+  issn = {2835-8856},
+  keywords = {journal},
+}
+@inproceedings{2025-04-effective-context-length-falls-short,
+  author = {Chenxin An and Jun Zhang and Ming Zhong and Lei Li and Shansan Gong and Yao Luo and Jingjing Xu and Lingpeng Kong},
+  title = {{Why Does the Effective Context Length of LLMs Fall Short?}},
+  year = {2025},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2025-07-longbench-v2,
   author = {Yushi Bai and Shangqing Tu and Jiajie Zhang and Hao Peng and Xiaozhi Wang and Xin Lv and Shulin Cao and Jiazheng Xu and Lei Hou and Yuxiao Dong and Jie Tang and Juanzi Li},
   title = {{LongBench v2: Towards Deeper Understanding and Reasoning on Realistic Long-context Multitasks}},
   year = {2025},
@@ -131,12 +298,50 @@
   pages = {3639--3664},
   keywords = {conference},
 }
-
-@article{li25tmlr,
-  author = {Tianle Li and Ge Zhang and Quy Duc Do and Xiang Yue and Wenhu Chen},
-  title = {{Long-context {LLM}s Struggle with Long In-context Learning}},
+@inproceedings{2025-07-nolima-long-context-evaluation,
+  author = {Ali Modarressi and Hanieh Deilamsalehy and Franck Dernoncourt and Trung Bui and Ryan A. Rossi and Seunghyun Yoon and Hinrich Sch\"{u}tze},
+  title = {{NoLiMa: Long-Context Evaluation Beyond Literal Matching}},
   year = {2025},
-  journal = TMLR,
-  issn = {2835-8856},
-  keywords = {journal},
+  booktitle = ICML,
+  keywords = {conference},
+}
+@inproceedings{2025-07-position-bias-transformers,
+  author = {Xinyi Wu and Yifei Wang and Stefanie Jegelka and Ali Jadbabaie},
+  title = {{On the Emergence of Position Bias in Transformers}},
+  year = {2025},
+  booktitle = ICML,
+  keywords = {conference},
+}
+@inproceedings{2025-11-context-length-hurts-performance,
+  author = {Yufeng Du and Minyang Tian and Srikanth Ronanki and Subendhu Rongali and Sravan Babu Bodapati and Aram Galstyan and Azton Wells and Roy Schwartz and Eliu A. Huerta and Hao Peng},
+  title = {{Context Length Alone Hurts LLM Performance Despite Perfect Retrieval}},
+  year = {2025},
+  booktitle = FindingsEMNLP,
+  keywords = {conference},
+}
+@inproceedings{2025-11-pos2distill-position-bias-distillation,
+  author = {Yifei Wang and Feng Xiong and Yong Wang and Linjing Li and Xiangxiang Chu and Daniel Dajun Zeng},
+  title = {{Position Bias Mitigates Position Bias: Mitigate Position Bias Through Inter-Position Knowledge Distillation}},
+  year = {2025},
+  booktitle = EMNLP,
+  pages = {1495--1512},
+  keywords = {conference},
+}
+@misc{2025-12-drope-dropping-positional-embeddings,
+  author = {Yoav Gelberg and Koshi Eguchi and Takuya Akiba and Edoardo Cetin},
+  title = {{DroPE: Extending the Context of Pretrained LLMs by Dropping Their Positional Embeddings}},
+  year = {2025},
+  eprint = {2512.12167},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
+@misc{2026-01-longbench-pro,
+  author = {Ziyang Chen and others},
+  title = {{LongBench Pro: A More Realistic and Comprehensive Bilingual Long-Context Evaluation Benchmark}},
+  year = {2026},
+  eprint = {2601.02872},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
 }

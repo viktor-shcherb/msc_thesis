@@ -1,9 +1,11 @@
 
 name=thesis
 
-all: *.tex *.bib 
-	rubber --pdf $(name).tex
+references.bib: references/_venues.bib references/*/cite.bib
+	cat references/_venues.bib references/*/cite.bib > references.bib
+
+all: references.bib *.tex
+	latexmk -pdf $(name).tex
 
 clean:
-	rubber --clean --pdf $(name).tex
-
+	latexmk -C $(name).tex

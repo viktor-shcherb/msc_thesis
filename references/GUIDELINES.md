@@ -26,7 +26,8 @@ When adding a new reference, follow these steps in order:
 1. **Create the subdirectory** following the `YYYY-MM-short-descriptive-name/` pattern.
 2. **Download the paper PDF** into the subdirectory. Use the arXiv ID as the filename (e.g., `2302.00093.pdf`). If no arXiv version exists, use the DOI-based or proceedings PDF. Skip this step only if no PDF is publicly available (e.g., some blog posts or Reddit contributions).
 3. **Write `source.md`** with bibliographic metadata (see below).
-4. **Read the PDF thoroughly**, then write `analysis.md` following the structure below. Always base the analysis on the actual paper content, not summaries or abstracts alone.
+4. **Add a `cite.bib` file** with the BibTeX entry for this reference. The citation key **must match the directory name** (e.g., `2024-02-lost-in-the-middle`). This allows citing with `\cite{2024-02-lost-in-the-middle}`. If the venue has a `@string` macro defined in `references/_venues.bib`, use the macro name (e.g., `booktitle = NeurIPS`). If the venue is a major conference or journal not yet in `_venues.bib`, add a new `@string` definition there. Only spell out the full venue name inline for one-off venues (e.g., workshops). Run `make references.bib` to regenerate the combined bibliography.
+5. **Read the PDF thoroughly**, then write `analysis.md` following the structure below. Always base the analysis on the actual paper content, not summaries or abstracts alone.
 
 ---
 
