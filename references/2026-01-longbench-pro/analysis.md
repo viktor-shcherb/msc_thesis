@@ -1,3 +1,87 @@
+---
+title: "LongBench Pro: A More Realistic and Comprehensive Bilingual Long-Context Evaluation Benchmark"
+authors: "Chen, Wu, Jia, Gao, Fu, Zhang, Hu"
+year: 2026
+venue: "arXiv:2601.02872"
+paper_type: "preprint"
+categories: ["benchmarking", "long-context-evaluation"]
+scope: ["bilingual long-context evaluation", "1500 samples", "up to 256K tokens"]
+benchmarks_used: ["longbench-pro"]
+models_introduced: []
+models_evaluated: ["llama-3.1-8b", "llama-3.1-70b"]
+key_claims:
+  - id: C1
+    claim: "Long-context optimization outperforms parameter scaling: Qwen3-4B-Instruct-2507 (256K) scores 45.68, surpassing Qwen3-8B (44.34); Qwen3-30B-A3B-Instruct-2507 (256K) scores 54.52, outperforming Qwen3-32B (51.12)"
+    evidence: "Table 3, Section 5.2 finding (1)"
+    status: supported
+  - id: C2
+    claim: "Claimed context length does not equal effective context length: MiniMax-Text-01 (4M claimed) scores only 45.00, below most 128K models; GLM-4.6 (198K claimed) drops from 34.14 to 2.55 at 256K when truncation length is raised from 120K to 190K"
+    evidence: "Table 3, Table 4, Section 5.2 finding (2)"
+    status: supported
+  - id: C3
+    claim: "Cross-lingual performance is misaligned: GPT/Claude/Mistral/Llama series perform better in English; GLM/Kimi/MiniMax perform better in Chinese; stronger models narrow this gap"
+    evidence: "Table 3, Section 5.2 finding (3)"
+    status: supported
+  - id: C4
+    claim: "Extreme difficulty reveals true capability gaps: on Easy samples the gap between open-source and closed-source is minimal (GPT-5 85.23 vs DeepSeek-V3.2 85.02), but on Extreme it widens (Gemini-2.5-Pro 50.77 vs DeepSeek-V3.2 44.27)"
+    evidence: "Table 3, Section 5.2 finding (4)"
+    status: supported
+  - id: C5
+    claim: "Native thinking training is essential for long-context gains; instruct models show limited or negative gains from thinking prompts (Llama-3.1-405B +0.59, Gemma-3-12B-It -0.24, Llama-3.1-8B -1.03)"
+    evidence: "Table 3, Section 5.2 finding (6)"
+    status: supported
+  - id: C6
+    claim: "Mixed-thinking models achieve Pareto optimality between fast response and deep reasoning: Gemini-2.5-Flash approaches Gemini-2.5-Pro in thinking mode; DeepSeek-V3.2 significantly outperforms DeepSeek-R1 in thinking mode"
+    evidence: "Table 3, Section 5.2 finding (7)"
+    status: supported
+  - id: C7
+    claim: "Human-model collaborative construction achieves highest sample quality (0.9609 +/- 0.0415), outperforming human-only (0.9484 +/- 0.0450) and model-only (0.8964 +/- 0.0536) strategies"
+    evidence: "Section 5.7, Figure 10"
+    status: supported
+cross_references:
+  - target: 2024-08-longbench-bilingual-benchmark
+    type: extends
+    detail: "Direct successor to LongBench with broader task coverage (11 vs 6 primary tasks) and multi-dimensional categorization"
+  - target: 2025-07-longbench-v2
+    type: extends
+    detail: "Extends LongBench v2 with bilingual coverage (EN+ZH vs EN only), diverse metrics (vs single metric), and fine-grained categorization"
+  - target: 2024-10-ruler-context-size
+    type: complementary
+    detail: "Explicitly compares against RULER, noting its synthetic-only text and 4-task limitation; LongBench Pro covers all RULER capability dimensions"
+  - target: 2022-12-scrolls-long-language-sequences
+    type: complementary
+    detail: "References SCROLLS as an early effort in long-context evaluation"
+  - target: 2023-12-zeroscrolls-zero-shot-long-text
+    type: complementary
+    detail: "References ZeroSCROLLS as an early effort in long-context evaluation"
+  - target: 2024-02-lost-in-the-middle
+    type: complementary
+    detail: "Cites Lost in the Middle as foundational work on the gap between advertised and effective context length"
+  - target: 2025-04-effective-context-length-falls-short
+    type: complementary
+    detail: "Both address claimed vs effective context length from complementary perspectives"
+  - target: 2022-12-chain-of-thought-prompting
+    type: complementary
+    detail: "LongBench Pro's thinking/non-thinking prompt design is inspired by chain-of-thought prompting"
+  - target: 2024-08-infinitebench-long-context-evaluation
+    type: complementary
+    detail: "Compares against InfiniteBench in Table 1 as a mixed synthetic/natural benchmark; LongBench Pro uses fully natural text with broader task and language coverage"
+  - target: 2024-08-l-eval-standardized-evaluation
+    type: complementary
+    detail: "References L-Eval as a standardized evaluation protocol in the broader long-context evaluation landscape"
+  - target: 2024-06-ada-leval-length-adaptable-benchmark
+    type: complementary
+    detail: "References Ada-LEval as a length-adaptable extension of standardized evaluation"
+open_questions:
+  - question: "Will the context-optimization-first paradigm hold as models scale beyond current parameter counts?"
+    addressed_by: null
+  - question: "How can human-model collaborative construction scale beyond 256K while maintaining verification accuracy?"
+    addressed_by: null
+  - question: "Will mixed-thinking models remain Pareto-optimal as dedicated thinking models improve?"
+    addressed_by: null
+  - question: "Can recursive critique schemes (Critique-of-Critique) resolve the verification-efficiency tension at extreme lengths?"
+    addressed_by: null
+---
 # LongBench Pro: A More Realistic and Comprehensive Bilingual Long-Context Evaluation Benchmark
 
 **Authors:** Ziyang Chen, Xing Wu, Junlong Jia, Chaochen Gao, Qi Fu, Debing Zhang, Songlin Hu (Institute of Information Engineering, Chinese Academy of Sciences; University of Chinese Academy of Sciences; Beihang University; Xiaohongshu Inc.)
@@ -90,16 +174,16 @@ Each summarization sample includes three reference summaries; the maximum across
    - **Moderate:** after excluding Hard, at most one low-performing model answers correctly
    - **Easy:** remaining samples
 
-**Quality validation.** An audit of 300 uniformly sampled samples yields 99.3% attribute correctness (language, length, task, context requirement all correct) and 97.3% answer correctness, with problematic samples impacting overall score by only 0.96 points.
+**Quality validation.** An audit of 300 uniformly sampled samples yields 99.3% attribute correctness (language, length, task, context requirement all correct) and 97.3% answer correctness, with problematic samples impacting overall score by only 0.96 points (Section 4).
 
-**Construction strategy comparison.** The human-model collaborative strategy achieves the highest average quality score (0.9609 +/- 0.0415) across five dimensions, outperforming human-only (0.9484 +/- 0.0450) and model-only (0.8964 +/- 0.0536). Fleiss' Kappa among three expert evaluators is 0.76 (high agreement). Time cost increases slowly with sample length for the collaborative strategy, compared to exponential growth for human-only.
+**Construction strategy comparison.** The human-model collaborative strategy achieves the highest average quality score (0.9609 +/- 0.0415) across five dimensions, outperforming human-only (0.9484 +/- 0.0450) and model-only (0.8964 +/- 0.0536). Fleiss' Kappa among three expert evaluators is 0.76 (high agreement). Time cost increases slowly with sample length for the collaborative strategy, compared to exponential growth for human-only (Section 5.7, Figure 10).
 
 ### Experimental Setup
 
-- **Models:** 46 long-context LLMs spanning closed-source (e.g., GPT-5, Gemini-2.5-Pro) and open-source (e.g., GPT-OSS-120B), thinking (e.g., DeepSeek-R1), mixed-thinking (e.g., DeepSeek-V3.2, Claude-4-Sonnet), and non-thinking (instruct) modes, sizes from 3B to 1T parameters, dense and MoE architectures, and context lengths from 128K to 1M.
+- **Models:** 46 long-context LLMs spanning closed-source (e.g., GPT-5, Gemini-2.5-Pro) and open-source (e.g., GPT-OSS-120B), thinking (e.g., DeepSeek-R1), mixed-thinking (e.g., DeepSeek-V3.2, Claude-4-Sonnet), and non-thinking (instruct) modes, sizes from 3B to 1T parameters, dense and MoE architectures, and context lengths from 128K to 4M.
 - **Inference:** Each model's default inference parameters; temperature set to 1.0 when no default exists. Inference run three times per sample. Both general performance (average across runs) and upper-bound performance (Best-of-N, Pass@N) are reported.
 - **Output length:** 32K for thinking scores on models supporting 256K context; 8K for other models' thinking scores. 1K for all non-thinking scores.
-- **Truncation:** When sample length exceeds model context length, text is truncated from the middle to (context length minus output length).
+- **Truncation:** When sample length exceeds model context length, text is truncated from the middle to (context length minus output length). DeepSeek-V3.2, GLM-4.6, and MiniMax-M2 use a truncation length of 120K to reserve sufficient thinking space (Appendix E).
 - **Default reporting:** Thinking scores are reported unless otherwise specified.
 
 ### Key Results
@@ -120,23 +204,23 @@ Each summarization sample includes three reference summaries; the maximum across
 
 Key findings from the evaluation:
 
-- **(1) Long-context optimization outperforms parameter scaling.** Qwen3-4B-Instruct-2507 (256K) scores 45.68, surpassing Qwen3-8B (44.34). Qwen3-30B-A3B-Instruct-2507 (256K) attains 54.52, outperforming the larger Qwen3-32B (51.12). Extending effective context length yields greater gains than scaling parameters by several times.
+- **(1) Long-context optimization outperforms parameter scaling.** Qwen3-4B-Instruct-2507 (256K) scores 45.68, surpassing Qwen3-8B (44.34). Qwen3-30B-A3B-Instruct-2507 (256K) attains 54.52, outperforming the larger Qwen3-32B (51.12). Extending effective context length yields greater gains than scaling parameters by several times (Table 3, Section 5.2).
 
-- **(2) Claimed context length does not equal effective context length.** MiniMax-Text-01 claims 4M context but scores only 45.00, falling behind most 128K models. GLM-4.6 (claiming 198K) becomes unstable at its claimed limit: scores drop from 34.14 to 2.55 at 256K when truncation length is raised from 120K to 190K.
+- **(2) Claimed context length does not equal effective context length.** MiniMax-Text-01 claims 4M context but scores only 45.00, falling behind most 128K models. GLM-4.6 (claiming 198K) becomes unstable at its claimed limit: scores drop from 34.14 to 2.55 at 256K when truncation length is raised from 120K to 190K (Table 3, Table 4, Section 5.2).
 
-- **(3) Cross-lingual performance is misaligned.** GPT, Claude, Mistral, and Llama series perform better in English; GLM, Kimi, and MiniMax perform better in Chinese. However, stronger models (DeepSeek-V3.2, Qwen3-235B-A22B-Thinking-2507) narrow this gap through stronger cross-lingual semantic representation.
+- **(3) Cross-lingual performance is misaligned.** GPT, Claude, Mistral, and Llama series perform better in English; GLM, Kimi, and MiniMax perform better in Chinese. However, stronger models (DeepSeek-V3.2, Qwen3-235B-A22B-Thinking-2507) narrow this gap through stronger cross-lingual semantic representation (Table 3, Section 5.2).
 
-- **(4) Extreme difficulty reveals true capability gaps.** On Easy samples, the gap between open-source and closed-source models is minimal (GPT-5: 85.23, DeepSeek-V3.2: 85.02). On Extreme samples, the gap widens (Gemini-2.5-Pro: 50.77, DeepSeek-V3.2: 44.27). Thinking gains exhibit diminishing returns at higher difficulty: Claude-4-Sonnet gains +15.36 on Easy but only +4.13 on Extreme.
+- **(4) Extreme difficulty reveals true capability gaps.** On Easy samples, the gap between open-source and closed-source models is minimal (GPT-5: 85.23, DeepSeek-V3.2: 85.02). On Extreme samples, the gap widens (Gemini-2.5-Pro: 50.77, DeepSeek-V3.2: 44.27). Thinking gains exhibit diminishing returns at higher difficulty: Claude-4-Sonnet gains +15.36 on Easy but only +4.13 on Extreme (Table 3, Section 5.2).
 
-- **(5) Thinking improves long-context performance substantially.** Gemini-2.5-Flash: 55.92 -> 67.41 with thinking. Qwen3-4B with thinking (40.82) surpasses Qwen3-32B without thinking (40.28).
+- **(5) Thinking improves long-context performance substantially.** Gemini-2.5-Flash: 55.92 -> 67.41 with thinking. Qwen3-4B with thinking (40.82) surpasses Qwen3-32B without thinking (40.28) (Table 3, Section 5.2).
 
-- **(6) Native thinking training is required.** Thinking/mixed-thinking models gain substantially: Claude-4-Sonnet +13.80 (56.07 -> 69.87), DeepSeek-V3.2 +16.15 (51.67 -> 67.82). Traditional instruct models show limited or negative gains: Llama-3.1-405B-Instruct +0.59 (40.07 -> 40.66), Gemma-3-12B-It -0.24 (32.16 -> 31.92), Llama-3.1-8B-Instruct -1.03 (21.09 -> 20.06).
+- **(6) Native thinking training is required.** Thinking/mixed-thinking models gain substantially: Claude-4-Sonnet +13.80 (56.07 -> 69.87), DeepSeek-V3.2 +16.15 (51.67 -> 67.82). Traditional instruct models show limited or negative gains: Llama-3.1-405B-Instruct +0.59 (40.07 -> 40.66), Gemma-3-12B-It -0.24 (32.16 -> 31.92), Llama-3.1-8B-Instruct -1.03 (21.09 -> 20.06) (Table 3, Section 5.2).
 
-- **(7) Mixed-thinking models achieve Pareto optimality.** They maintain robust baseline capability without thinking and approach or surpass dedicated thinking models with thinking enabled. Gemini-2.5-Flash approaches Gemini-2.5-Pro in thinking mode; DeepSeek-V3.2 significantly outperforms DeepSeek-R1 in thinking mode.
+- **(7) Mixed-thinking models achieve Pareto optimality.** They maintain robust baseline capability without thinking and approach or surpass dedicated thinking models with thinking enabled. Gemini-2.5-Flash approaches Gemini-2.5-Pro in thinking mode; DeepSeek-V3.2 significantly outperforms DeepSeek-R1 in thinking mode (Table 3, Section 5.2).
 
 ### Length Dimension Analysis
 
-Most models exhibit declining performance as sample length increases. Gemini-2.5-Pro is the exception, showing remarkable length insensitivity: 74.50 at 8K vs. 71.77 at 256K. This indicates that within the 256K range, the bottleneck for state-of-the-art models is not the ability to "read" 256K tokens but rather the capacity to handle long-range dependencies and complex logical relationships.
+Most models exhibit declining performance as sample length increases. Gemini-2.5-Pro is the exception, showing remarkable length insensitivity: 74.50 at 8K vs. 71.77 at 256K. This indicates that within the 256K range, the bottleneck for state-of-the-art models is not the ability to "read" 256K tokens but rather the capacity to handle long-range dependencies and complex logical relationships (Section 5.4, Figure 7).
 
 **Performance across length (selected models):**
 
@@ -150,35 +234,89 @@ Most models exhibit declining performance as sample length increases. Gemini-2.5
 
 ### Task Dimension Analysis
 
-- **Gap between retrieval and aggregation.** Models score above 80 on retrieval (T1) and sequencing (T2) but drop sharply on aggregation (T6, average 57.72), indicating that "needle-in-a-haystack" localization capability does not transfer to semantic aggregation of dispersed information.
-- **Imbalance in forward vs. backward inference.** Models perform relatively well on evidence retrieval/citation alignment (T5, average 63.47) but lower on QA (T3) and summarization (T4, below 55), suggesting backward alignment (outcomes to evidence) is easier than forward generation (evidence to outcomes).
-- **Logical reasoning and consistency maintenance are bottlenecks.** Models perform moderately on reasoning tasks (T8--T10, ~60) and poorly on consistency maintenance (T7, T11, average below 49).
+- **Gap between retrieval and aggregation.** Models score above 80 on retrieval (T1) and sequencing (T2) but drop sharply on aggregation (T6, average 57.72), indicating that "needle-in-a-haystack" localization capability does not transfer to semantic aggregation of dispersed information (Section 5.5, Figure 8).
+- **Imbalance in forward vs. backward inference.** Models perform relatively well on evidence retrieval/citation alignment (T5, average 63.47) but lower on QA (T3) and summarization (T4, below 55), suggesting backward alignment (outcomes to evidence) is easier than forward generation (evidence to outcomes) (Section 5.5).
+- **Logical reasoning and consistency maintenance are bottlenecks.** Models perform moderately on reasoning tasks (T8--T10, ~60) and poorly on consistency maintenance (T7, T11, average below 49) (Section 5.5).
 
 ### Context Requirement Dimension
 
-All models perform substantially better on Partial tasks (localization and retrieval) than Full tasks (integration and reasoning), with a performance drop of 7.32 to 10.84 points when shifting from Partial to Full context requirements. This indicates that associating dispersed information across segments and performing holistic reasoning remains a notable limitation of current models.
+All models perform substantially better on Partial tasks (localization and retrieval) than Full tasks (integration and reasoning), with a performance drop of 7.32 to 10.84 points when shifting from Partial to Full context requirements. This indicates that associating dispersed information across segments and performing holistic reasoning remains a notable limitation of current models (Section 5.6, Figure 9).
 
 ### Upper-Bound Performance
 
-Under Best-of-3 evaluation, all models show monotonic improvement. Gemini-2.5-Pro and GPT-5 exhibit strong stability (marginal gains converge quickly), while Qwen3-235B-A22B-Thinking-2507 shows high potential (N significantly corrects initial reasoning bias). Under Pass@3, even Gemini-2.5-Pro achieves only 10.68% on Extreme samples, demonstrating substantial headroom.
+Under Best-of-3 evaluation, all models show monotonic improvement. Gemini-2.5-Pro and GPT-5 exhibit strong stability (marginal gains converge quickly), while Qwen3-235B-A22B-Thinking-2507 shows high potential (N significantly corrects initial reasoning bias). Under Pass@3, even Gemini-2.5-Pro achieves only 10.68% on Extreme samples, demonstrating substantial headroom (Section 5.3, Figures 5--6).
+
+---
+
+## Limitations and Failure Modes
+
+1. **Maximum length capped at 256K tokens.** The benchmark does not evaluate beyond 256K, while several evaluated models claim context lengths of 1M or more. Whether the findings generalize to longer contexts is unknown (Section 2, Section 5.4).
+
+2. **Bilingual only, not multilingual.** Coverage is limited to English and Chinese. Performance patterns for other languages (especially lower-resource languages) are not assessed (Table 1).
+
+3. **Difficulty calibration is model-dependent.** Difficulty levels are defined by the performance of 15 specific models (5 per tier). As models improve, current "Extreme" samples may become routine, and the difficulty distribution will need recalibration. The authors acknowledge this as inherent to the design's co-evolution with model capabilities (Section 3.5).
+
+4. **Construction pipeline involves the same models used for evaluation.** The five frontier LLMs used for sample generation (Gemini-2.5-Pro, GPT-5, Claude-4-Sonnet, DeepSeek-V3.2, Qwen3-235B-A22B-Thinking-2507) are also among the highest-ranked models in evaluation. This could introduce a bias where samples are implicitly tuned to the strengths or weaknesses of these specific models.
+
+5. **Human-model collaborative construction faces scaling tension.** The authors note that "as task length and complexity continue to grow, even human-model collaborative construction can face a tension between verification accuracy and production efficiency" (Section 7).
+
+6. **All models struggle with Full-context tasks.** Every evaluated model shows a 7.32 to 10.84 point drop when shifting from Partial to Full context requirements, indicating that holistic reasoning over dispersed evidence remains a fundamental limitation, not just a benchmark difficulty issue (Section 5.6).
+
+7. **Consistency maintenance is universally weak.** Models score below 49 on average for T7 (Consistency & Compliance Checking) and T11 (Dialogue Memory & Long-Horizon Tracking), exposing inherent limitations in sustaining global states over long sequences (Section 5.5).
 
 ---
 
 ## Conclusions
 
-1. **Comprehensive bilingual benchmark with multi-dimensional categorization.** LongBench Pro provides 1,500 naturally occurring samples across 11 primary tasks and 25 secondary tasks in English and Chinese, with fine-grained categorization along context requirement, length (six levels), and difficulty (four model-calibrated levels), covering all capability dimensions of existing benchmarks.
+### Contributions
 
-2. **Human-Model Collaborative Construction transcends the cost-quality trade-off.** The collaborative pipeline achieves the highest sample quality (0.9609 +/- 0.0415) at moderate cost, outperforming both purely human and purely model construction strategies. Model drafting reduces human cognitive burden at extreme lengths while human verification eliminates hallucinated answers.
+1. **Comprehensive bilingual benchmark with multi-dimensional categorization.** LongBench Pro provides 1,500 naturally occurring samples across 11 primary tasks and 25 secondary tasks in English and Chinese, with fine-grained categorization along context requirement (Full/Partial), length (six levels), and difficulty (four model-calibrated levels), covering all capability dimensions of existing benchmarks (Section 2, Table 1, Table 2).
 
-3. **Context-optimization-first paradigm.** Extending effective context length contributes more to long-context comprehension than scaling model parameters. Smaller models with long-context optimization (e.g., Qwen3-4B-Instruct-2507 at 256K) can outperform larger models without it (e.g., Qwen3-8B at 128K).
+2. **Human-Model Collaborative Construction transcends the cost-quality trade-off.** The collaborative pipeline achieves the highest sample quality (0.9609 +/- 0.0415) at moderate cost, outperforming both purely human (0.9484 +/- 0.0450) and purely model (0.8964 +/- 0.0536) construction strategies. Model drafting reduces human cognitive burden at extreme lengths while human verification eliminates hallucinated answers (Section 5.7, Figure 10).
 
-4. **Effective context length falls short of claimed length.** Models' actual long-context understanding capability often does not match their advertised context window. MiniMax-Text-01 (4M claimed) scores below most 128K models. Cross-lingual performance misalignment further constrains practical utility.
+3. **Comprehensive evaluation of 46 long-context LLMs.** The evaluation reveals systematic patterns across model families, architectures, and thinking paradigms, providing an empirical foundation for understanding long-context capabilities (Table 3, Sections 5.2--5.7).
 
-5. **Native thinking training is essential for long-context gains.** Thinking improves performance substantially, but only for models trained with native reasoning capability. Conventional instruct models show limited or negative gains when prompted to think, indicating that thinking is a fundamental post-training paradigm shift rather than a prompt engineering technique.
+### Implications
 
-6. **Mixed-thinking models define a promising future paradigm.** Models that combine fast response and deep reasoning achieve Pareto-optimal performance: efficient baseline output when thinking is disabled and competitive or superior performance to dedicated thinking models when thinking is enabled.
+1. **Context-optimization-first paradigm.** Extending effective context length may contribute more to long-context comprehension than scaling model parameters, suggesting a shift from "scale-first" to "context-optimization-first" for long-context performance. However, this finding is based on comparisons within the Qwen3 family and may not generalize across architectures (Section 5.2 finding (1)).
 
-7. **Deep comprehension remains the frontier challenge.** For state-of-the-art models, the bottleneck is no longer reading 256K tokens but comprehending long-range dependencies and complex logical relationships within them. Extreme-difficulty samples expose the true gap between models, with even the strongest model (Gemini-2.5-Pro) achieving only Pass@3 of 10.68% on Extreme samples.
+2. **Effective context length falls short of claimed length.** Models' actual long-context understanding capability often does not match their advertised context window, constraining practical utility. Cross-lingual performance misalignment further limits real-world deployment (Section 5.2 findings (2) and (3)).
+
+3. **Native thinking training is a post-training paradigm shift.** Thinking improves performance substantially, but only for models trained with native reasoning capability. This implies that thinking is a fundamental capability that must be internalized during training, not merely elicited through prompt engineering (Section 5.2 finding (6)).
+
+4. **Mixed-thinking models define a promising future paradigm.** Models that combine fast response and deep reasoning achieve Pareto-optimal performance, suggesting this may become the dominant architecture for long-context applications (Section 5.2 finding (7)).
+
+5. **Deep comprehension is the frontier challenge.** For state-of-the-art models, the bottleneck has shifted from reading capacity to comprehending long-range dependencies and complex logical relationships. Even Gemini-2.5-Pro achieves only Pass@3 of 10.68% on Extreme samples (Section 5.3, Section 5.4).
+
+---
+
+## Key Claims
+
+1. **C1: Long-context optimization outperforms parameter scaling.** Qwen3-4B-Instruct-2507 (256K) scores 45.68, surpassing Qwen3-8B (44.34); Qwen3-30B-A3B-Instruct-2507 (256K) scores 54.52, outperforming Qwen3-32B (51.12). Evidence: Table 3, Section 5.2. Status: **supported**.
+
+2. **C2: Claimed context length does not equal effective context length.** MiniMax-Text-01 (4M claimed) scores only 45.00, below most 128K models. GLM-4.6 drops from 34.14 to 2.55 at 256K when truncation length is raised from 120K to 190K. Evidence: Table 3, Table 4. Status: **supported**.
+
+3. **C3: Cross-lingual performance is misaligned.** GPT/Claude/Mistral/Llama series perform better in English; GLM/Kimi/MiniMax perform better in Chinese. Stronger models narrow this gap. Evidence: Table 3, Section 5.2. Status: **supported**.
+
+4. **C4: Extreme difficulty reveals true capability gaps.** On Easy samples, GPT-5 (85.23) and DeepSeek-V3.2 (85.02) are nearly tied. On Extreme samples, Gemini-2.5-Pro (50.77) leads DeepSeek-V3.2 (44.27) by 6.5 points. Thinking gains diminish at higher difficulty. Evidence: Table 3, Section 5.2. Status: **supported**.
+
+5. **C5: Native thinking training is essential for long-context gains.** Thinking/mixed-thinking models gain substantially (Claude-4-Sonnet +13.80, DeepSeek-V3.2 +16.15), while instruct models show limited or negative gains (Llama-3.1-405B +0.59, Gemma-3-12B-It -0.24, Llama-3.1-8B -1.03). Evidence: Table 3, Section 5.2. Status: **supported**.
+
+6. **C6: Mixed-thinking models achieve Pareto optimality.** Gemini-2.5-Flash approaches Gemini-2.5-Pro in thinking mode; DeepSeek-V3.2 outperforms DeepSeek-R1 (67.82 vs 60.07) in thinking mode while maintaining robust non-thinking baseline. Evidence: Table 3, Section 5.2. Status: **supported**.
+
+7. **C7: Human-model collaborative construction achieves highest quality.** Average quality score 0.9609 +/- 0.0415 vs human-only 0.9484 +/- 0.0450 and model-only 0.8964 +/- 0.0536. Fleiss' Kappa = 0.76. Evidence: Section 5.7, Figure 10. Status: **supported**.
+
+---
+
+## Open Questions
+
+1. **Will the context-optimization-first paradigm hold as models scale beyond current parameter counts?** The finding is based primarily on Qwen3 family comparisons. Whether it generalizes across architectures and to much larger models is unresolved.
+
+2. **How can human-model collaborative construction scale beyond 256K while maintaining verification accuracy?** The authors note the tension between verification accuracy and production efficiency at extreme lengths (Section 7). They are exploring a recursive "Critique-of-Critique" scheme but have not yet published results.
+
+3. **Will mixed-thinking models remain Pareto-optimal as dedicated thinking models improve?** The current advantage of mixed-thinking over pure thinking models may be transient as thinking-specific training matures.
+
+4. **Can the benchmark maintain discriminability as models improve?** With even Gemini-2.5-Pro achieving only Pass@3 of 10.68% on Extreme samples, LongBench Pro currently has headroom. However, the model-calibrated difficulty levels will need periodic recalibration.
 
 ---
 
@@ -210,10 +348,3 @@ Under Best-of-3 evaluation, all models show monotonic improvement. Gemini-2.5-Pr
 
 - **Wei et al. (2022)** -- *Chain-of-Thought Prompting.* The thinking process paradigm that motivates LongBench Pro's dual prompt design (non-thinking vs. thinking) for evaluating model upper bounds.
 - **Liu et al. (2023)** -- *Lost in the Middle.* Demonstrates positional effects and the gap between advertised and effective reasoning length in long contexts, a phenomenon that LongBench Pro's length-dimension analysis confirms and extends.
-
-#### Cross-References in Available Papers
-
-- **RULER (2024-10-ruler-context-size):** LongBench Pro explicitly compares against RULER in Table 1, noting that RULER uses fully synthetic text and covers only 4 tasks with a single metric and English only. LongBench Pro's task taxonomy (Figure 2) maps RULER's retrieval, QA, aggregation, and multi-hop tasks to its own T1, T3, T6, and T10 categories. Both benchmarks share the finding that claimed context lengths are unreliable, but LongBench Pro demonstrates this with natural text and a broader set of tasks.
-- **Lost in the Middle (2024-02-lost-in-the-middle):** LongBench Pro cites Liu et al. (2023) as foundational work on positional effects and the gap between advertised and effective context length. LongBench Pro's finding (2) that effective context length falls short of claimed length extends this work to 46 models with natural text and multi-dimensional analysis.
-- **Effective Context Length Falls Short (2025-04-effective-context-length-falls-short):** Both papers address the discrepancy between claimed and effective context length. LongBench Pro provides a complementary perspective using a benchmark-based approach with natural text, while the "Falls Short" paper examines this through perplexity and task-specific analyses.
-- **YaRN (2024-05-yarn-context-extension):** LongBench Pro evaluates Qwen3 models that use YaRN for context extension (32K native, 128K with YaRN), and the Qwen3-4B to 32B comparison that demonstrates context-optimization outperforming parameter scaling relies in part on YaRN-extended variants.

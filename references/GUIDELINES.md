@@ -4,6 +4,12 @@ These guidelines describe how to write the `source.md` and `analysis.md` files f
 
 ---
 
+## Ground Truth Rule
+
+**No results, numbers, claims, or statements may be fabricated.** Everything in an `analysis.md` file must be traceable to the paper text. If the paper does not report a number, do not invent one. If a claim is ambiguous, flag the ambiguity rather than resolving it editorially. Quote the paper where precision matters (equations, key definitions, exact metrics). When describing implications or limitations not explicitly stated by the authors, mark them clearly as inferences.
+
+---
+
 ## Directory Structure
 
 Each reference lives in its own subdirectory named with the pattern:
@@ -28,6 +34,11 @@ When adding a new reference, follow these steps in order:
 3. **Write `source.md`** with bibliographic metadata (see below).
 4. **Add a `cite.bib` file** with the BibTeX entry for this reference. The citation key **must match the directory name** (e.g., `2024-02-lost-in-the-middle`). This allows citing with `\cite{2024-02-lost-in-the-middle}`. If the venue has a `@string` macro defined in `references/_venues.bib`, use the macro name (e.g., `booktitle = NeurIPS`). If the venue is a major conference or journal not yet in `_venues.bib`, add a new `@string` definition there. Only spell out the full venue name inline for one-off venues (e.g., workshops). Run `make references.bib` to regenerate the combined bibliography.
 5. **Read the PDF thoroughly**, then write `analysis.md` following the structure below. Always base the analysis on the actual paper content, not summaries or abstracts alone.
+   - **Check the PDF length first.** Before reading, check how many pages the PDF has (e.g., using `pdfinfo` or by reading the first page and noting the total). If the PDF is long (roughly >10 pages including appendices), do **not** attempt to read and process it in a single pass.
+   - **Split long PDFs into parts.** For long papers, divide the reading into roughly equal parts. Process each part separately in parallel, extracting the relevant information for the corresponding `analysis.md` sections.
+   - **Aggregate into the final file.** After all parts have been processed, combine the extracted information into the complete `analysis.md`. Verify consistency across parts (e.g., notation, claim numbering, cross-references) during this aggregation step.
+6. **Update the YAML front matter** in the new `analysis.md` (see "YAML Front Matter" below).
+7. **Update cross-references** in other papers' `analysis.md` front matter to reflect the new paper (see "Metadata Maintenance" below).
 
 ---
 
@@ -104,7 +115,41 @@ Include all relevant URLs: arXiv, official proceedings (PMLR, ACL Anthology, Ope
 
 ## Analysis File (`analysis.md`)
 
-Every analysis must contain the following sections in order:
+Every analysis must begin with a **YAML front matter block** (see next section) and then contain the following sections in order:
+
+### YAML Front Matter
+
+Every `analysis.md` must begin with a YAML front matter block enclosed in `---` delimiters. This block holds structured metadata used by `search.py` for cross-referencing, categorization, and search. See the schema below.
+
+```yaml
+---
+title: "Full Paper Title"
+authors: "Last1, Last2, Last3"
+year: YYYY
+venue: "Venue Name Year"
+paper_type: conference-paper   # from ontology.paper_types
+categories: ["cat1", "cat2"]   # from ontology.categories
+scope: ["freeform scope 1"]   # freeform scope constraints
+benchmarks_used: ["bench1"]    # from ontology.benchmarks
+models_introduced: ["model1"]  # from ontology.models (if any)
+models_evaluated: ["model2"]   # from ontology.models (if any)
+key_claims:
+  - id: C1
+    claim: "Exact claim, traceable to paper"
+    evidence: "Table 2, Section 4"
+    status: supported           # supported | contested | unvalidated
+    contested_by: YYYY-MM-ref   # if contested (optional)
+cross_references:
+  - target: YYYY-MM-other-ref
+    type: extends               # from ontology.relationship_types
+    detail: "One sentence explaining the relationship"
+open_questions:
+  - question: "..."
+    addressed_by: YYYY-MM-ref   # or null if unresolved
+---
+```
+
+All category, benchmark, model, and relationship type identifiers must come from the controlled vocabularies defined in `references/metadata.yaml`. If a new identifier is needed, add it to the ontology first.
 
 ### 1. Title Block
 
@@ -175,29 +220,54 @@ This is the longest section. Organize it with the following subsections:
 - Follow the table with bullet points highlighting the most important takeaways.
 
 #### Additional Subsections
-- Add subsections as needed for the specific paper (e.g., "Comparison with Prior Methods", "Limitations", "Follow-Up Contributions", "Impact and Adoption").
+- Add subsections as needed for the specific paper (e.g., "Comparison with Prior Methods", "Follow-Up Contributions", "Impact and Adoption").
 
-### 5. Conclusions
+### 5. Limitations and Failure Modes
 
-Numbered list of the paper's main contributions and implications. Each item should:
+Describe the paper's limitations, negative results, and known failure modes. This section should:
+
+- List limitations explicitly acknowledged by the authors.
+- Note any failure modes observed in the experiments (e.g., tasks where the method underperforms baselines).
+- Identify assumptions or constraints that limit generalizability.
+
+If the paper does not discuss limitations, state this explicitly.
+
+### 6. Conclusions
+
+Split into two subsections:
+
+#### Contributions
+
+Numbered list of what the paper **established** — direct technical contributions supported by evidence. Each item should:
 
 - Open with a **bold phrase** summarizing the point.
 - Follow with one to two sentences of explanation.
-- Cover both the direct technical contribution and any broader implications.
 
-### 6. Core References and Why They Are Referenced
+#### Implications
+
+Numbered list of what the paper **suggests** — broader implications that may be contested or require further validation. Mark speculative implications as such.
+
+### 7. Key Claims
+
+Discrete numbered claims extracted from the paper, each with:
+
+- The claim statement (traceable to a specific section, figure, or table).
+- The evidence supporting it.
+- Status: `supported`, `contested`, or `unvalidated`.
+
+This section mirrors the `key_claims` field in the YAML front matter but in human-readable prose. Keep them consistent.
+
+### 8. Open Questions
+
+Questions raised by the paper that remain unresolved, or questions the paper explicitly leaves for future work. For each question, note whether it has been addressed by subsequent work in the `references/` directory.
+
+### 9. Core References and Why They Are Referenced
 
 Group references by role using H3 headers (e.g., "Positional Encoding Foundations", "Direct Predecessors", "Models Used in Evaluation", "Evaluation Benchmarks"). For each reference:
 
 ```markdown
 - **Author et al. (Year)** -- *Paper Title.* One to two sentences explaining why this reference matters to the paper being analyzed.
 ```
-
-If this paper is part of a lineage with other analyzed references, add a subsection:
-
-#### Cross-References in Available Papers
-
-Describe how the paper is cited or used in other papers within the `references/` directory and vice versa, with specific section and table references.
 
 ---
 
@@ -213,3 +283,91 @@ Describe how the paper is cited or used in other papers within the `references/`
 8. **Concrete over abstract.** Prefer "0.5-2% of pretraining tokens" over "a small fraction of pretraining compute."
 9. **Reference format.** Use `Author et al. (Year)` in text. Include the short title in italics after a double dash.
 10. **Consistent structure.** Follow the section order defined above. Readers should be able to find the same information in the same place across all analyses.
+11. **Capture negative results explicitly.** If the paper reports cases where the method fails, underperforms, or produces unexpected results, include them in the "Limitations and Failure Modes" section. Negative results are as informative as positive ones.
+12. **Distinguish claims from evidence.** When reporting a finding, always cite the specific table, figure, or section where the evidence appears. Use the format: "Method X improves by Y% (Table Z, Section W)." Do not present claims without evidence pointers.
+
+---
+
+## Metadata Maintenance
+
+### Ontology (`metadata.yaml`)
+
+The file `references/metadata.yaml` contains the shared ontology: controlled vocabularies for categories, paper types, relationship types, benchmarks, and models. Per-paper metadata lives in the YAML front matter of each `analysis.md` file.
+
+**When to update the ontology:**
+
+- When a new paper introduces a category, benchmark, or model not yet in the vocabulary.
+- Add the new identifier to the relevant list in `metadata.yaml` with a short description.
+- Then use the new identifier in the paper's `analysis.md` front matter.
+
+**When adding a new reference:**
+
+1. Write the YAML front matter for the new `analysis.md` using existing ontology identifiers. Add new identifiers to `metadata.yaml` if needed.
+2. Add `cross_references` entries in the new paper's front matter pointing to related papers already in the directory.
+3. **Update existing papers' front matter** to add reciprocal cross-references. For example, if the new paper extends Paper A, add an `extended-by` entry in Paper A's front matter pointing to the new paper.
+
+**Relationship type conventions:**
+
+- `extends` / `extended-by`: Direct methodological lineage.
+- `contradicts`: Findings are in tension. Include the specific claim and evidence.
+- `uses-benchmark`: This paper uses a benchmark introduced by the target.
+- `evaluates`: This paper evaluates a model or method from the target.
+- `concurrent`: Published around the same time addressing similar questions.
+- `complementary`: Related problem, different approach.
+- `formalizes`: Provides theoretical grounding for empirical findings.
+
+### Validating metadata
+
+Run `search.py` to verify cross-references are consistent:
+
+```bash
+# Check a specific paper's relationships
+python3 references/search.py related 2024-05-yarn-context-extension
+
+# Verify no broken references
+python3 references/search.py info <dir-name>
+
+# List all contradictions
+python3 references/search.py contradictions
+```
+
+---
+
+## Search Script Usage
+
+The `references/search.py` script reads YAML front matter from all `analysis.md` files and the ontology from `metadata.yaml`. It requires PyYAML.
+
+### Commands
+
+```bash
+# Find papers by category
+python3 references/search.py category context-extension
+
+# Find papers using a benchmark
+python3 references/search.py benchmark ruler
+
+# Find papers introducing or evaluating a model
+python3 references/search.py model llama-2-7b
+
+# Trace methodological lineage (extends/extended-by chains)
+python3 references/search.py lineage 2023-06-pi-positional-interpolation
+
+# Find all contradictions between papers
+python3 references/search.py contradictions
+
+# List key claims by status
+python3 references/search.py claims contested
+python3 references/search.py claims unvalidated
+
+# List open questions
+python3 references/search.py open-questions --unresolved
+
+# Full-text search across titles, claims, and details
+python3 references/search.py text "attention sink"
+
+# Show full metadata for a paper
+python3 references/search.py info 2024-05-yarn-context-extension
+
+# Show all cross-references (both directions) for a paper
+python3 references/search.py related 2024-05-yarn-context-extension
+```

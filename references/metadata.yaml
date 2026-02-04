@@ -1,0 +1,316 @@
+# =============================================================================
+# References Ontology — Controlled vocabularies for reference categorization
+# =============================================================================
+# Per-paper metadata is stored in YAML front matter of each analysis.md file.
+# This file contains only the shared ontology (categories, paper types,
+# relationship types, benchmarks, and models).
+#
+# Maintenance: see references/GUIDELINES.md § "Metadata Maintenance".
+# Search:      see references/search.py or run  ./references/search.py --help
+# =============================================================================
+
+ontology:
+  categories:
+  - id: architecture
+    description: Core Transformer architecture design and modifications
+  - id: position-encoding
+    description: Positional encoding methods (absolute, relative, rotary, ALiBi)
+  - id: context-extension
+    description: Methods for extending pretrained context windows
+  - id: attention-analysis
+    description: Empirical and theoretical analysis of attention patterns
+  - id: benchmarking
+    description: Evaluation benchmark design and methodology
+  - id: long-context-evaluation
+    description: Evaluation of long-context understanding capabilities
+  - id: attention-efficiency
+    description: Sparse, linear, and efficient attention mechanisms
+  - id: mechanistic-interpretability
+    description: Reverse-engineering internal model circuits and representations
+  - id: in-context-learning
+    description: Few-shot and zero-shot learning from context
+  - id: position-bias
+    description: Positional biases in model behavior and performance
+  - id: model-release
+    description: Open model releases and their technical reports
+  - id: streaming-inference
+    description: Efficient inference over unbounded input streams
+  - id: pruning-and-sparsity
+    description: Head pruning, weight sparsity, and model compression
+  - id: probing-and-analysis
+    description: Probing experiments and behavioral analysis of LLMs
+  - id: reasoning-evaluation
+    description: Evaluation of reasoning capabilities, including chain-of-thought
+  paper_types:
+  - conference-paper
+  - journal-paper
+  - preprint
+  - workshop-paper
+  - informal
+  relationship_types:
+  - id: extends
+    description: This paper builds directly on the target paper's method
+  - id: extended-by
+    description: The target paper builds directly on this paper's method
+  - id: contradicts
+    description: Findings are in tension or conflict with the target paper
+  - id: uses-benchmark
+    description: This paper uses a benchmark introduced by the target paper
+  - id: evaluates
+    description: This paper evaluates a model or method from the target paper
+  - id: concurrent
+    description: Published around the same time addressing similar questions
+  - id: complementary
+    description: Addresses a related problem from a different angle
+  - id: formalizes
+    description: Provides formal or theoretical grounding for the target paper's findings
+  benchmarks:
+  - id: glue
+    description: GLUE multi-task benchmark for natural language understanding
+  - id: wmt-translation
+    description: WMT machine translation shared tasks
+  - id: penn-treebank
+    description: Penn Treebank language modeling
+  - id: perplexity-pg19
+    description: Perplexity evaluation on PG-19 books corpus
+  - id: perplexity-proofpile
+    description: Perplexity evaluation on Proof-Pile mathematical corpus
+  - id: perplexity-wikitext103
+    description: Perplexity evaluation on WikiText-103 English Wikipedia corpus
+  - id: perplexity-govreport
+    description: Perplexity evaluation on GovReport long documents
+  - id: passkey-retrieval
+    description: Synthetic passkey retrieval test
+  - id: ruler
+    description: RULER multi-task synthetic long-context benchmark
+  - id: longbench
+    description: LongBench bilingual multi-task long-context benchmark
+  - id: longbench-v2
+    description: LongBench v2 with harder human-annotated questions
+  - id: longbench-pro
+    description: LongBench Pro comprehensive bilingual benchmark
+  - id: scrolls
+    description: SCROLLS long-text understanding benchmark (fine-tuning)
+  - id: zeroscrolls
+    description: ZeroSCROLLS zero-shot long-text benchmark
+  - id: infinitebench
+    description: InfiniteBench 100K+ token evaluation
+  - id: niah
+    description: Needle-in-a-haystack retrieval test
+  - id: babilong
+    description: BABILong reasoning-in-a-haystack benchmark
+  - id: lra
+    description: Long Range Arena synthetic benchmark
+  - id: open-llm-leaderboard
+    description: HuggingFace Open LLM Leaderboard
+  - id: arc
+    description: AI2 Reasoning Challenge
+  - id: hellaswag
+    description: HellaSwag commonsense NLI
+  - id: mmlu
+    description: Massive Multitask Language Understanding
+  - id: sst-2
+    description: Stanford Sentiment Treebank binary
+  - id: conll-coreference
+    description: CoNLL coreference resolution
+  - id: squad
+    description: Stanford Question Answering Dataset
+  - id: hotpotqa
+    description: HotpotQA multi-hop QA
+  - id: l-eval
+    description: L-Eval standardized long-context evaluation
+  - id: ada-leval
+    description: Ada-LEval length-adaptable evaluation
+  - id: gsm-ic
+    description: GSM-IC irrelevant context reasoning
+  - id: longicl-bench
+    description: LongICLBench long in-context learning benchmark
+  - id: nolima
+    description: NOLIMA long-context evaluation without limitations
+  - id: text8
+    description: text8 character-level language modeling (100M chars from Wikipedia)
+  - id: enwik8
+    description: enwik8 character-level language modeling (100M bytes from Wikipedia)
+  - id: wikihop
+    description: WikiHop multi-hop reading comprehension across documents
+  - id: triviaqa
+    description: TriviaQA large-scale distantly supervised QA
+  - id: ontonotes-coref
+    description: OntoNotes coreference resolution
+  - id: imdb-sentiment
+    description: IMDB movie review sentiment classification
+  - id: hyperpartisan
+    description: Hyperpartisan news detection (SemEval-2019 Task 4)
+  - id: arxiv-summarization
+    description: arXiv long document summarization
+  - id: mnli
+    description: MultiNLI natural language inference (matched and mismatched)
+  - id: cola
+    description: Corpus of Linguistic Acceptability (GLUE)
+  - id: mrpc
+    description: Microsoft Research Paraphrase Corpus (GLUE)
+  - id: natural-questions
+    description: Natural Questions open-domain QA (Kwiatkowski et al., 2019)
+  - id: boolq
+    description: BoolQ yes/no question answering (Clark et al., 2019)
+  - id: humaneval
+    description: HumanEval code generation (Chen et al., 2021)
+  - id: race
+    description: RACE reading comprehension from exams (Lai et al., 2017)
+  - id: gsm8k
+    description: GSM8K grade school math word problems (Cobbe et al., 2021)
+  - id: svamp
+    description: SVAMP math word problems with varying structures (Patel et al., 2021)
+  - id: csqa
+    description: CommonsenseQA commonsense reasoning (Talmor et al., 2019)
+  - id: strategyqa
+    description: StrategyQA multi-hop implicit reasoning (Geva et al., 2021)
+  - id: piqa
+    description: PIQA physical intuition question answering (Bisk et al., 2020)
+  - id: winogrande
+    description: WinoGrande commonsense reasoning (Sakaguchi et al., 2021)
+  - id: truthfulqa
+    description: TruthfulQA truthfulness and informativeness (Lin et al., 2021)
+  - id: toxigen
+    description: ToxiGen implicit toxic language detection (Hartvigsen et al., 2022)
+  - id: bbh
+    description: BIG-Bench Hard challenging reasoning tasks (Suzgun et al., 2022)
+  - id: mbpp
+    description: MBPP code generation benchmark (Austin et al., 2021)
+  - id: agi-eval
+    description: AGI Eval standardized exam benchmark (Zhong et al., 2023)
+  - id: bold
+    description: BOLD bias in open-ended language generation (Dhamala et al., 2021)
+  - id: webqa
+    description: WebQA open-domain QA on Freebase (Berant et al., 2013)
+  - id: musique
+    description: MuSiQue multi-hop QA via single-hop composition (Trivedi et al., 2022)
+  - id: 2wikimultihopqa
+    description: 2WikiMultiHopQA multi-hop QA (Ho et al., 2020)
+  - id: swag
+    description: SWAG adversarial commonsense inference (Zellers et al., 2018)
+  - id: math-hendrycks
+    description: MATH competition mathematics benchmark (Hendrycks et al., 2021)
+  - id: gpqa
+    description: GPQA graduate-level science QA (Rein et al., 2023)
+  - id: mmlu-pro
+    description: MMLU-Pro more robust multi-task language understanding (Wang et al., 2024)
+  - id: ifeval
+    description: IFEval instruction following evaluation
+  - id: mgsm
+    description: MGSM multilingual grade school math (Shi et al., 2022)
+  - id: egoschema
+    description: EgoSchema long-form egocentric video QA (Mangalam et al., 2023)
+  - id: mrcr
+    description: Multi-Round Coreference Resolution long-context diagnostic (Reid et al., 2024)
+  - id: mtob
+    description: Machine Translation from One Book in-context learning benchmark (Tanzer et al., 2023)
+  models:
+  - id: transformer-base
+    description: Original Transformer (Vaswani et al., 2017)
+  - id: bert-base
+    description: BERT base model (Devlin et al., 2019)
+  - id: bert-large
+    description: BERT large model (Devlin et al., 2019)
+  - id: gpt-2
+    description: GPT-2 (Radford et al., 2019)
+  - id: compressive-transformer
+    description: Compressive Transformer (Rae et al., 2020)
+  - id: llama-7b
+    description: LLaMA 7B (Touvron et al., 2023a)
+  - id: llama-13b
+    description: LLaMA 13B (Touvron et al., 2023a)
+  - id: llama-33b
+    description: LLaMA 33B (Touvron et al., 2023a)
+  - id: llama-65b
+    description: LLaMA 65B (Touvron et al., 2023a)
+  - id: llama-2-7b
+    description: Llama 2 7B (Touvron et al., 2023b)
+  - id: llama-2-13b
+    description: Llama 2 13B (Touvron et al., 2023b)
+  - id: llama-2-70b
+    description: Llama 2 70B (Touvron et al., 2023b)
+  - id: llama-3-8b
+    description: Llama 3 8B (Meta, 2024)
+  - id: llama-3-70b
+    description: Llama 3 70B (Meta, 2024)
+  - id: llama-3.1-8b
+    description: Llama 3.1 8B (Meta, 2024)
+  - id: llama-3.1-70b
+    description: Llama 3.1 70B (Meta, 2024)
+  - id: llama-3.1-405b
+    description: Llama 3.1 405B (Dubey et al., 2024)
+  - id: qwen2-72b
+    description: Qwen2 72B (Bai et al., 2023)
+  - id: code-llama-7b
+    description: Code Llama 7B (Roziere et al., 2023)
+  - id: mistral-7b
+    description: Mistral 7B (Jiang et al., 2023)
+  - id: falcon-7b
+    description: Falcon 7B (Penedo et al., 2023)
+  - id: mpt-7b
+    description: MPT 7B (MosaicML, 2023)
+  - id: pythia-series
+    description: Pythia scaling suite (Biderman et al., 2023)
+  - id: smollm-360m
+    description: SmolLM 360M (Allal et al., 2024)
+  - id: smollm-1.7b
+    description: SmolLM 1.7B (Allal et al., 2024)
+  - id: gemini-1.5-pro
+    description: Gemini 1.5 Pro (Reid et al., 2024)
+  - id: gemini-1.5-flash
+    description: Gemini 1.5 Flash (Reid et al., 2024)
+  - id: gpt-4
+    description: GPT-4 (OpenAI, 2023)
+  - id: claude-2.1
+    description: Claude 2.1 (Anthropic, 2023)
+  - id: qwen-series
+    description: Qwen model family (Alibaba)
+  - id: yi-34b
+    description: Yi 34B (Young et al., 2024)
+  - id: roberta-base
+    description: RoBERTa base (Liu et al., 2019)
+  - id: roberta-large
+    description: RoBERTa large (Liu et al., 2019)
+  - id: longformer-base
+    description: Longformer base (Beltagy et al., 2020)
+  - id: longformer-large
+    description: Longformer large (Beltagy et al., 2020)
+  - id: led-large
+    description: Longformer-Encoder-Decoder large (Beltagy et al., 2020)
+  - id: palm-540b
+    description: PaLM 540B (Chowdhery et al., 2022)
+  - id: lamda-137b
+    description: LaMDA 137B (Thoppilan et al., 2022)
+  - id: gpt-3.5-turbo
+    description: GPT-3.5-Turbo (OpenAI, 2023)
+  - id: vicuna-7b-v1.5-16k
+    description: Vicuna 7B v1.5 16K context (Li et al., 2023a)
+  - id: tulu-2-7b
+    description: Tulu 2 7B (Wang et al., 2023)
+  - id: gpt-3-175b
+    description: GPT-3 175B / InstructGPT text-davinci-002 (Brown et al., 2020; Ouyang et al., 2022)
+  - id: chatglm2-6b
+    description: ChatGLM2 6B (Du et al., 2022; Zeng et al., 2023)
+  - id: chatglm2-6b-32k
+    description: ChatGLM2 6B 32K context (Zeng et al., 2023)
+  - id: longchat-v1.5-7b-32k
+    description: LongChat v1.5 7B 32K (Li et al., 2023)
+  - id: xgen-7b-8k
+    description: XGen 7B 8K (Nijkamp et al., 2023)
+  - id: internlm-7b-8k
+    description: InternLM 7B 8K (Team, 2023)
+  - id: qwen1.5-7b
+    description: Qwen1.5 7B (Alibaba, 2024)
+  - id: qwen2.5-7b
+    description: Qwen2.5 7B (Alibaba, 2024)
+  - id: qwen2.5-14b
+    description: Qwen2.5 14B (Alibaba, 2024)
+  - id: qwen2.5-32b
+    description: Qwen2.5 32B (Alibaba, 2024)
+  - id: gpt-4o
+    description: GPT-4o (OpenAI, 2024)
+  - id: claude-3.5-sonnet
+    description: Claude 3.5 Sonnet (Anthropic, 2024)
+  - id: gemini-2.0
+    description: Gemini 2.0 (Google DeepMind, 2024)

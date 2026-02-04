@@ -53,12 +53,36 @@ references/
 
 `references/_venues.bib` defines `@string` macros for commonly used venues (e.g., `NeurIPS`, `ACL`, `ICML`). The Makefile concatenates `_venues.bib` first, then all `*/cite.bib` files, so macros are defined before any entry uses them.
 
+Each `analysis.md` file includes YAML front matter with structured metadata (categories, key claims, cross-references, benchmarks, models). The shared ontology of controlled vocabularies is in `references/metadata.yaml`.
+
+Full guidelines for writing `source.md` and `analysis.md` files, maintaining metadata, and the YAML front matter schema are in `references/GUIDELINES.md`.
+
+### Searching references
+
+`references/search.py` queries the YAML front matter across all analysis files:
+
+```
+python3 references/search.py category context-extension
+python3 references/search.py benchmark ruler
+python3 references/search.py model llama-2-7b
+python3 references/search.py lineage 2023-06-pi-positional-interpolation
+python3 references/search.py contradictions
+python3 references/search.py claims contested
+python3 references/search.py open-questions --unresolved
+python3 references/search.py text "attention sink"
+python3 references/search.py info 2024-05-yarn-context-extension
+python3 references/search.py related 2024-05-yarn-context-extension
+```
+
+Requires PyYAML (`pip install pyyaml`).
+
 ### Adding a new reference
 
 1. Create a subdirectory: `references/YYYY-MM-short-name/`
-2. Add the paper PDF, `source.md`, and `analysis.md` (see `references/GUIDELINES.md` for details).
-3. Add a `cite.bib` with the BibTeX entry. Use `@string` macros from `_venues.bib` where applicable.
-4. Run `make references.bib` to regenerate the combined file.
+2. Add the paper PDF, `source.md`, `analysis.md`, and `cite.bib` following `references/GUIDELINES.md`.
+3. Add YAML front matter to `analysis.md` using identifiers from `references/metadata.yaml`. Add new identifiers to the ontology if needed.
+4. Update cross-references in related papers' front matter.
+5. Run `make references.bib` to regenerate the combined file.
 
 ### Regenerating references.bib
 

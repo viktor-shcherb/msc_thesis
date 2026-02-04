@@ -1,3 +1,59 @@
+---
+title: "NTK-Aware Scaled RoPE"
+authors: "bloc97"
+year: 2023
+venue: "Reddit post / community contribution"
+paper_type: "informal"
+categories: ["context-extension", "position-encoding"]
+scope: ["RoPE-based LLMs", "context window extension without fine-tuning"]
+benchmarks_used: ["perplexity-pg19"]
+models_introduced: []
+models_evaluated: ["llama-7b"]
+key_claims:
+  - id: C1
+    claim: "Scaling the RoPE base frequency preserves high-frequency components that uniform position interpolation (PI) destroys"
+    evidence: "Frequency analysis in the post; formalized in YaRN Definition 1 and Appendix A.1"
+    status: supported
+  - id: C2
+    claim: "NTK-aware interpolation extends context to 8k+ tokens zero-shot without fine-tuning and with minimal perplexity degradation"
+    evidence: "Perplexity comparison graph in the post (alpha=8 on LLaMA 7B)"
+    status: supported
+  - id: C3
+    claim: "Without fine-tuning, NTK-aware scaling achieves lower perplexity than PI at extended context lengths"
+    evidence: "Perplexity comparison graph in the post; confirmed by YaRN Table 1"
+    status: supported
+  - id: C4
+    claim: "After fine-tuning on longer context data, PI outperforms NTK-aware scaling because NTK-aware has some dimensions in the extrapolation regime"
+    evidence: "Noted in the post and follow-up discussions; confirmed by YaRN Table 2"
+    status: supported
+cross_references:
+  - target: 2024-01-roformer-rope
+    type: extends
+    detail: "Modifies the base frequency in the RoPE formulation from Su et al."
+  - target: 2023-06-pi-positional-interpolation
+    type: concurrent
+    detail: "Addresses the same context extension problem; NTK-aware preserves high frequencies that PI destroys through uniform scaling"
+  - target: 2023-02-llama-open-efficient-foundation
+    type: extends
+    detail: "NTK-aware scaling is designed specifically for LLaMA's RoPE-based positional encoding"
+  - target: 2024-05-yarn-context-extension
+    type: extended-by
+    detail: "YaRN formalizes NTK-aware as Definition 1 and builds NTK-by-parts + attention temperature scaling on top"
+  - target: 2025-12-drope-dropping-positional-embeddings
+    type: extended-by
+    detail: "DroPE includes NTK-aware as one of three primary baselines; outperforms it on NIAH and LongBench"
+  - target: 2022-04-alibi-train-short-test-long
+    type: complementary
+    detail: "ALiBi uses linear attention biases for length extrapolation; NTK-aware addresses the same problem by modifying RoPE frequencies"
+open_questions:
+  - question: "Is there an optimal interpolation strategy that balances high-frequency preservation with avoidance of out-of-bounds extrapolation?"
+    addressed_by: 2024-05-yarn-context-extension
+  - question: "What is the optimal base value for a given target context extension ratio without empirical search?"
+    addressed_by: null
+  - question: "Can dynamic scale factor adjustment at inference time fully replace static scaling for all use cases?"
+    addressed_by: null
+---
+
 # NTK-Aware Scaled RoPE
 
 **Author:** bloc97 (Bowen Peng, later affiliated with Nous Research)
@@ -5,13 +61,17 @@
 **Type:** Reddit post on r/LocalLLaMA (not a formal peer-reviewed paper)
 **URL:** https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/
 
-This is a community contribution. The method was later formalized in the YaRN paper (Peng et al., 2023, arXiv:2309.00071) where bloc97 is the first author. Two follow-up contributions by the same author -- "NTK-by-parts" interpolation and its integration into YaRN -- were also initially released as community posts.
+This is a community contribution. The method was later formalized in the YaRN paper (Peng et al., 2023, arXiv:2309.00071, published at ICLR 2024) where bloc97 is the first author. Two follow-up contributions by the same author -- "NTK-by-parts" interpolation and its integration into YaRN -- were also initially released as community posts.
 
 ---
 
 ## Core Research Problem
 
-Position Interpolation (PI, Chen et al. 2023) extends the context window of RoPE-based LLMs by uniformly downscaling all position indices by a factor s = L'/L. While this avoids the catastrophic extrapolation of raw RoPE, it treats all frequency dimensions identically -- a "blind" approach. The key insight of NTK-aware scaling is that **uniform interpolation destroys high-frequency positional information** that the network needs to distinguish close-by tokens. Drawing on Neural Tangent Kernel (NTK) theory (Tancik et al., 2020), which shows that neural networks struggle to learn high-frequency functions when input embeddings lack high-frequency components, bloc97 identified that compressing RoPE's high-frequency dimensions reduces the model's ability to resolve fine-grained local positional differences.
+Position Interpolation (PI, Chen et al. 2023) extends the context window of RoPE-based LLMs by uniformly downscaling all position indices by a factor s = L'/L, where L is the pretrained context length and L' is the target length. While this avoids the catastrophic extrapolation of raw RoPE beyond L, it treats all frequency dimensions identically -- a "blind" approach. The key insight of NTK-aware scaling is that **uniform interpolation destroys high-frequency positional information** that the network needs to distinguish close-by tokens.
+
+Drawing on Neural Tangent Kernel (NTK) theory (Tancik et al., 2020), which shows that neural networks struggle to learn high-frequency functions when input embeddings lack high-frequency components, bloc97 identified that compressing RoPE's high-frequency dimensions reduces the model's ability to resolve fine-grained local positional differences. PI compresses all dimensions by the same factor s, including the highest-frequency dimensions where adjacent token positions differ most. This makes the problem analogous to the low-dimensional input problem studied in NTK theory: without high-frequency embedding components, the network cannot represent high-frequency functions of position.
+
+The core challenge is: **how to extend the context window of RoPE-based LLMs while preserving the high-frequency positional information needed for local token discrimination.**
 
 ---
 
@@ -20,7 +80,7 @@ Position Interpolation (PI, Chen et al. 2023) extends the context window of RoPE
 Instead of scaling every RoPE dimension by the same factor s, NTK-aware scaling **spreads the interpolation pressure across dimensions**: high frequencies are scaled less (preserving local resolution) and low frequencies are scaled more (accommodating the extended context). The solution is built on:
 
 1. **NTK theory insight:** Neural networks cannot learn high-frequency functions when input embeddings lack high-frequency components (Tancik et al., 2020). RoPE acts as a Fourier Feature mapping, so compressing its high-frequency dimensions directly harms local positional resolution.
-2. **Non-uniform frequency scaling via base change:** Rather than rescaling position indices (as PI does), the method changes the RoPE base parameter from b to b', which non-uniformly shifts all frequencies — preserving the highest frequencies almost entirely while compressing the lowest frequencies by approximately factor s.
+2. **Non-uniform frequency scaling via base change:** Rather than rescaling position indices (as PI does), the method changes the RoPE base parameter from b to b', which non-uniformly shifts all frequencies -- preserving the highest frequencies almost entirely while compressing the lowest frequencies by approximately factor s.
 3. **Zero fine-tuning required:** The base change is a 3-line code modification with no architectural changes, no new parameters, and no additional training.
 
 ---
@@ -29,11 +89,11 @@ Instead of scaling every RoPE dimension by the same factor s, NTK-aware scaling 
 
 ### Method
 
-RoPE defines frequencies theta_d = b^(-2d/|D|) where b = 10000 is the base, d indexes the hidden dimension, and |D| is the head dimension. NTK-aware scaling replaces b with a new base b':
+RoPE defines frequencies theta_d = b^(-2d/|D|) where b = 10000 is the base, d indexes the hidden dimension pair (0, 1, ..., |D|/2 - 1), and |D| is the head dimension. NTK-aware scaling replaces b with a new base b':
 
 > **b' = b * s^(|D| / (|D| - 2))**
 
-where s = L'/L is the context extension factor.
+where s = L'/L is the context extension factor (referred to as "alpha" in the original post).
 
 In the general RoPE modification framework f'(x_m, m, theta_d) = f(x_m, g(m), h(theta_d)):
 - g(m) = m (position indices are NOT rescaled, unlike PI)
@@ -41,23 +101,19 @@ In the general RoPE modification framework f'(x_m, m, theta_d) = f(x_m, g(m), h(
 
 This means position indices remain at their original integer values, and the frequency spectrum is non-uniformly compressed. The lowest-frequency dimension (d = |D|/2 - 1) is scaled by approximately factor s (matching PI's behavior), while the highest-frequency dimension (d = 0) remains nearly unchanged, preserving the model's ability to distinguish adjacent tokens.
 
-### Mathematical Derivation (from YaRN, Appendix A.1)
-
-The base change is derived by requiring that the lowest frequency dimension matches PI's linear interpolation scale:
+The derivation (formalized in YaRN Appendix A.1) requires that the lowest frequency dimension matches PI's linear interpolation scale:
 
 > b'^((|D|-2)/|D|) = s * b^((|D|-2)/|D|)
 
-Solving for b' gives:
+Solving for b' gives b' = b * s^(|D| / (|D| - 2)). For LLaMA 7B with |D| = 128 (head dimension = 4096/32): b' = 10000 * s^(128/126) ≈ 10000 * s^1.016.
 
-> b' = b * s^(|D| / (|D| - 2))
+### Key Technical Components
 
-For LLaMA 7B with |D| = 128 (head dimension = 4096/32): b' = 10000 * s^(128/126) ≈ 10000 * s^1.016.
+**NTK theory connection.** RoPE closely resembles Fourier Features (Tancik et al., 2020). A token's position is one-dimensional, and RoPE expands it into a |D|/2-dimensional complex vector spanning a range of frequencies. NTK theory shows that when input embeddings lack high-frequency components, networks cannot learn high-frequency functions of the input. The "NTK" in "NTK-aware" refers to this theoretical motivation: the method is designed to avoid destroying the high-frequency components that the network needs to represent fine-grained positional relationships.
 
-### Intuition from NTK Theory
+**Base-to-alpha correspondence.** In the implementation, the `--rope-freq-base` parameter corresponds to `10000 * alpha^(64/63)` for models with 64 dimension pairs (head dim = 128). For example, Code Llama's b = 1,000,000 corresponds to approximately alpha = 85, enabling ~85x context extension.
 
-RoPE closely resembles Fourier Features (Tancik et al., 2020). A token's position is one-dimensional, and RoPE expands it into a |D|/2-dimensional complex vector. NTK theory shows that when input embeddings lack high-frequency components, networks cannot learn high-frequency functions of the input. By preserving the high-frequency RoPE dimensions, NTK-aware scaling maintains the network's ability to encode fine-grained positional relationships without retraining.
-
-### Comparison with Position Interpolation
+**Comparison with Position Interpolation.**
 
 | Property | PI | NTK-Aware |
 |---|---|---|
@@ -65,26 +121,44 @@ RoPE closely resembles Fourier Features (Tancik et al., 2020). A token's positio
 | Frequency scaling | All dimensions scaled equally | Non-uniform: high freq preserved, low freq compressed |
 | High-frequency info | Lost (compressed by factor s) | Preserved |
 | Out-of-bounds values | None (pure interpolation) | Some dimensions slightly extrapolated |
-| Without fine-tuning | Poor (high perplexity) | Good (low perplexity, no fine-tuning needed) |
+| Without fine-tuning | Poor (high perplexity) | Good (minimal perplexity degradation) |
 | After fine-tuning | Good | Slightly worse than PI (due to out-of-bounds dims) |
 | Code changes | 1 line | 3 lines |
 
-### Limitations
+### Experimental Setup
 
-1. **Out-of-bounds extrapolation:** Because position indices are not rescaled, some dimensions see positional values beyond the pretrained range. This means NTK-aware is not a pure interpolation method, and after fine-tuning, PI can outperform it.
-2. **Scale factor mismatch:** The theoretical scale factor s does not accurately describe the true context extension. In practice, s must be set higher than the target extension ratio.
-3. **No frequency-dependent treatment:** NTK-aware applies a single base change globally. It does not distinguish between dimensions that should be fully interpolated (low frequency), not interpolated at all (high frequency), or partially interpolated (intermediate). This limitation was addressed by the subsequent "NTK-by-parts" method.
+- **Model:** LLaMA 7B (pretrained context length L = 2048 tokens)
+- **Extension factor:** alpha = 8 (target context: 8k+ tokens)
+- **Evaluation:** Perplexity on long-context text, compared against baseline RoPE (no extension) and linear Position Interpolation (PI with scale factor 4)
+- **Setting:** Zero-shot (no fine-tuning on longer sequences)
+- **Code:** Accompanying Colab notebook demonstrating the 3-line modification
+
+### Key Results
+
+The perplexity comparison graph in the original post shows three conditions on LLaMA 7B:
+
+| Method | Within pretrained range (<=2048) | Extended range (2048-8192) |
+|---|---|---|
+| Baseline RoPE (no scaling) | Normal perplexity | Perplexity explodes |
+| PI (linear interpolation, scale=4) | Degraded (all frequencies compressed) | Moderate perplexity |
+| NTK-aware (alpha=8) | Near-normal perplexity | Low perplexity, gradual increase |
+
+Key takeaways from the perplexity comparison (graph in the post):
+- **Baseline RoPE** catastrophically fails beyond the pretrained context length of 2048 tokens.
+- **NTK-aware scaling** maintains substantially lower perplexity than PI across the extended context range without any fine-tuning.
+- **NTK-aware preserves short-context performance** better than PI because it does not compress high-frequency dimensions.
+- After fine-tuning, PI can outperform NTK-aware because PI stays strictly within the interpolation regime while NTK-aware has some dimensions in the extrapolation regime (confirmed by YaRN experiments, Table 2 in Peng et al., 2023).
 
 ### Follow-Up Contributions by bloc97
 
-**NTK-by-parts interpolation** (GitHub PR, July 2023): Splits RoPE dimensions into three regimes based on the ratio r = L/lambda_d:
+**NTK-by-parts interpolation** (GitHub PR on jquesnelle/scaled-rope, July 2023): Splits RoPE dimensions into three regimes based on the ratio r = L/lambda_d (where lambda_d = 2*pi * b^(2d/|D|) is the wavelength of dimension d):
 - r > beta: do not interpolate (high frequency, preserve local distances)
 - r < alpha: fully interpolate by s (low frequency, avoid extrapolation)
 - alpha <= r <= beta: smooth ramp between the two
 
-For LLaMA: alpha = 1, beta = 32. This method outperforms both PI and NTK-aware in both fine-tuned and non-fine-tuned settings.
+For LLaMA: alpha = 1, beta = 32. This method outperforms both PI and NTK-aware in both fine-tuned and non-fine-tuned settings by eliminating both the high-frequency destruction of PI and the out-of-bounds extrapolation of NTK-aware.
 
-**Dynamic NTK** (by emozilla/Jeffrey Quesnelle, Reddit, June 2023): Uses a dynamic scale factor s = max(1, l'/L) that updates each forward pass based on current sequence length l'. Prevents performance degradation below L and allows graceful degradation beyond L'. Works exceptionally well without fine-tuning.
+**Dynamic NTK** (by emozilla/Jeffrey Quesnelle, Reddit, June 2023): Uses a dynamic scale factor s = max(1, l'/L) that updates each forward pass based on current sequence length l'. Prevents performance degradation below L and allows graceful degradation beyond L'. Works well without fine-tuning.
 
 Both methods were later unified with attention temperature scaling into **YaRN** (Peng et al., 2023).
 
@@ -96,65 +170,96 @@ Despite being a Reddit post, NTK-aware scaling had immediate and significant imp
 2. **Qwen 7B (Alibaba, 2023):** Adopted Dynamic NTK interpolation for context extension.
 3. **Hugging Face transformers v4.31.0:** Incorporated RoPE scaling support, enabling NTK-aware and related methods in the standard library.
 4. **YaRN (Peng et al., 2023):** Formalized NTK-aware as Definition 1 and built the full YaRN method on top of NTK-by-parts.
-5. **DroPE (Gelberg et al., 2025):** Uses NTK-aware as a baseline method throughout, including in the formal definition of scaling factors (Eq. 3) and all experimental comparisons.
+5. **DroPE (Gelberg et al., 2025):** Uses NTK-aware as a baseline method throughout all experimental comparisons.
+
+---
+
+## Limitations and Failure Modes
+
+1. **Out-of-bounds extrapolation.** Because position indices are not rescaled, some dimensions see positional values beyond the pretrained range. This means NTK-aware is not a pure interpolation method. After fine-tuning on longer context data, PI can outperform NTK-aware because PI stays strictly within the interpolation regime (noted in the post; confirmed by YaRN Table 2).
+
+2. **Scale factor mismatch.** The theoretical scale factor s (alpha) does not accurately describe the true context extension achieved. In practice, alpha must be set higher than the target extension ratio. For example, alpha = 8 does not yield exactly 8x context extension. The optimal base value must be found empirically, increasing the difficulty of deployment.
+
+3. **No frequency-dependent treatment of intermediate dimensions.** NTK-aware applies a single base change globally. It does not distinguish between dimensions that should be fully interpolated (low frequency), not interpolated at all (high frequency), or partially interpolated (intermediate). All dimensions receive a non-uniform but continuous transformation. This limitation was addressed by the subsequent "NTK-by-parts" method, which uses a piecewise ramp function with separate treatment for three frequency regimes.
+
+4. **Perplexity degradation at the tail end.** While NTK-aware maintains lower perplexity than PI at extended lengths without fine-tuning, perplexity still increases gradually beyond the pretrained context and eventually exhibits catastrophic blowup at sufficiently long sequences, similar to baseline RoPE and static PI.
+
+5. **Limited formal evaluation.** As a Reddit post, the evaluation is limited to perplexity on a single model (LLaMA 7B) without downstream task evaluation, systematic hyperparameter sweeps, or comparison across model scales.
 
 ---
 
 ## Conclusions
 
-1. **High-frequency preservation is critical:** Uniform position interpolation (PI) degrades short-context performance because it compresses high-frequency positional information. A frequency-aware approach that preserves high frequencies while compressing low frequencies avoids this problem.
+### Contributions
 
-2. **Simple base change is effective:** The entire method reduces to changing the RoPE base from b to b * s^(|D|/(|D|-2)) -- a 3-line code change with no new parameters, no architectural modifications, and no fine-tuning required.
+1. **High-frequency preservation is critical for zero-shot context extension.** Uniform position interpolation (PI) degrades short-context performance because it compresses high-frequency positional information. The NTK-aware base change preserves high frequencies while compressing low frequencies, enabling context extension without fine-tuning (perplexity comparison in the post).
 
-3. **Zero-shot context extension:** Unlike PI, which requires fine-tuning to be useful, NTK-aware scaling provides meaningful context extension without any additional training, though fine-tuning further improves results.
+2. **Simple base change achieves effective context extension.** The entire method reduces to changing the RoPE base from b to b * s^(|D|/(|D|-2)) -- a 3-line code change with no new parameters, no architectural modifications, and no fine-tuning required (code in the post).
 
-4. **Foundation for subsequent methods:** NTK-aware scaling established the key insight (frequency-dependent treatment of RoPE dimensions) that underpins all subsequent improvements: NTK-by-parts, Dynamic NTK, and YaRN.
+3. **Identification of the frequency-aware principle.** NTK-aware scaling established the key insight that RoPE's frequency dimensions should be treated non-uniformly for context extension, with high frequencies preserved and low frequencies compressed. This principle underpins all subsequent improvements: NTK-by-parts, Dynamic NTK, and YaRN.
 
-5. **Community-driven research impact:** A Reddit post with a 3-line code change influenced Meta's Code Llama, Alibaba's Qwen, and the broader RoPE context extension research direction, demonstrating the role of open-source community contributions in advancing LLM capabilities.
+4. **Demonstration of community-driven research impact.** A Reddit post with a 3-line code change directly influenced Meta's Code Llama (b = 1,000,000), Alibaba's Qwen (Dynamic NTK), and the broader RoPE context extension research direction, demonstrating the role of open-source community contributions in LLM development.
+
+### Implications
+
+1. **RoPE frequencies, not positions, are the right abstraction level for context extension.** [Inference: the success of base-change scaling over position scaling suggests that future context extension methods should operate on the frequency spectrum rather than position indices directly.]
+
+2. **Zero-shot context extension may be sufficient for many practical applications.** NTK-aware achieves meaningful 8k+ context with no training, suggesting that some fraction of the pretrained model's capacity can be reallocated to longer context through frequency manipulation alone. [Inference: this may be speculative for tasks requiring precise long-range retrieval.]
+
+3. **The trade-off between interpolation safety and zero-shot performance is fundamental.** NTK-aware (better zero-shot, worse fine-tuned) and PI (worse zero-shot, better fine-tuned) represent two endpoints of this trade-off, suggesting that optimal methods must find a middle ground. [Inference: this was confirmed by the NTK-by-parts and YaRN methods.]
+
+---
+
+## Key Claims
+
+1. **C1: High-frequency preservation.** Scaling the RoPE base frequency preserves high-frequency components that uniform position interpolation (PI) destroys. RoPE's highest-frequency dimensions (d = 0) remain nearly unchanged under the base change, while PI compresses all dimensions equally by factor s. Evidence: frequency analysis in the post; formalized in YaRN Definition 1 and Appendix A.1. Status: **supported**.
+
+2. **C2: Zero-shot context extension with minimal degradation.** NTK-aware interpolation extends LLaMA 7B's context to 8k+ tokens without fine-tuning, maintaining perplexity close to the pretrained model within the original context range and achieving gradual degradation beyond it. Evidence: perplexity comparison graph in the post (alpha=8 on LLaMA 7B). Status: **supported**.
+
+3. **C3: Outperforms PI without fine-tuning.** Without fine-tuning, NTK-aware scaling achieves lower perplexity than PI across extended context lengths. Evidence: perplexity comparison graph in the post; confirmed by YaRN Table 1 (Peng et al., 2023). Status: **supported**.
+
+4. **C4: Underperforms PI after fine-tuning.** After fine-tuning on longer context data, PI outperforms NTK-aware scaling because NTK-aware leaves some dimensions in the extrapolation regime while PI stays strictly within interpolation bounds. Evidence: noted in the post and follow-up discussions; confirmed by YaRN Table 2 (Peng et al., 2023). Status: **supported**.
+
+---
+
+## Open Questions
+
+1. **Is there an optimal interpolation strategy that balances high-frequency preservation with avoidance of out-of-bounds extrapolation?** NTK-aware preserves high frequencies but extrapolates in some dimensions; PI avoids extrapolation but destroys high frequencies. The ideal method would combine both properties. Addressed by: `2024-05-yarn-context-extension` (YaRN's NTK-by-parts with attention temperature scaling).
+
+2. **What is the optimal base value for a given target context extension ratio without empirical search?** The alpha parameter must be set higher than the target extension ratio, and the optimal value depends on the model. The difficulty of determining the optimal base "significantly increases the difficulty and cost of obtaining a successful fine-tuned model." Not addressed.
+
+3. **Can dynamic scale factor adjustment at inference time fully replace static scaling for all use cases?** Dynamic NTK (emozilla, 2023) adjusts the scale factor per forward pass, which works well without fine-tuning but has not been extensively compared to static scaling in fine-tuned settings across diverse tasks. Not addressed.
 
 ---
 
 ## Core References and Why They Are Referenced
 
 ### Foundational
-- **Su et al. (2021)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* The positional encoding that NTK-aware modifies. Provides the frequency-based rotation formulation theta_d = b^(-2d/|D|) that the base change operates on.
-- **Tancik et al. (2020)** -- *Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains.* NTK theory paper providing the theoretical motivation: neural networks struggle with high-frequency functions when input embeddings lack high-frequency components. The "NTK" in "NTK-aware" refers to this theory.
 
-### Predecessor
-- **Chen et al. (2023)** -- *Position Interpolation (PI).* The uniform interpolation method that NTK-aware improves upon. PI's blind downscaling of all position indices by 1/s loses high-frequency information; NTK-aware's non-uniform base change preserves it.
-- **kaiokendev (2023)** -- *SuperHOT.* Concurrent work that independently discovered position interpolation for context extension (2K to 8K). Referenced as concurrent in PI; part of the same wave of community-driven context extension research.
+- **Su et al. (2021)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* The positional encoding that NTK-aware modifies. Provides the frequency-based rotation formulation theta_d = b^(-2d/|D|) that the base change operates on.
+
+- **Tancik et al. (2020)** -- *Fourier Features Let Networks Learn High Frequency Functions in Low Dimensional Domains.* NTK theory paper providing the theoretical motivation: neural networks struggle with high-frequency functions when input embeddings lack high-frequency components. The "NTK" in "NTK-aware" refers to this theory. RoPE is identified as a Fourier Feature mapping, making NTK theory directly applicable to understanding frequency compression effects.
+
+### Direct Predecessor
+
+- **Chen et al. (2023)** -- *Extending Context Window of Large Language Models via Positional Interpolation.* The uniform interpolation method that NTK-aware improves upon. PI's blind downscaling of all position indices by 1/s loses high-frequency information; NTK-aware's non-uniform base change preserves it. Both methods address the same problem of extending RoPE-based LLMs beyond their pretrained context length.
+
+- **kaiokendev (2023)** -- *SuperHOT.* Concurrent work that independently discovered position interpolation for context extension (2K to 8K). Part of the same wave of community-driven context extension research as NTK-aware.
 
 ### Successor Methods (Building on NTK-Aware)
-- **bloc97 (2023)** -- *NTK-by-parts interpolation (GitHub PR).* Follow-up by the same author introducing frequency-dependent ramp function for targeted interpolation. Addresses NTK-aware's out-of-bounds problem.
-- **emozilla (2023)** -- *Dynamic NTK (Reddit post).* Dynamic scale factor adaptation at inference time. Combined with NTK-aware, enables >2x context extension without fine-tuning.
-- **Peng et al. (2023)** -- *YaRN: Efficient Context Window Extension.* Unifies NTK-by-parts + attention temperature scaling. Formalizes NTK-aware as Definition 1 with full mathematical derivation. First author is bloc97.
+
+- **bloc97 (2023)** -- *NTK-by-parts interpolation (GitHub PR).* Follow-up by the same author introducing a piecewise ramp function for frequency-dependent interpolation. Addresses NTK-aware's out-of-bounds problem by splitting dimensions into three regimes (extrapolation, interpolation, and ramp).
+
+- **emozilla/Jeffrey Quesnelle (2023)** -- *Dynamic NTK (Reddit post).* Dynamic scale factor adaptation at inference time. Combined with NTK-aware, enables context extension without fine-tuning and without the catastrophic blowup at the tail end.
+
+- **Peng et al. (2023)** -- *YaRN: Efficient Context Window Extension.* Unifies NTK-by-parts + attention temperature scaling. Formalizes NTK-aware as Definition 1 with full mathematical derivation (Appendix A.1). First author is bloc97. Published at ICLR 2024.
 
 ### Models That Adopted NTK-Aware
-- **Roziere et al. (2023)** -- *Code Llama.* Meta's code model uses NTK-aware scaling with b=1,000,000 to achieve 100k context windows. First major industry adoption.
+
+- **Roziere et al. (2023)** -- *Code Llama.* Meta's code model uses NTK-aware scaling with b = 1,000,000 to achieve 100k context windows. First major industry adoption of the base change method.
+
 - **Qwen (2023)** -- *Qwen 7B.* Alibaba's model uses Dynamic NTK interpolation for context extension.
 
 ### Subsequent Work Using NTK-Aware as Baseline
+
 - **Gelberg et al. (2025)** -- *DroPE: Dropping Positional Embeddings.* Uses NTK-aware as one of three primary baselines (with PI and YaRN) throughout all experiments. DroPE outperforms NTK-aware on all zero-shot context extension tasks.
-- **Ding et al. (2024)** -- *LongRoPE.* Advanced RoPE extension method that also builds on the frequency-aware insights from NTK-aware.
-
-#### Cross-References in Available Papers
-
-**How NTK-Aware Is Referenced in DroPE (Gelberg et al., 2025):**
-- Listed as "bloc97, 2023" throughout as one of the three primary RoPE-scaling baselines (alongside PI and YaRN)
-- Included in the formal definition of scaling factors (Eq. 3) describing how different methods modify RoPE frequencies
-- Evaluated as a baseline in all experiments: Tables 1-3, Table 10
-- DroPE outperforms NTK-aware on zero-shot NIAH tasks (28.0/41.6/23.3 vs 21.1/19.4/16.5 at 2x context) and LongBench (Llama2-7B: 26.08 vs 21.88 avg)
-
-**How NTK-Aware Is Referenced in YaRN (Peng et al., 2023):**
-- Referenced as [6] (bloc97's Reddit post) extensively throughout
-- Section 1 (Introduction): "[6] proposed the 'NTK-aware' interpolation by taking the loss of high frequency into account"
-- Section 3.1: Entire subsection "Loss of High Frequency information" dedicated to formalizing NTK-aware as Definition 1 with the mathematical derivation
-- Notes Code Llama uses NTK-aware scaling (b=1M)
-- NTK-by-parts referenced as [7] (bloc97's GitHub PR); Dynamic NTK referenced as [14] (emozilla's Reddit post)
-- YaRN is essentially NTK-by-parts + attention temperature scaling, building directly on bloc97's contributions
-- The first author of YaRN (Bowen Peng) IS bloc97
-
-**How NTK-Aware Is Referenced in PI (Chen et al., 2023):**
-- PI does **not** reference NTK-aware scaling directly. The PI paper (June 2023) was concurrent with/slightly preceded the NTK-aware Reddit post (June 2023)
-- PI mentions concurrent work by kaiokendev (SuperHOT) which also interpolates RoPE, but this is a different method from NTK-aware
-- PI's theoretical interpolation bound analysis implicitly motivates why NTK-aware was needed: the bound shows interpolation is stable but does not address the frequency-dependent information loss that NTK-aware solves

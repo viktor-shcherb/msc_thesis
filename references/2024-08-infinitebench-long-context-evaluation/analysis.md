@@ -1,3 +1,84 @@
+---
+title: "∞Bench: Extending Long Context Evaluation Beyond 100K Tokens"
+authors: "Zhang, Chen, Hu, Xu, Chen, Moo, Han, Thai, Wang, Liu, Sun"
+year: 2024
+venue: "ACL 2024"
+paper_type: conference-paper
+categories: ["benchmarking", "long-context-evaluation"]
+scope: ["100K+ token evaluation", "bilingual benchmark", "mixed synthetic and natural tasks"]
+benchmarks_used: ["infinitebench"]
+models_introduced: []
+models_evaluated: ["gpt-4", "claude-2.1", "mistral-7b"]
+key_claims:
+  - id: C1
+    claim: "∞Bench is the first LLM benchmark with average data length surpassing 100K tokens, spanning 5 domains in English and Chinese with 12 tasks and 3,946 examples"
+    evidence: "Table 1, Table 2, Section 3"
+    status: supported
+  - id: C2
+    claim: "All evaluated models show significant performance degradation at 100K+ contexts compared to shorter contexts"
+    evidence: "Table 3, Figure 4, Section 4.3 and 5.1"
+    status: supported
+  - id: C3
+    claim: "No consistent lost-in-the-middle effect exists at 100K+ contexts; position-dependent performance is task- and model-specific"
+    evidence: "Figure 5, Section 5.2"
+    status: supported
+    contested_by: 2024-02-lost-in-the-middle
+  - id: C4
+    claim: "Context recalling prompting improves GPT-4 Code.Debug accuracy from 15.74% to 39.59%"
+    evidence: "Section 5.3, Figure 6"
+    status: supported
+  - id: C5
+    claim: "Open-source YaRN-Mistral-7B-128K substantially underperforms proprietary models (19.96% vs 45.63% average)"
+    evidence: "Table 3, Section 4.3"
+    status: supported
+cross_references:
+  - target: 2023-12-landmark-attention-infinite-context
+    type: extends
+    detail: "Retrieve.PassKey task adapted from Mohtashami and Jaggi (2023) with 59 positions and 590 examples"
+  - target: 2024-02-lost-in-the-middle
+    type: contradicts
+    detail: "Finds no consistent lost-in-the-middle effect at 100K+ contexts, unlike Liu et al. (2023) at 16K; also adapts Retrieve.KV task"
+  - target: 2024-05-yarn-context-extension
+    type: evaluates
+    detail: "YaRN-Mistral-7B-128K is a baseline model, achieving 19.96% average"
+  - target: 2024-08-longbench-bilingual-benchmark
+    type: complementary
+    detail: "LongBench (~10K avg tokens) is the closest prior benchmark; ∞Bench addresses its limited context length"
+  - target: 2024-08-l-eval-standardized-evaluation
+    type: complementary
+    detail: "L-Eval reaches up to 60K tokens; ∞Bench surpasses its length ceiling by over 3x"
+  - target: 2021-05-long-range-arena
+    type: complementary
+    detail: "LRA (~10K tokens) targets efficient transformers; ∞Bench targets LLMs at 100K+ with broader domain coverage"
+  - target: 2024-10-ruler-context-size
+    type: complementary
+    detail: "RULER provides controllable synthetic evaluation; ∞Bench combines synthetic and realistic tasks at 100K+"
+  - target: 2024-12-babilong-long-context-reasoning
+    type: complementary
+    detail: "BABILong extends to 10M tokens with reasoning focus; ∞Bench provides realistic multi-domain tasks at 100K+"
+  - target: 2025-07-nolima-long-context-evaluation
+    type: complementary
+    detail: "NoLiMa identifies InfiniteBench QA as having the highest literal overlap measured (ROUGE-1 = 0.966); NoLiMa provides a complementary low-overlap evaluation (ROUGE-1 = 0.069)"
+  - target: 2025-07-longbench-v2
+    type: complementary
+    detail: "LongBench v2 contrasts with InfiniteBench as having more reliable evaluation (multiple-choice vs ROUGE/F1) and human-verified difficulty calibration"
+  - target: 2026-01-longbench-pro
+    type: complementary
+    detail: "LongBench Pro references ∞Bench as a mixed synthetic/natural benchmark"
+  - target: 2025-03-longiclbench-long-in-context-learning
+    type: complementary
+    detail: "LongICLBench provides a complementary evaluation paradigm at 2K-50K tokens requiring full label-space comprehension via extreme-label ICL rather than information retrieval"
+  - target: 2024-07-llama-3-herd-of-models
+    type: extended-by
+    detail: "Llama 3 405B achieves 83.4% on En.MC, outperforming GPT-4 (72.0%)"
+open_questions:
+  - question: "Is the context recalling prompting technique generalizable beyond Code.Debug to other long-context tasks?"
+    addressed_by: null
+  - question: "How do lost-in-the-middle effects change as context lengths scale from 16K to 100K+ tokens?"
+    addressed_by: 2024-08-found-in-the-middle
+  - question: "Can evaluation be extended to million-token scales with realistic (non-synthetic) tasks?"
+    addressed_by: 2024-12-babilong-long-context-reasoning
+---
 # ∞Bench: Extending Long Context Evaluation Beyond 100K Tokens
 
 **Authors:** Xinrong Zhang, Yingfa Chen, Shengding Hu, Zihang Xu, Junhao Chen, Moo Khai Hao, Xu Han, Zhen Leng Thai, Shuo Wang, Zhiyuan Liu, Maosong Sun (Tsinghua University)
@@ -7,9 +88,9 @@
 
 ## Core Research Problem
 
-Despite rapid advances in LLM context windows -- with models like GPT-4 (128K), Claude 2 (200K), and Kimi-Chat (200K) claiming to process over 100K tokens -- existing long-context benchmarks lag far behind. LongBench (Bai et al., 2023) and LRA (Tay et al., 2020) average only ~10K tokens; L-Eval (An et al., 2023) reaches 60K at most. No public benchmark at the time of writing had an average data length surpassing 100K tokens.
+Despite rapid advances in LLM context windows -- with GPT-4 Turbo (128K), Claude 2 (200K), and Kimi-Chat (200K) claiming to process over 100K tokens -- existing long-context benchmarks lag far behind. LongBench (Bai et al., 2023) averages ~10K tokens across 21 tasks; L-Eval (An et al., 2023) reaches at most 60K; LRA (Tay et al., 2020) averages ~10K; and LooGLE (Li et al., 2023) averages ~20K. No public benchmark at the time had an average data length surpassing 100K tokens (Table 1, Section 2).
 
-This gap creates two problems. First, it is impossible to comparatively evaluate models that claim 100K+ context support when benchmarks test only at 10K. Second, existing benchmarks are dominated by retrieval-style tasks or tasks where parametric knowledge can compensate for failure to process the full context. Simply retrieving a limited number of passages is often sufficient to answer questions, making the benchmarks unable to isolate genuine long-context reasoning from short-context retrieval ability.
+This length gap creates two problems. First, it is impossible to comparatively evaluate models that claim 100K+ context support when benchmarks test only at 10K. Second, existing benchmarks are dominated by retrieval-style tasks or tasks where parametric knowledge can compensate for failure to process the full context -- simply retrieving a limited number of passages is often sufficient to answer questions, making these benchmarks unable to isolate genuine long-context reasoning from short-context retrieval ability.
 
 **The core challenge is how to construct a standardized, multi-domain, bilingual benchmark with average data length exceeding 100K tokens, featuring tasks that require genuine understanding of long-range dependencies rather than simple passage retrieval.**
 
@@ -17,10 +98,10 @@ This gap creates two problems. First, it is impossible to comparatively evaluate
 
 ## Problem Solutions
 
-∞Bench is the first LLM benchmark with an average data length surpassing 100K tokens (~200K average). It spans 5 domains (retrieval, code, math, novels, dialogue) in both English and Chinese, with 12 tasks totaling 3,946 examples.
+∞Bench is the first LLM benchmark with an average data length surpassing 100K tokens (~200K average across all tasks). It spans 5 domains (retrieval, code, math, novels, dialogue) in both English and Chinese, with 12 tasks totaling 3,946 examples.
 
 1. **Multi-domain realistic and synthetic tasks.** The benchmark combines human-annotated tasks from realistic contexts (novels, code repositories, movie scripts) with auto-generated synthetic tasks (passkey retrieval, number retrieval, key-value lookup, code execution, arithmetic).
-2. **Tasks requiring long-range dependencies.** Novel-based tasks use aggregation (compiling information scattered throughout the text) and filtering (identifying specific information from a large set), both of which require processing the full context. Synthetic tasks test retrieval at elevated resolution, state preservation, and sequential processing.
+2. **Tasks requiring long-range dependencies.** Novel-based tasks use aggregation (compiling information scattered throughout the text) and filtering (identifying specific information from a large set), both requiring processing of the full context. Synthetic tasks test retrieval at elevated resolution, state preservation, and sequential processing.
 3. **Data contamination countermeasures.** Novel-based tasks employ key entity replacement -- substituting prominent character names with unrelated ones to create "fake novels" -- preventing LLMs from relying on training data memorization.
 
 ---
@@ -29,42 +110,63 @@ This gap creates two problems. First, it is impossible to comparatively evaluate
 
 ### Method
 
-∞Bench constructs tasks in two broad categories:
+∞Bench constructs tasks in two broad categories: realistic context tasks using real-world data, and synthetic context tasks testing specific long-context capabilities.
 
-**Realistic context tasks** use real-world data:
-- **Novel-based tasks (En.Sum, En.QA, En.MC, Zh.QA):** Entire novels are presented at inference time, with key entities replaced. Annotators create questions requiring aggregation or filtering reasoning across the full novel.
-- **Dialogue (En.Dia):** Movie/drama scripts with random character name instances replaced by `$$MASK$$`; the model must identify the masked character. Scripts shorter than 100K tokens are padded with additional scripts.
-- **Code debugging (Code.Debug):** Real Python packages from PyPI (64K--256K tokens) with a deliberate bug injected into one function. Four-choice format due to extreme difficulty of the open-ended version.
+**Realistic context tasks:**
 
-**Synthetic context tasks** test specific capabilities:
-- **Retrieve.PassKey:** Find a random 5-digit passkey hidden in noisy text (from Mohtashami and Jaggi, 2023). 590 examples with 59 positions.
-- **Retrieve.Number:** Enhanced passkey with 10-digit answers containing successive repetitive digits (e.g., 9998877762), testing local attention resolution.
-- **Retrieve.KV:** Identify and retrieve a value from a large JSON object of key-value pairs (from Liu et al., 2023). Relevant and irrelevant information share the same format.
-- **Code.Run:** Simulate multi-step Python function executions (addition/subtraction with nested calls at depths 2--10), testing state tracking.
-- **Math.Find:** Locate specific elements (3 largest, 3 smallest, median) in a large number array, testing state preservation.
-- **Math.Calc:** Compute intermediate results of a long arithmetic expression, testing sequential processing.
+- **Novel-based tasks (En.Sum, En.QA, En.MC, Zh.QA):** Entire novels are presented at inference time, with key entities replaced by unrelated names. Annotators create questions requiring two types of reasoning: (1) **aggregation** -- compiling various pieces of information scattered throughout the novel (e.g., "How much money in total did A spend on lunch?"); and (2) **filtering** -- identifying specific information from a larger set (e.g., "What color dress did A wear when A met B for the second time?"). En.Sum requires generating a concise summary; En.MC provides four answer choices annotated to be challenging (Section 3.1.1).
+- **Dialogue (En.Dia):** Movie and drama scripts from IMSDB, with random character name instances replaced by `$$MASK$$`; the model must identify the masked character. Scripts shorter than 100K tokens are padded with additional scripts (Section 3.1.2).
+- **Code debugging (Code.Debug):** Real Python packages from PyPI (64K--256K tokens) with a deliberate, obvious error injected into one function. Six bug injection methods are used: (1) deleting a necessary variable declaration; (2) incorrect number of function arguments; (3) infinite loops; (4) indentation errors; (5) undefined variable/function references; (6) blatant syntax errors. Presented in four-choice format because the open-ended version is too difficult for current LLMs (Section 3.1.3).
+
+**Synthetic context tasks** test four essential capabilities for long-context processing:
+
+- **Location and retrieval (Retrieve.PassKey, Retrieve.Number, Retrieve.KV):** PassKey retrieves a random 5-digit sequence from noisy text (adapted from Mohtashami and Jaggi, 2023, with 59 evenly-distributed positions and 590 examples). Number retrieves a 10-digit answer with successive repetitive digits (e.g., 9998877762), testing local attention resolution. KV retrieves a value from a large JSON object of UUID key-value pairs (adapted from Liu et al., 2023), where relevant and irrelevant information share the same format (Section 3.2.1).
+- **State preservation (Code.Run, Math.Find):** Code.Run simulates multi-step Python function executions with addition/subtraction and nested calls at depths 2--10. Math.Find locates specific elements (3 largest, 3 smallest, median) in a large number array (Sections 3.2.2--3.2.3).
+- **Sequential processing (Math.Calc):** Computes intermediate results of a long arithmetic expression. Models provide intermediate values after each operator rather than a final answer, since no model can produce the final result directly (Section 3.2.3).
 
 ### Key Technical Components
 
-**Annotation pipelines.** Five distinct pipelines are used for human-annotated tasks (Figure 3 in paper). Each annotation is quality-checked by at least two other annotators. For novel tasks, a shared pipeline covers entity replacement, question annotation, and answer/option annotation.
+**Annotation pipelines.** Five distinct annotation pipelines are used for human-annotated tasks (Figure 3). Each annotation is quality-checked by at least two other annotators. Novel tasks share a pipeline covering entity replacement, question annotation, and answer/option annotation. The annotation work is performed by the paper's authors (Appendix C).
 
-**Key entity replacement.** Prominent entities (main character names) are replaced with unrelated names to prevent LLMs from leveraging training data knowledge of well-known novels.
+**Key entity replacement.** Prominent entities (main character names) are replaced with unrelated names to prevent LLMs from leveraging training data knowledge of well-known novels. Some novels are exempt from replacement because they are too obscure for LLMs to recognize (Appendix C).
 
-**Evaluation metrics.** Exact match for most tasks; ROUGE-L-Sum for En.Sum. For multiple-choice tasks, failure to output a valid option receives a score of 0.
+**Evaluation metrics.** Exact match for most tasks; ROUGE-L-Sum for En.Sum. For multiple-choice tasks, failure to output a valid option receives a score of 0. For Math.Calc, performance is measured by the number of correct intermediate values before the first error.
 
-**Input truncation.** For models with maximum input limits, inputs are truncated by removing the center and joining both ends, based on the assumption that key information (instructions, book titles) is typically at the start or end.
+**Input truncation.** For models with maximum input length limits, inputs are truncated by removing the center and joining both ends, based on the assumption that key information (instructions, book titles) is typically at the start or end of the prompt (Section 4.2).
 
 ### Experimental Setup
 
 **Models evaluated (4 baselines):**
-- **GPT-4** (gpt-4-0125-preview): 128K context, evaluated via API (~$5000 total cost)
-- **Claude 2:** 200K context, evaluated manually via web interface
-- **Kimi-Chat:** 200K context, evaluated manually via web interface
-- **YaRN-Mistral-7B-128K:** Open-source, Mistral-7B adapted to 128K via modified position encoding (Peng et al., 2023b). Inference on 1x A100 80GB GPU, ~10 min/example
 
-An additional experiment with **RWKV-4-World-7B** is reported in Appendix A, but it produces unintelligible output at these lengths (0% on Retrieve.PassKey) due to being trained only on 4K sequences.
+| Model | Context Length | Access Method |
+|---|---|---|
+| GPT-4 (gpt-4-0125-preview) | 128K | API (~$5,000 total cost) |
+| Claude 2 | 200K | Manual web interface (3 authors, several weeks, ~$160) |
+| Kimi-Chat (Moonshot AI) | 200K | Manual web interface (free) |
+| YaRN-Mistral-7B-128K | 128K | 1x A100 80GB GPU, ~10 min/example |
 
-**Prompt design.** Model-specific prompt templates optimized on short dummy examples. YaRN-Mistral prompts include answer prefixes to constrain generation.
+An additional experiment with RWKV-4-World-7B is reported in Appendix A, but it produces unintelligible output at these lengths (0% on Retrieve.PassKey) due to being trained only on 4K sequences. The authors emphasize this does not reflect the RWKV architecture's inherent capability (Table 4).
+
+**Data statistics (Table 2):**
+
+| Task | Annotation | # Examples | Avg Length (input/output tokens) |
+|---|---|---|---|
+| Retrieve.PassKey | Auto | 590 | 122.4K / 2 |
+| Retrieve.Number | Auto | 590 | 122.4K / 4 |
+| Retrieve.KV | Auto | 500 | 121.1K / 22.7 |
+| En.Sum | Human | 103 | 103.5K / 1.1K |
+| En.QA | Human | 351 | 192.6K / 4.8 |
+| En.MC | Human | 229 | 184.4K / 5.3 |
+| Zh.QA | Human | 189 | 2,068.6K / 6.3 |
+| En.Dia | Auto | 200 | 103.6K / 3.4 |
+| Code.Debug | Human | 394 | 114.7K / 4.8 |
+| Code.Run | Auto | 400 | 75.2K / 1.3 |
+| Math.Calc | Auto | 50 | 43.9K / 43.9K |
+| Math.Find | Auto | 350 | 87.9K / 1.3 |
+
+Zh.QA is notably the longest task at ~2.07M tokens average input length, using Chinese novels that are substantially longer than the English ones.
+
+**Prompt design.** Model-specific prompt templates are optimized on short dummy examples for each model-task combination. YaRN-Mistral prompts include answer prefixes (e.g., "The pass key is", "The correct option is:") to constrain generation. GPT-4 requires a special system prompt for Math.Calc to avoid refusal (Appendix B).
 
 ### Key Results
 
@@ -86,65 +188,101 @@ An additional experiment with **RWKV-4-World-7B** is reported in Appendix A, but
 | Math.Find | **60.00** | 17.14 | 12.57 | 32.29 |
 | **Average** | **45.63** | 19.96 | 34.73 | 37.06 |
 
-- **GPT-4 leads overall** with 45.63% average, excelling in retrieval (100% on PassKey and Number), code, and math domains.
-- **No clear winner on novel tasks.** Kimi-Chat leads on En.Sum and En.MC; GPT-4 leads on En.QA and Zh.QA; Claude 2 dominates En.Dia (46.50% vs. GPT-4's 8.50%).
-- **YaRN-Mistral substantially underperforms** proprietary models (19.96% average), showing near-random performance on multiple tasks and 0% on Retrieve.KV.
+- **GPT-4 leads overall** with 45.63% average, excelling in retrieval (100% on PassKey and Number), code, and math domains (Section 4.3).
+- **No clear winner on novel-based tasks.** Kimi-Chat leads on En.Sum (17.93) and En.MC (72.49); GPT-4 leads on En.QA (22.22) and Zh.QA (23.06); Claude 2 dominates En.Dia (46.50 vs. GPT-4's 8.50).
+- **YaRN-Mistral substantially underperforms** proprietary models (19.96% average), showing near-random performance on multiple tasks and 0.00% on Retrieve.KV.
 - **Math.Calc is unsolvable** for all models (best: GPT-4 at 0.01%), indicating that sequential processing over very long arithmetic expressions remains far beyond current capabilities.
 - **All models struggle on realistic tasks.** Even GPT-4 achieves only 22.22% on En.QA and 14.73 ROUGE-L-Sum on En.Sum.
 
 ### Length Ablation
 
-Performance on auto-generated tasks is measured at shortened context lengths (Figure 4):
+Performance on auto-generated tasks is measured at shortened context lengths (Figure 4, Section 5.1):
 
-- **Retrieve.KV:** GPT-4 maintains ~90% up to ~1000 KV pairs, then drops. Kimi-Chat degrades more gradually. YaRN-Mistral scores 0 at all lengths.
+- **Retrieve.KV:** GPT-4 maintains ~90% accuracy up to ~1,000 KV pairs, then drops. Kimi-Chat degrades more gradually. YaRN-Mistral scores 0% at all lengths.
 - **Math.Find:** All models degrade with increasing array size. GPT-4 drops from ~60% to ~40%.
-- **Code.Run:** GPT-4 drops from ~75% at depth 2 to ~20% at depth 10. Other models near 0 at all depths.
-- **En.Dia:** Claude 2 (not shown but reported) maintains relatively stable performance; GPT-4 drops from ~60% to ~8% as script length increases.
+- **Code.Run:** GPT-4 drops from ~75% at depth 2 to ~20% at depth 10. Other models near 0% at all depths.
+- **En.Dia:** GPT-4 drops from ~60% at short scripts to ~8% as script length increases.
 
 **Performance generally declines with longer input lengths**, confirming that models' effectiveness diminishes even though they can technically accept extended inputs.
 
 ### Lost-in-the-Middle Analysis
 
-Unlike Liu et al. (2023), ∞Bench finds **no consistent trend between performance and answer position** across models (Figure 5):
+Unlike Liu et al. (2023), who found performance drops when answers are in the middle of 16K contexts, ∞Bench finds **no consistent trend between performance and answer position** across models at 100K+ (Figure 5, Section 5.2):
 
 - GPT-4 favors early answers on Retrieve.KV but later answers on En.Dia.
-- Claude 2 is relatively unaffected by answer position across all three tested tasks.
-- YaRN-Mistral and Kimi-Chat tend to perform better with end-positioned answers.
+- Claude 2 is relatively unaffected by answer position across all three tested tasks (Retrieve.Number, Retrieve.KV, En.Dia).
+- YaRN-Mistral and Kimi-Chat tend to perform better with end-positioned answers (except YaRN-Mistral's uniform 0% on Retrieve.KV).
+- The steep drop for Kimi-Chat in the middle on Retrieve.KV is caused by center truncation removing the answer.
 
-The authors hypothesize that the "lost in the middle" phenomenon is task- and model-specific, and that their 100K+ context setting (8x longer than Liu et al.'s 16K) may produce different position-dependent behaviors.
+The authors hypothesize that the "lost in the middle" phenomenon is task- and model-specific, and that the 100K+ context setting (roughly 8x longer than Liu et al.'s 16K) may produce qualitatively different position-dependent behaviors.
 
 ### Context Recalling
 
-A prompting technique termed **context recalling** is identified: explicitly instructing the model to first repeat/recall relevant information before reasoning improves performance. On Code.Debug with GPT-4:
+A prompting technique termed **context recalling** is identified: explicitly instructing the model to first repeat/recall relevant information from the context before reasoning (Section 5.3, Figure 6). On Code.Debug with GPT-4:
 
-- Step-by-step prompting: **15.74%**
-- Context recalling (repeat relevant code first): **39.59%**
+- Step-by-step prompting ("Think step by step and at last give me your answer"): **15.74%**
+- Context recalling ("Locate the functions in the options, repeat their content, inspect through code"): **39.59%**
 
-This 2.5x improvement suggests that for long-context tasks, prompting models to relocate relevant information into their generation buffer before reasoning is more effective than direct reasoning over the full context.
+This 2.5x improvement suggests that prompting models to relocate relevant information into their generation buffer before reasoning is more effective than direct reasoning over the full 100K+ context.
 
-### Limitations
+---
 
-1. **Small set of baselines.** Only 4 models are benchmarked, compared to 34+ in later benchmarks like BABILong.
-2. **Manual evaluation for two models.** Claude 2 and Kimi-Chat are evaluated by manually entering examples through web interfaces, limiting scalability and reproducibility.
-3. **Exact match scoring sensitivity.** Performance depends on prompt templates and answer parsing, requiring tailored prompt engineering for each model.
-4. **100K ceiling may be insufficient.** For applications requiring analysis of multiple books or entire databases, 100K--200K tokens may not be enough. Later benchmarks like BABILong (Kuratov et al., 2024) extend to 10M+ tokens.
-5. **No controllable length scaling.** Unlike BABILong, ∞Bench does not offer predefined length splits for systematic analysis of performance degradation curves on realistic tasks.
+## Limitations and Failure Modes
+
+1. **Small set of baselines.** Only 4 models are benchmarked, compared to 34+ in later benchmarks like BABILong (Kuratov et al., 2024). The limited model set restricts the generalizability of observed patterns.
+2. **Manual evaluation for two models.** Claude 2 and Kimi-Chat are evaluated by manually entering examples through web interfaces, limiting scalability, reproducibility, and control over decoding parameters (Appendix D).
+3. **Exact match scoring sensitivity.** Performance depends on prompt templates and answer parsing, requiring tailored prompt engineering for each model. The paper acknowledges this "may necessitate tailored redesigns for new model evaluations" (Limitations section).
+4. **100K ceiling may be insufficient.** The authors note that "supporting contexts up to 100K tokens may fall short for applications requiring analysis of extensive datasets, such as multiple books or entire databases." Later benchmarks like BABILong extend to 10M+ tokens.
+5. **No controllable length scaling for realistic tasks.** Unlike BABILong's predefined length splits, ∞Bench's realistic tasks have fixed lengths determined by the source material (novels, code repositories), preventing systematic analysis of performance degradation curves on these tasks.
+6. **Limited diversity of benchmark.** The paper acknowledges that ∞Bench "may not be sufficiently diverse or extensive to provide a comprehensive assessment of model capabilities" (Limitations section).
 
 ---
 
 ## Conclusions
 
-1. **First 100K+ benchmark.** ∞Bench is the first LLM benchmark with average data length surpassing 100K tokens, spanning 5 domains (retrieval, code, math, novels, dialogue) in English and Chinese with 12 tasks and 3,946 examples.
+### Contributions
 
-2. **Significant performance degradation at scale.** All evaluated models show substantial performance drops at 100K+ contexts compared to shorter contexts, demonstrating that claimed context window sizes do not translate to effective utilization.
+1. **First 100K+ benchmark.** ∞Bench is the first LLM benchmark with average data length surpassing 100K tokens, spanning 5 domains (retrieval, code, math, novels, dialogue) in English and Chinese with 12 tasks and 3,946 examples (Table 1, Table 2).
 
-3. **Retrieval is easier than reasoning.** Models excel at retrieval tasks (GPT-4 achieves 100% on PassKey/Number) but struggle with tasks requiring genuine long-range reasoning (22% on En.QA, 0.01% on Math.Calc).
+2. **Demonstrated performance degradation at scale.** All evaluated models show substantial performance drops at 100K+ contexts compared to shorter contexts, establishing that claimed context window sizes do not translate to effective utilization (Table 3, Figure 4).
 
-4. **No consistent lost-in-the-middle effect at 100K+.** Unlike prior findings at 16K contexts (Liu et al., 2023), answer position effects are model- and task-specific at ∞Bench's much longer contexts.
+3. **Retrieval-reasoning gap quantified.** Models excel at retrieval tasks (GPT-4 achieves 100% on PassKey/Number) but struggle with tasks requiring genuine long-range reasoning (22.22% on En.QA, 0.01% on Math.Calc), demonstrating a clear hierarchy of difficulty across task types (Table 3).
 
-5. **Context recalling improves long-context performance.** Prompting models to explicitly recall relevant information before reasoning yields 2.5x improvement on Code.Debug (15.74% to 39.59% for GPT-4), suggesting that generation-time information relocation is more effective than direct long-range attention.
+4. **Position bias findings at 100K+ contexts.** Unlike prior findings at 16K contexts (Liu et al., 2023), answer position effects are model- and task-specific at ∞Bench's 100K+ lengths, with no universal lost-in-the-middle pattern (Figure 5).
 
-6. **Open-source models lag substantially.** YaRN-Mistral-7B-128K achieves only 19.96% average versus GPT-4's 45.63%, indicating that context extension methods applied to smaller open-source models do not match proprietary long-context models on challenging tasks.
+5. **Context recalling technique identified.** Prompting models to explicitly recall relevant information before reasoning yields 2.5x improvement on Code.Debug (15.74% to 39.59% for GPT-4), establishing that generation-time information relocation can be more effective than direct attention over long contexts (Figure 6).
+
+### Implications
+
+1. **Context window claims require benchmark validation.** The gap between claimed context lengths and effective performance at those lengths suggests that benchmark-based evaluation at the claimed length is necessary for meaningful model comparison.
+
+2. **Long-context evaluation needs domain diversity.** The finding that no single model dominates across all task types (GPT-4 leads retrieval/code/math; Kimi-Chat leads summarization/MC; Claude 2 leads dialogue) implies that single-task benchmarks may produce misleading rankings.
+
+3. **Context recalling may indicate an attention bottleneck.** The effectiveness of context recalling suggests that even when information is within the context window, models may struggle to directly attend to and reason over distant tokens -- copying relevant information into the generation buffer may bypass this bottleneck (speculative).
+
+---
+
+## Key Claims
+
+1. **C1: First 100K+ benchmark.** ∞Bench is the first LLM benchmark with average data length surpassing 100K tokens (~200K across tasks), covering 5 domains in 2 languages with 12 tasks and 3,946 examples. Evidence: Table 1 comparison with prior benchmarks; Table 2 data statistics showing average lengths from 43.9K to 2,068.6K tokens. Status: **supported**.
+
+2. **C2: Performance degrades at 100K+.** All evaluated models show significant performance degradation as context length increases, even though they technically accept inputs at these lengths. Evidence: Table 3 main results (average scores 19.96--45.63%); Figure 4 length ablation showing monotonic degradation on auto-generated tasks. Status: **supported**.
+
+3. **C3: No consistent lost-in-the-middle at 100K+.** Position-dependent performance is task- and model-specific at 100K+, with no universal U-shaped degradation pattern. This contrasts with Liu et al. (2023) who found consistent position effects at 16K. Evidence: Figure 5 showing divergent position-performance patterns across models and tasks (Section 5.2). Status: **supported** (though tested on only 4 models and 3 tasks, limiting generalizability).
+
+4. **C4: Context recalling improves long-context performance.** Explicitly prompting GPT-4 to repeat relevant code before analysis improves Code.Debug accuracy from 15.74% (step-by-step) to 39.59% (context recalling). Evidence: Section 5.3, Figure 6 comparing two prompt variants. Status: **supported** (demonstrated on one task and one model).
+
+5. **C5: Open-source models lag substantially.** YaRN-Mistral-7B-128K achieves 19.96% average versus GPT-4's 45.63%, with 0% on Retrieve.KV and near-random performance on several tasks. Evidence: Table 3. Status: **supported** (though comparing a 7B open-source model to proprietary models of unknown size is not size-controlled).
+
+---
+
+## Open Questions
+
+1. **Is context recalling generalizable?** The 2.5x improvement on Code.Debug raises the question of whether prompting models to first recall/repeat relevant context before reasoning is a generally effective strategy for long-context tasks, or specific to code debugging with GPT-4. Not addressed in subsequent work in this collection.
+
+2. **How do position bias effects change with context scale?** ∞Bench's finding of no consistent lost-in-the-middle at 100K+ diverges from Liu et al. (2023) at 16K. How and why these effects change across the 16K--200K range remains unclear. Partially addressed by Peysakhovich and Lerer (2024) in *Found in the Middle*.
+
+3. **Can realistic (non-synthetic) evaluation scale to millions of tokens?** ∞Bench's realistic tasks are limited by source material length. BABILong (Kuratov et al., 2024) extends to 10M tokens but uses synthetic reasoning tasks embedded in book text, not fully realistic tasks.
 
 ---
 
@@ -152,41 +290,31 @@ This 2.5x improvement suggests that for long-context tasks, prompting models to 
 
 ### Long-Context Evaluation Benchmarks
 
-- **Bai et al. (2023)** -- *LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding.* The closest prior benchmark, averaging ~10K tokens across 21 tasks. ∞Bench explicitly addresses LongBench's limited context length and lack of 100K+ evaluation.
-- **An et al. (2023)** -- *L-Eval: Instituting Standardized Evaluation for Long Context Language Models.* Another prior benchmark reaching up to 60K tokens. ∞Bench surpasses L-Eval's length ceiling by 3x and adds bilingual coverage.
-- **Tay et al. (2020)** -- *Long Range Arena: A Benchmark for Efficient Transformers.* An older benchmark (~10K tokens) spanning text, image, and math. ∞Bench differs by targeting LLMs rather than efficient transformer architectures and using much longer contexts.
-- **Li et al. (2023)** -- *LooGLE: Can Long-Context Language Models Understand Long Contexts?* Averages ~20K tokens with summary and QA tasks. ∞Bench provides 10x longer contexts and broader domain coverage.
-
-### Models and Context Extension Methods
-
-- **OpenAI (2023)** -- *GPT-4 Technical Report / GPT-4 Turbo.* The strongest baseline on ∞Bench (45.63% average), supporting 128K contexts. GPT-4 achieves perfect scores on passkey and number retrieval but struggles on realistic tasks.
-- **Anthropic (2023)** -- *Claude 2.* Claims 200K context support. Achieves the best performance on En.Dia (46.50%) but lags behind GPT-4 on most other tasks.
-- **AI (2023)** -- *Kimi-Chat.* Proprietary 200K-context model by Moonshot AI. Leads on En.Sum (17.93) and En.MC (72.49) but underperforms GPT-4 overall.
-- **Peng et al. (2023b)** -- *YaRN: Efficient Context Window Extension of Large Language Models.* Provides the YaRN-Mistral-7B-128K baseline, which substantially underperforms proprietary models (19.96% average), demonstrating that positional encoding modifications alone do not confer robust 100K+ context processing.
-- **Peng et al. (2023a)** -- *RWKV: Reinventing RNNs for the Transformer Era.* RWKV-4-World-7B is tested but produces unintelligible output at ∞Bench lengths due to being trained only on 4K sequences.
-
-### Attention and Positional Encoding
-
-- **Su et al. (2023)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* RoPE is the positional encoding modified by context extension methods like YaRN that are evaluated on ∞Bench.
-- **Chen et al. (2023)** -- *Extending Context Window of Large Language Models via Positional Interpolation.* Positional interpolation is referenced as a key method for extending LLM context windows, forming the technical background against which ∞Bench evaluates models.
+- **Bai et al. (2023)** -- *LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding.* The closest prior benchmark, averaging ~10K tokens across 21 tasks in 4 categories. ∞Bench explicitly addresses LongBench's limited context length and inability to evaluate 100K+ models (Table 1).
+- **An et al. (2023)** -- *L-Eval: Instituting Standardized Evaluation for Long Context Language Models.* Prior benchmark with 18 tasks reaching up to 60K tokens. ∞Bench surpasses L-Eval's length ceiling by over 3x and adds bilingual coverage (Table 1).
+- **Tay et al. (2020)** -- *Long Range Arena: A Benchmark for Efficient Transformers.* Older benchmark (~10K tokens) spanning text, image, and math, designed for efficient transformers. ∞Bench differs by targeting LLMs rather than efficient architectures and using much longer contexts (Table 1).
+- **Li et al. (2023)** -- *LooGLE: Can Long-Context Language Models Understand Long Contexts?* Averages ~20K tokens with summary and QA tasks focusing on short vs long dependency examples. ∞Bench provides 10x longer contexts and broader domain coverage (Table 1).
 
 ### Task Foundations
 
-- **Mohtashami & Jaggi (2023)** -- *Landmark Attention: Random-Access Infinite Context Length for Transformers.* Source of the Retrieve.PassKey task adapted in ∞Bench with 59 positions and 590 examples.
-- **Liu et al. (2023)** -- *Lost in the Middle: How Language Models Use Long Contexts.* Source of the Retrieve.KV task and the "lost in the middle" hypothesis. ∞Bench's analysis at 100K+ contexts contradicts the consistent position-dependent performance drop observed at 16K.
-- **Bubeck et al. (2023)** -- *Sparks of Artificial General Intelligence: Early Experiments with GPT-4.* Demonstrates GPT-4's state tracking capability, motivating the Code.Run task design in ∞Bench.
+- **Mohtashami & Jaggi (2023)** -- *Landmark Attention: Random-Access Infinite Context Length for Transformers.* Source of the Retrieve.PassKey task, which ∞Bench adapts with 59 evenly-distributed positions and 590 examples at 100K+ context lengths (Section 3.2.1).
+- **Liu et al. (2023)** -- *Lost in the Middle: How Language Models Use Long Contexts.* Source of the Retrieve.KV task and the "lost in the middle" hypothesis. ∞Bench's analysis at 100K+ contexts finds no consistent position-dependent performance drop, contrasting with Liu et al.'s findings at 16K (Section 5.2).
+- **Bubeck et al. (2023)** -- *Sparks of Artificial General Intelligence: Early Experiments with GPT-4.* Demonstrates GPT-4's state tracking capability, motivating the Code.Run task design in ∞Bench (Section 3.2.2).
+
+### Models and Context Extension Methods
+
+- **OpenAI (2023)** -- *GPT-4 Technical Report / GPT-4 Turbo.* The strongest baseline on ∞Bench (45.63% average), supporting 128K contexts. Achieves perfect scores on passkey and number retrieval but struggles on realistic tasks (Table 3).
+- **Anthropic (2023)** -- *Claude 2.* Claims 200K context support. Achieves the best performance on En.Dia (46.50%) but lags behind GPT-4 on most other tasks (Table 3).
+- **Moonshot AI (2023)** -- *Kimi-Chat.* Proprietary 200K-context model. Leads on En.Sum (17.93) and En.MC (72.49) but underperforms GPT-4 overall (34.73% average, Table 3).
+- **Peng et al. (2023b)** -- *YaRN: Efficient Context Window Extension of Large Language Models.* Provides the YaRN-Mistral-7B-128K baseline, which substantially underperforms proprietary models (19.96% average), demonstrating that positional encoding modifications alone do not confer robust 100K+ context processing (Table 3).
+- **Peng et al. (2023a)** -- *RWKV: Reinventing RNNs for the Transformer Era.* RWKV-4-World-7B is tested in Appendix A but produces unintelligible output at ∞Bench lengths (0% on Retrieve.PassKey) due to being trained on only 4K sequences (Table 4).
+
+### Positional Encoding
+
+- **Su et al. (2023)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* RoPE is the positional encoding modified by context extension methods like YaRN that are evaluated on ∞Bench.
+- **Chen et al. (2023)** -- *Extending Context Window of Large Language Models via Positional Interpolation.* Positional interpolation is referenced as a key method for extending LLM context windows, forming the technical background for the models evaluated.
 
 ### Infrastructure
 
-- **Dao et al. (2022)** -- *FlashAttention.* Referenced as enabling efficient long-context training and inference, forming part of the infrastructure that makes 100K+ LLMs feasible.
-- **Dao (2023)** -- *FlashAttention-2.* The improved version enabling the training infrastructure for the long-context models evaluated on ∞Bench.
-
-#### Cross-References in Available Papers
-
-- **BABILong (2024-12-babilong-long-context-reasoning):** BABILong references ∞Bench (as "InfinityBench") alongside LongBench and ZeroSCROLLS as realistic benchmarks lacking controllable sequence length that confound long-context utilization with parametric knowledge. BABILong extends evaluation to 10M tokens and 50M tokens for fine-tuned models, far beyond ∞Bench's ~200K average.
-- **LongBench v2 (2025-07-longbench-v2):** References ∞Bench as focusing on shallow understanding with extractive questions; contrasts it with LongBench v2's human-verified difficulty calibration and more reliable multiple-choice evaluation format versus ROUGE/F1.
-- **Effective Context Length Falls Short (2025-04-effective-context-length-falls-short):** Evaluates models on ∞Bench at 128K and reports that STRING method improves Llama3.1 70B and Qwen2 72B by over 10 points, with Llama3.1 70B + STRING surpassing GPT-4-128K (56.88 vs. 55.69).
-- **LongBench Pro (2026-01-longbench-pro):** References ∞Bench as a mixed synthetic/natural benchmark, contrasting it with LongBench Pro's fully natural text approach.
-- **YaRN (2024-05-yarn-context-extension):** YaRN-Mistral-7B-128K is evaluated as the sole open-source baseline on ∞Bench and substantially underperforms proprietary models, consistent with RULER and BABILong findings that context extension via positional encoding modification does not guarantee effective long-context utilization.
-- **Lost in the Middle (2024-02-lost-in-the-middle):** ∞Bench's Retrieve.KV task originates from Liu et al. (2023), and ∞Bench's analysis at 100K+ contradicts the consistent lost-in-the-middle effect observed at 16K, suggesting the phenomenon is task- and model-specific.
-- **LongBench (2024-08-longbench-bilingual-benchmark):** ∞Bench directly positions itself as addressing LongBench's ~10K token limitation, extending evaluation to 100K+ tokens while adding math and novel domains not covered by LongBench.
+- **Dao et al. (2022)** -- *FlashAttention.* Referenced as enabling efficient long-context training, forming part of the infrastructure that makes 100K+ LLMs feasible.
+- **Dao (2023)** -- *FlashAttention-2.* The improved version enabling faster attention computation for the long-context models evaluated on ∞Bench.
