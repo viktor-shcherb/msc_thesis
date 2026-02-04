@@ -68,6 +68,9 @@ cross_references:
   - target: 2025-04-pine-eliminating-position-bias
     type: complementary
     detail: "PINE proposes bidirectional inter-document attention and importance-based position re-assignment as an alternative to attention calibration for eliminating position bias, with formal invariance guarantees"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA shows length degrades reasoning even at optimal positions (key paragraphs first), indicating the positional attention bias identified here is one mechanism but length-induced degradation is broader"
 open_questions:
   - question: "What is the root cause of positional attention bias — pretraining data distribution, transformer architecture, or optimization process?"
     addressed_by: null

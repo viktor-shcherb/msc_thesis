@@ -87,6 +87,9 @@ cross_references:
   - target: 2025-04-pine-eliminating-position-bias
     type: complementary
     detail: "PINE provides a practical inference-time solution to position bias (bidirectional inter-document attention + importance-based position re-assignment) based on similar mechanistic insights about causal masking and PE-induced bias"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA empirically demonstrates position-dependent and length-dependent reasoning degradation; this paper provides theoretical grounding for why position bias emerges in causal Transformers"
 open_questions:
   - question: "How do residual connections, value projections, and MLPs interact with attention to modulate position bias accumulation across layers?"
     addressed_by: null

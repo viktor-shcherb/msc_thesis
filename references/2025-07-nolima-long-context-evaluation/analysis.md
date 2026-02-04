@@ -75,6 +75,9 @@ cross_references:
   - target: 2024-11-genuinely-difficult-long-context
     type: extends
     detail: "NOLIMA directly addresses the under-explored high-dispersion quadrant identified by Goldman et al. by removing literal cues and requiring latent associative reasoning, targeting the genuinely difficult long-context tasks they call for"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "Both isolate true reasoning from confounds in long-context evaluation; FlenQA controls for input length while NoLiMa removes literal cues, revealing complementary dimensions of LLM weakness"
 open_questions:
   - question: "Can architectural improvements beyond standard attention address the latent association retrieval challenge in long contexts without literal cues?"
     addressed_by: null
