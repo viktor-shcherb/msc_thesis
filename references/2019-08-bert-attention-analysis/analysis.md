@@ -52,6 +52,9 @@ cross_references:
   - target: 2024-02-lost-in-the-middle
     type: complementary
     detail: "Both address how Transformers distribute attention across positions; Clark et al. find positional biases in BERT heads that foreshadow the positional biases in context utilization"
+  - target: 2018-07-sharp-nearby-fuzzy-far-away
+    type: extends
+    detail: "Extends the context utilization analysis from LSTMs to BERT attention patterns, finding positional biases that echo the nearby-vs-far distinction; Khandelwal is a co-author on both papers"
   - target: 2019-06-bert-pretraining-language-understanding
     type: evaluates
     detail: "Analyzes the attention heads of the BERT model introduced by Devlin et al."

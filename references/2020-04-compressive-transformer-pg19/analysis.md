@@ -57,6 +57,9 @@ cross_references:
   - target: 2023-12-landmark-attention-infinite-context
     type: complementary
     detail: "Landmark attention uses PG-19 for language modelling evaluation and addresses a similar problem of extending effective context via selective memory mechanisms"
+  - target: 2021-11-long-range-models-use-context
+    type: complementary
+    detail: "Sun et al. analyze long-range LMs on PG-19 and find that compression of infrequent tokens (as in the Compressive Transformer) indeed helps, but overall long-range context beyond 2K tokens has negligible aggregate impact"
 open_questions:
   - question: "Can adaptive compression rates per layer improve performance, given that compression loss varies non-monotonically across layers?"
     addressed_by: null

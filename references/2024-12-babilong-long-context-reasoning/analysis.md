@@ -75,6 +75,9 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: evaluates
     detail: "BABILong evaluates Gemini 1.5 Pro on reasoning-in-a-haystack tasks; achieves ~64K effective context on QA1"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA demonstrates reasoning degradation at short lengths (250-3000 tokens) with controlled padding, complementing BABILong's evaluation at much longer contexts (up to 10M tokens)"
 open_questions:
   - question: "Can optimized RAG pipelines recover reasoning performance on multi-fact tasks?"
     addressed_by: null

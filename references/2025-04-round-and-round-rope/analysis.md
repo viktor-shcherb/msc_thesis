@@ -69,6 +69,9 @@ cross_references:
   - target: 2025-07-position-bias-transformers
     type: complementary
     detail: "Both analyze RoPE's decay properties theoretically; Barbero et al. argue decay is not the core benefit, while Chi et al. characterize the decay as Gaussian-like"
+  - target: 2023-12-positional-encoding-length-generalization
+    type: complementary
+    detail: "Kazemnejad et al. prove NoPE can represent both absolute and relative PEs via the Universal Approximation Theorem; this paper refines that argument by showing NoPE cannot learn diagonal or off-diagonal positional attention patterns in a single head (Proposition 5.2)"
   - target: 2025-04-attention-sink-emerges
     type: complementary
     detail: "Gu et al. study attention sinks across PE types; Barbero et al. identify BOS-attending semantic heads in Gemma 7B that use low-frequency RoPE bands"

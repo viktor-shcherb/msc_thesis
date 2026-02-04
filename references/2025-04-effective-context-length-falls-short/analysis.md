@@ -84,6 +84,12 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: complementary
     detail: "Gemini 1.5 claims 10M-token context with near-perfect NIAH recall; STRING's findings about effective vs claimed context length are directly relevant to evaluating this claim"
+  - target: 2021-11-long-range-models-use-context
+    type: extends
+    detail: "Sun et al. empirically observe that long-range context beyond 2K tokens has negligible impact on perplexity; this paper provides a mechanistic explanation via the left-skewed position frequency distribution"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA empirically demonstrates reasoning degradation at lengths far below technical maxima; this paper provides a mechanistic explanation via undertrained position indices from left-skewed training distributions"
 open_questions:
   - question: "Can the left-skewed position frequency distribution be addressed during pretraining by adjusting the data length distribution, and would this preserve reasoning ability?"
     addressed_by: null

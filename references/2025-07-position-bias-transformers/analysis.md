@@ -72,9 +72,21 @@ cross_references:
   - target: 2022-12-nope-transformers-learn-positions
     type: complementary
     detail: "Haviv et al. conjecture that causal masking enables implicit positional encoding; this paper's analysis (C5) shows the causal mask introduces directional bias toward earlier positions rather than simulating full positional encodings"
+  - target: 2023-12-positional-encoding-length-generalization
+    type: complementary
+    detail: "Kazemnejad et al. hypothesize that NoPE learns relative PE via the causal mask; Wu et al. provide a different perspective showing the causal mask introduces directional position bias rather than simulating PE"
   - target: 2024-07-llama-3-herd-of-models
     type: evaluates
     detail: "Position bias analysis conducted on Llama 3 models"
+  - target: 2024-12-transformers-need-glasses-over-squashing
+    type: concurrent
+    detail: "Both provide theoretical analysis of position-dependent information flow in causal Transformers; Barbero et al. use gradient sensitivity bounds from GNN over-squashing theory while this paper uses graph-theoretic cumulative context probability"
+  - target: 2025-07-position-bias-single-dimension-scaling
+    type: complementary
+    detail: "Both identify causal masking as a source of position bias: this paper proves it theoretically via exponential convergence (Theorem 4.1), while Yu et al. demonstrate it empirically through perturbation experiments on hidden states channels and propose single-channel scaling as mitigation"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: complementary
+    detail: "PINE provides a practical inference-time solution to position bias (bidirectional inter-document attention + importance-based position re-assignment) based on similar mechanistic insights about causal masking and PE-induced bias"
 open_questions:
   - question: "How do residual connections, value projections, and MLPs interact with attention to modulate position bias accumulation across layers?"
     addressed_by: null

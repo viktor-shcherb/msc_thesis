@@ -59,6 +59,15 @@ cross_references:
   - target: 2025-11-pos2distill-position-bias-distillation
     type: complementary
     detail: "Pos2Distill proposes a training-based alternative to attention calibration for mitigating position bias, using self-distillation from advantageous positions rather than inference-time attention reweighting"
+  - target: 2024-12-lost-in-the-middle-in-between
+    type: complementary
+    detail: "Baker et al. show the positional bias persists and compounds in multi-hop QA, where inter-document distance adds a second dimension to the bias beyond absolute position; attention calibration could potentially address both dimensions"
+  - target: 2025-07-position-bias-single-dimension-scaling
+    type: complementary
+    detail: "Both mitigate position bias at inference time without training: this paper calibrates document-level attention via dummy-document subtraction, while Yu et al. scale a single positional hidden states channel; both evaluate on NaturalQuestions with 20 documents"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: complementary
+    detail: "PINE proposes bidirectional inter-document attention and importance-based position re-assignment as an alternative to attention calibration for eliminating position bias, with formal invariance guarantees"
 open_questions:
   - question: "What is the root cause of positional attention bias — pretraining data distribution, transformer architecture, or optimization process?"
     addressed_by: null

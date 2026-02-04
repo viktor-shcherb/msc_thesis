@@ -88,6 +88,9 @@ cross_references:
   - target: 2025-04-attention-sink-emerges
     type: extended-by
     detail: "Gu et al. identify the softmax normalization in the Transformer's attention mechanism as the root cause of attention sinks, showing that replacing softmax with sigmoid attention eliminates the phenomenon"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: extended-by
+    detail: "PINE modifies the Transformer's causal attention to bidirectional inter-document attention to provably eliminate position bias at inference time"
 open_questions:
   - question: "Why do sinusoidal and learned positional encodings produce nearly identical results?"
     addressed_by: null

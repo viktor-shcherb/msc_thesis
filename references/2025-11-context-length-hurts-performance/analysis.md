@@ -59,6 +59,15 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: complementary
     detail: "Evaluates Gemini 2.0 (successor to 1.5) and finds it shows better robustness than open-source models but still exhibits context-length-induced degradation"
+  - target: 2021-11-long-range-models-use-context
+    type: complementary
+    detail: "Sun et al. are an early empirical demonstration that long-range context does not help overall predictions; this paper extends the finding by showing context length alone degrades performance even with perfect retrieval"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. argue that retrieval-like tasks (low scope, low dispersion) are insufficient for evaluating long-context capabilities; this paper empirically demonstrates that even when retrieval is perfect, context length itself degrades problem-solving performance"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: extends
+    detail: "Extends FlenQA's finding that input length degrades reasoning; adds whitespace padding and attention masking controls to further isolate the length effect from content and distraction effects"
 open_questions:
   - question: "What is the precise mechanism by which increased positional indices degrade reasoning capacity in transformers?"
     addressed_by: null

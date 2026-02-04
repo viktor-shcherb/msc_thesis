@@ -43,6 +43,9 @@ cross_references:
   - target: 2025-07-position-bias-transformers
     type: complementary
     detail: "Wu et al. provide a formal graph-theoretic analysis of the causal mask's effect on position bias, refining Haviv et al.'s conjecture about how causal attention encodes position"
+  - target: 2023-12-positional-encoding-length-generalization
+    type: extended-by
+    detail: "Kazemnejad et al. extend the NoPE finding from perplexity competitiveness to length generalization on downstream tasks, showing NoPE outperforms all explicit PEs and theoretically proving NoPE can represent both absolute and relative PEs"
 open_questions:
   - question: "Does the competitiveness of NoPos models hold at scales much larger than 1.3B parameters?"
     addressed_by: null
@@ -51,7 +54,7 @@ open_questions:
   - question: "Can NoPos models extrapolate to sequence lengths beyond training?"
     addressed_by: 2025-12-drope-dropping-positional-embeddings
   - question: "Do NoPos models maintain competitive performance on downstream tasks beyond language modeling perplexity?"
-    addressed_by: null
+    addressed_by: 2023-12-positional-encoding-length-generalization
 ---
 
 # Transformer Language Models without Positional Encodings Still Learn Positional Information

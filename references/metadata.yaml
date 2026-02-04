@@ -75,6 +75,8 @@ ontology:
     description: Perplexity evaluation on PG-19 books corpus
   - id: perplexity-proofpile
     description: Perplexity evaluation on Proof-Pile mathematical corpus
+  - id: perplexity-wikitext2
+    description: Perplexity evaluation on WikiText-2 English Wikipedia corpus
   - id: perplexity-wikitext103
     description: Perplexity evaluation on WikiText-103 English Wikipedia corpus
   - id: perplexity-govreport
@@ -205,6 +207,10 @@ ontology:
     description: Multi-Round Coreference Resolution long-context diagnostic (Reid et al., 2024)
   - id: mtob
     description: Machine Translation from One Book in-context learning benchmark (Tanzer et al., 2023)
+  - id: flenqa
+    description: FLenQA flexible length QA reasoning benchmark (Levy et al., 2024)
+  - id: rewardbench
+    description: RewardBench evaluation benchmark for reward models (Lambert et al., 2024)
   models:
   - id: transformer-base
     description: Original Transformer (Vaswani et al., 2017)
@@ -212,10 +218,14 @@ ontology:
     description: BERT base model (Devlin et al., 2019)
   - id: bert-large
     description: BERT large model (Devlin et al., 2019)
+  - id: awd-lstm
+    description: AWD-LSTM language model (Merity et al., 2018)
   - id: gpt-2
     description: GPT-2 (Radford et al., 2019)
   - id: compressive-transformer
     description: Compressive Transformer (Rae et al., 2020)
+  - id: routing-transformer
+    description: Routing Transformer 490M (Roy et al., 2021)
   - id: llama-7b
     description: LLaMA 7B (Touvron et al., 2023a)
   - id: llama-13b
@@ -312,5 +322,13 @@ ontology:
     description: GPT-4o (OpenAI, 2024)
   - id: claude-3.5-sonnet
     description: Claude 3.5 Sonnet (Anthropic, 2024)
+  - id: gemma-7b
+    description: Gemma 7B (Google DeepMind, 2024)
   - id: gemini-2.0
     description: Gemini 2.0 (Google DeepMind, 2024)
+  - id: gemini-pro
+    description: Gemini Pro (Google, 2023)
+  - id: mistral-medium
+    description: Mistral Medium (Mistral AI, 2024)
+  - id: mixtral-8x7b
+    description: Mixtral 8x7B (Jiang et al., 2024)

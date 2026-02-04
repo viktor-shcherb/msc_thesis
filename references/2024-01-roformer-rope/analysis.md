@@ -79,6 +79,9 @@ cross_references:
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
     detail: "Llama 3 uses RoPE with increased base frequency theta=500,000 for 128K context support"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: extended-by
+    detail: "PINE identifies RoPE's recency bias as one of two causes of position bias and designs importance-based position re-assignment that aligns with RoPE's inherent distance decay"
 open_questions:
   - question: "Why does multiplicative position encoding (RoPE) converge faster than additive position encoding (sinusoidal PE) during pre-training?"
     addressed_by: null

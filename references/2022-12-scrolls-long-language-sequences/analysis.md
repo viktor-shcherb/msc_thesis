@@ -53,6 +53,9 @@ cross_references:
   - target: 2024-08-l-eval-standardized-evaluation
     type: extended-by
     detail: "L-Eval addresses SCROLLS limitations with manual sample filtering, metric-human correlation analysis, and more closed-ended tasks"
+  - target: 2018-07-sharp-nearby-fuzzy-far-away
+    type: complementary
+    detail: "Khandelwal et al.'s finding that LM perplexity mostly captures local short-range patterns is cited to motivate SCROLLS's argument that task-based evaluation is needed for long-context abilities"
   - target: 2024-06-ada-leval-length-adaptable-benchmark
     type: complementary
     detail: "Ada-LEval addresses SCROLLS's fixed-length limitation and lack of ultra-long settings with length-adaptable tasks"

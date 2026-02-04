@@ -60,6 +60,9 @@ cross_references:
   - target: 2021-12-transformer-circuits-framework
     type: complementary
     detail: "Elhage et al.'s circuit analysis framework provides context for understanding how the first token's key vectors act as implicit biases in the QK circuit"
+  - target: 2024-12-transformers-need-glasses-over-squashing
+    type: complementary
+    detail: "Barbero et al. provide a complementary theoretical analysis: over-squashing from the causal mask topology creates exponentially more information pathways for initial tokens, connecting attention sinks to GNN over-squashing theory"
 open_questions:
   - question: "How do attention sinks on non-initial word tokens (e.g., period, newline tokens) relate to pre-training dynamics?"
     addressed_by: null

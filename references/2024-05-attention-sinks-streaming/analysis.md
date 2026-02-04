@@ -76,6 +76,9 @@ cross_references:
   - target: 2023-07-llama-2-open-foundation-chat
     type: evaluates
     detail: "Llama-2-[7,13,70]B and their Chat variants are the primary models evaluated in StreamingLLM experiments"
+  - target: 2025-07-position-bias-single-dimension-scaling
+    type: complementary
+    detail: "Yu et al. identify positional hidden states as an additional mechanism beyond attention sinks that causes position-dependent attention patterns, and propose scaling these channels to mitigate position bias"
   - target: 2025-07-position-bias-transformers
     type: complementary
     detail: "Position bias analysis provides theoretical context for why attention concentrates at boundary positions, related to the attention sink phenomenon"
@@ -85,6 +88,9 @@ cross_references:
   - target: 2025-04-attention-sink-emerges
     type: extended-by
     detail: "Gu et al. comprehensively investigate when and why attention sinks emerge during pre-training, identifying softmax normalization as the root cause and showing sigmoid attention without normalization eliminates sinks up to 1B parameters"
+  - target: 2024-12-transformers-need-glasses-over-squashing
+    type: complementary
+    detail: "Barbero et al. provide a complementary theoretical perspective: attention sinks relate to the over-squashing phenomenon where the causal mask topology funnels information from all tokens through the final position, with initial tokens having exponentially more pathways"
   - target: 2020-04-compressive-transformer-pg19
     type: uses-benchmark
     detail: "Uses PG-19 (introduced by Rae et al., 2020) for streaming perplexity evaluation over sequences up to 4M tokens"

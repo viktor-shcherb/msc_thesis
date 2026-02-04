@@ -77,6 +77,9 @@ cross_references:
   - target: 2023-11-needle-in-a-haystack
     type: complementary
     detail: "NIAH tests position-dependent retrieval of a single fact; this paper provides a more controlled multi-position experimental setup with both QA and synthetic retrieval tasks"
+  - target: 2025-07-position-bias-single-dimension-scaling
+    type: extended-by
+    detail: "Identifies positional hidden states (introduced by the causal mask) as an additional mechanistic cause of position bias beyond position embeddings, and mitigates it by scaling a single hidden states channel"
   - target: 2025-11-context-length-hurts-performance
     type: complementary
     detail: "Extends the analysis to show that context length alone degrades performance even without positional manipulation"
@@ -89,12 +92,33 @@ cross_references:
   - target: 2025-07-nolima-long-context-evaluation
     type: extended-by
     detail: "NoLiMa confirms lost-in-the-middle in one-hop tasks but shows that in two-hop scenarios without literal cues, context length dominates over position"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify this paper's multi-document QA and key-value retrieval tasks as low-scope low-dispersion in their taxonomy, arguing that such retrieval-focused tasks are necessary but insufficient for evaluating genuine long-context capabilities"
+  - target: 2018-07-sharp-nearby-fuzzy-far-away
+    type: extends
+    detail: "Extends Khandelwal et al.'s analysis of context utilization from LSTM LMs to Transformer LLMs, finding that larger models additionally exhibit primacy bias not seen in the smaller LSTM models"
   - target: 2024-12-babilong-long-context-reasoning
     type: complementary
     detail: "BABILong embeds reasoning tasks in long contexts at controlled positions, complementing the positional bias analysis here with tasks requiring multi-hop reasoning rather than single-fact retrieval"
+  - target: 2021-11-long-range-models-use-context
+    type: complementary
+    detail: "Sun et al. provide early evidence that long-range context is used superficially (token copying only); this paper complements by showing a U-shaped positional bias pattern in how models use context"
   - target: 2024-03-gemini-1.5-long-context
     type: complementary
     detail: "Gemini 1.5's MRCR evaluation tests position-dependent retrieval with adversarially similar needles, extending the position bias analysis to millions of tokens"
+  - target: 2024-12-transformers-need-glasses-over-squashing
+    type: extended-by
+    detail: "Barbero et al. provide a theoretical explanation for the U-shaped retrieval curve through the over-squashing framework: early tokens have exponentially more information pathways to the final token, while end tokens benefit from recency bias"
+  - target: 2024-12-lost-in-the-middle-in-between
+    type: extended-by
+    detail: "Baker et al. extend the lost-in-the-middle analysis from single-hop to multi-hop QA, showing that performance depends not only on absolute document position but also on the relative distance between multiple evidence documents"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: extended-by
+    detail: "PINE uses this paper's experimental setup and directly addresses the U-shaped position bias by provably eliminating inter-document position bias through bidirectional attention and importance-based position re-assignment"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA isolates input length as a variable while keeping reasoning tasks constant, showing that length itself degrades reasoning independently of the position effects documented here"
 open_questions:
   - question: "Is the U-shaped curve a fundamental property of Transformer attention or an artifact of training data distributions and task design?"
     addressed_by: 2024-08-found-in-the-middle

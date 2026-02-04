@@ -72,6 +72,9 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: evaluates
     detail: "NOLIMA evaluates Gemini 1.5 Pro/Flash; effective length drops to 2K without literal matching cues, challenging the near-perfect NIAH recall claims"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: extends
+    detail: "NOLIMA directly addresses the under-explored high-dispersion quadrant identified by Goldman et al. by removing literal cues and requiring latent associative reasoning, targeting the genuinely difficult long-context tasks they call for"
 open_questions:
   - question: "Can architectural improvements beyond standard attention address the latent association retrieval challenge in long contexts without literal cues?"
     addressed_by: null

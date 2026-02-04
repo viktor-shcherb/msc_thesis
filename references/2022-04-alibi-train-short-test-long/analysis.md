@@ -69,6 +69,9 @@ cross_references:
   - target: 2025-04-attention-sink-emerges
     type: complementary
     detail: "Gu et al. evaluate ALiBi alongside other PE types and show PE choice does not affect attention sink emergence; proves (Proposition 3) that ALiBi produces no attention sink with repeated tokens due to monotonic distance penalties"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: complementary
+    detail: "PINE's mechanistic analysis identifies ALiBi-style PE-induced distance penalties as one of two causes of position bias; PINE eliminates this bias through importance-based position re-assignment"
 open_questions:
   - question: "Does ALiBi's recency bias limit its effectiveness on tasks requiring long-range retrieval?"
     addressed_by: 2024-02-lost-in-the-middle

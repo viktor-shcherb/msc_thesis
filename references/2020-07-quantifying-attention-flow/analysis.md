@@ -42,6 +42,9 @@ cross_references:
   - target: 2019-06-bert-pretraining-language-understanding
     type: evaluates
     detail: "Uses BERT-base as the primary model for evaluating attention rollout and attention flow methods"
+  - target: 2024-12-transformers-need-glasses-over-squashing
+    type: extended-by
+    detail: "Barbero et al. extend information flow analysis to decoder-only Transformers, showing how the causal mask creates asymmetric information propagation with over-squashing at the final token"
 open_questions:
   - question: "How should attention rollout and flow be adapted for Transformer decoders with causal masking, where natural bias toward initial tokens requires normalization by the receptive field?"
     addressed_by: null

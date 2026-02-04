@@ -71,6 +71,9 @@ cross_references:
   - target: 2022-12-nope-transformers-learn-positions
     type: extends
     detail: "Builds on the NoPE finding that causal LMs learn positions without explicit PE; uses PE removal after pretraining for context extension"
+  - target: 2023-12-positional-encoding-length-generalization
+    type: extends
+    detail: "Builds on Kazemnejad et al.'s theoretical proof that NoPE can represent both absolute and relative PEs, establishing that NoPE has the same expressivity as RoPE; DroPE shows the gap is in optimization, not expressivity"
   - target: 2025-04-attention-sink-emerges
     type: complementary
     detail: "Gu et al. show PE type does not affect attention sink emergence — even NoPE models develop sinks — providing independent evidence that PEs and attention sinks serve orthogonal roles"

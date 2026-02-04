@@ -64,6 +64,12 @@ cross_references:
   - target: 2025-07-position-bias-transformers
     type: complementary
     detail: "Wu et al. provide a theoretical framework for why positional biases emerge; Pos2Distill offers training-based mitigation for the biases that theory predicts"
+  - target: 2025-07-position-bias-single-dimension-scaling
+    type: complementary
+    detail: "Yu et al. propose a training-free inference-time alternative to Pos2Distill's training-based approach, mitigating position bias by scaling a single positional hidden states channel rather than knowledge distillation; both evaluate on NaturalQuestions multi-document QA"
+  - target: 2025-04-pine-eliminating-position-bias
+    type: complementary
+    detail: "PINE uses training-free inference-time attention modification (bidirectional inter-document attention + importance-based position re-assignment) while Pos2Distill uses training-based self-distillation; both target position bias elimination"
 open_questions:
   - question: "Can adaptive strategies that adjust the distillation process based on reasoning chain complexity or document configuration further improve Pos2Distill-R2?"
     addressed_by: null

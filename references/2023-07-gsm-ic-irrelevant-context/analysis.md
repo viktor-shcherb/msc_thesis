@@ -47,6 +47,9 @@ cross_references:
   - target: 2025-11-context-length-hurts-performance
     type: complementary
     detail: "Extends the analysis to show that even without irrelevant content, context length alone degrades performance"
+  - target: 2024-08-flenqa-input-length-reasoning
+    type: complementary
+    detail: "FlenQA extends the irrelevant-context analysis by showing that degradation occurs even with duplicate (relevant-only) padding, isolating length from distraction"
 open_questions:
   - question: "How does distractibility manifest in model families beyond the GPT-3 family (e.g., open-weight models, instruction-tuned models trained with different methods)?"
     addressed_by: null
