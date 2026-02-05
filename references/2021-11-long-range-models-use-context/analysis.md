@@ -57,6 +57,12 @@ cross_references:
   - target: 2025-11-context-length-hurts-performance
     type: complementary
     detail: "Both find that additional context does not help as expected; Du et al. extend this to show context length alone degrades performance even with perfect retrieval"
+  - target: 2018-06-prediction-short-memory
+    type: complementary
+    detail: "Sharan et al. provide theoretical grounding for the empirical finding that long-range context has limited benefit under perplexity: bounded mutual information between past and future implies a Markov model predicts well on average"
+  - target: 2021-08-context-features-transformer-lm
+    type: concurrent
+    detail: "Both study what information long-range transformer LMs extract from distant context using perturbation experiments; O'Connor & Andreas use V-information on GPT-2/WikiText-103 while Sun et al. study Routing Transformer on PG-19, reaching consistent conclusions about the primacy of token identity over word order"
 open_questions:
   - question: "Would modern decoder-only LLMs at much larger scale (e.g., 7B-70B parameters) show the same pattern of superficial long-range context use observed in the 490M-parameter Routing Transformer?"
     addressed_by: 2025-04-effective-context-length-falls-short

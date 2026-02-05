@@ -72,6 +72,12 @@ cross_references:
   - target: 2024-08-infinitebench-long-context-evaluation
     type: uses-benchmark
     detail: "Uses InfiniteBench En.QA and En.MC for 100K+ token evaluation"
+  - target: 2023-10-mistral-7b
+    type: evaluates
+    detail: "Mistral 7B included as an open-weight baseline for comparison with Llama 3 models"
+  - target: 2023-03-gpt-4-technical-report
+    type: evaluates
+    detail: "Evaluates Llama 3.1 405B against GPT-4 and GPT-4o across multiple benchmarks, showing competitive performance (88.6% vs 88.7% on MMLU)"
 open_questions:
   - question: "Would training beyond 15.6T tokens continue to improve the 405B model, or has a data quality ceiling been reached?"
     addressed_by: null

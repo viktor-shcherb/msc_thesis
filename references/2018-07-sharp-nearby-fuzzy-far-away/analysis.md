@@ -64,6 +64,12 @@ cross_references:
   - target: 2022-12-scrolls-long-language-sequences
     type: complementary
     detail: "SCROLLS cites this paper's finding that perplexity mostly captures local short-range patterns to motivate task-based rather than perplexity-based evaluation of long-context models"
+  - target: 2018-06-prediction-short-memory
+    type: complementary
+    detail: "Sharan et al. provide theoretical grounding via bounded mutual information for the empirical finding that LSTM LMs effectively use only ~200 tokens of context"
+  - target: 2021-08-context-features-transformer-lm
+    type: extended-by
+    detail: "O'Connor & Andreas extend the evaluation-time ablation paradigm to transformers and introduce V-information to distinguish usable information loss from distributional shift, finding that content words carry most long-range usable information"
 open_questions:
   - question: "Do these findings about nearby vs. long-range context generalize to Transformer-based language models with self-attention?"
     addressed_by: 2024-02-lost-in-the-middle

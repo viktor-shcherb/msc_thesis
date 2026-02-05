@@ -55,6 +55,9 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: evaluates
     detail: "LongICLBench evaluates Gemini 1.5 Pro on extreme-label ICL tasks; one of the only models with non-zero performance on the hardest 174-class Discovery task"
+  - target: 2024-03-yi-open-foundation-models
+    type: evaluates
+    detail: "Yi-6B-200K evaluated on extreme-label in-context learning tasks at 2K-50K token context lengths"
 open_questions:
   - question: "What causes the performance ceiling in extreme-label ICL — context window limitations, attention degradation, or label-space complexity?"
     addressed_by: null

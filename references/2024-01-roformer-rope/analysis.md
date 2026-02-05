@@ -78,10 +78,16 @@ cross_references:
     detail: "Gu et al. evaluate RoPE alongside five other PE types and show that PE type does not affect attention sink emergence; proves (Proposition 4) that RoPE attention scores with repeated tokens are bounded by e^{2xi}/(e^{2xi} + (t-1))"
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
+  - target: 2025-04-kimi-vl-technical-report
+    type: extended-by
+    detail: "Kimi-VL uses 2D RoPE in MoonViT vision encoder for spatial position encoding and extends RoPE base frequency from 50K to 800K for 128K context in the MoE language model"
     detail: "Llama 3 uses RoPE with increased base frequency theta=500,000 for 128K context support"
   - target: 2025-04-pine-eliminating-position-bias
     type: extended-by
     detail: "PINE identifies RoPE's recency bias as one of two causes of position bias and designs importance-based position re-assignment that aligns with RoPE's inherent distance decay"
+  - target: 2025-10-kimi-linear-attention
+    type: complementary
+    detail: "Kimi Linear interprets linear attention with gated delta rule as learnable multiplicative position encoding that relaxes RoPE's orthogonality constraint; uses NoPE for full attention layers, delegating positional encoding to KDA layers"
 open_questions:
   - question: "Why does multiplicative position encoding (RoPE) converge faster than additive position encoding (sinusoidal PE) during pre-training?"
     addressed_by: null

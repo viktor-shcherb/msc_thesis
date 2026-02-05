@@ -59,6 +59,9 @@ cross_references:
   - target: 2019-06-bert-pretraining-language-understanding
     type: evaluates
     detail: "Analyzes self-attention patterns in the BERT model introduced by Devlin et al."
+  - target: 2023-12-quantizable-transformers-attention-do-nothing
+    type: extended-by
+    detail: "Bondarenko et al. explain the mechanism behind BERT's vertical attention on [CLS]/[SEP]: these tokens serve as sinks for no-op attention heads, with softmax normalization constraints driving outlier growth in FFN outputs"
   - target: 2025-04-attention-sink-emerges
     type: complementary
     detail: "Gu et al. extend the finding that BERT attention concentrates on [CLS]/[SEP] to auto-regressive LMs, identifying softmax normalization as the mechanism underlying both BERT's vertical patterns and autoregressive attention sinks"

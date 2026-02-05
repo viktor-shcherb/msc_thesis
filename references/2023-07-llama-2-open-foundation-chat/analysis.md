@@ -69,9 +69,18 @@ cross_references:
   - target: 2024-02-lost-in-the-middle
     type: extended-by
     detail: "Lost in the Middle evaluates positional bias in Llama 2 on multi-document QA"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: extended-by
+    detail: "Wu et al. use Llama-2-7B and Llama-2-13B (including 80K and 64K context-extended variants) to discover retrieval heads and show they are intrinsic to the base model"
+  - target: 2023-10-mistral-7b
+    type: extended-by
+    detail: "Mistral 7B outperforms Llama 2 13B on all benchmarks at 7B parameters using sliding window attention and GQA"
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
     detail: "Llama 3 extends Llama 2 with 8x more training data (15.6T vs 2T tokens), 128K context (vs 4K), and 405B flagship model"
+  - target: 2024-03-gemma-open-models
+    type: extended-by
+    detail: "Gemma 7B outperforms Llama 2 13B on MMLU (64.3 vs 54.8) and most benchmarks despite having fewer parameters"
 open_questions:
   - question: "Would training beyond 2T tokens continue to improve performance, given that training loss showed no saturation?"
     addressed_by: null

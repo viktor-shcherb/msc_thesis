@@ -60,9 +60,18 @@ cross_references:
   - target: 2021-12-transformer-circuits-framework
     type: complementary
     detail: "Elhage et al.'s circuit analysis framework provides context for understanding how the first token's key vectors act as implicit biases in the QK circuit"
+  - target: 2023-12-quantizable-transformers-attention-do-nothing
+    type: extends
+    detail: "Builds on Bondarenko et al.'s observation that attention heads learn no-op behavior by concentrating on low-information tokens, extending the analysis to identify when and why sinks emerge during pre-training and showing sigmoid attention eliminates sinks"
   - target: 2024-12-transformers-need-glasses-over-squashing
     type: complementary
     detail: "Barbero et al. provide a complementary theoretical analysis: over-squashing from the causal mask topology creates exponentially more information pathways for initial tokens, connecting attention sinks to GNN over-squashing theory"
+  - target: 2023-10-mistral-7b
+    type: evaluates
+    detail: "Mistral 7B is one of five model families used to study attention sink emergence across architectures"
+  - target: 2025-10-kimi-linear-attention
+    type: extended-by
+    detail: "Kimi Linear adopts sigmoid output gating (vs swish) in KDA, citing gated attention as alleviating attention sink; ablation shows sigmoid outperforms no gating and swish gating"
 open_questions:
   - question: "How do attention sinks on non-initial word tokens (e.g., period, newline tokens) relate to pre-training dynamics?"
     addressed_by: null

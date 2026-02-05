@@ -29,16 +29,17 @@ Place the `source.md`, `analysis.md`, and paper PDF at the root of this subdirec
 
 When adding a new reference, follow these steps in order:
 
-1. **Create the subdirectory** following the `YYYY-MM-short-descriptive-name/` pattern.
-2. **Download the paper PDF** into the subdirectory. Use the arXiv ID as the filename (e.g., `2302.00093.pdf`). If no arXiv version exists, use the DOI-based or proceedings PDF. Skip this step only if no PDF is publicly available (e.g., some blog posts or Reddit contributions).
-3. **Write `source.md`** with bibliographic metadata (see below).
-4. **Add a `cite.bib` file** with the BibTeX entry for this reference. The citation key **must match the directory name** (e.g., `2024-02-lost-in-the-middle`). This allows citing with `\cite{2024-02-lost-in-the-middle}`. If the venue has a `@string` macro defined in `references/_venues.bib`, use the macro name (e.g., `booktitle = NeurIPS`). If the venue is a major conference or journal not yet in `_venues.bib`, add a new `@string` definition there. Only spell out the full venue name inline for one-off venues (e.g., workshops). Run `make references.bib` to regenerate the combined bibliography.
-5. **Read the PDF thoroughly**, then write `analysis.md` following the structure below. Always base the analysis on the actual paper content, not summaries or abstracts alone.
+1. **Determine the correct publication date first.** Before creating any directory, verify the publication date by checking the paper PDF, arXiv page, or venue proceedings. Use the peer-reviewed publication date when available (e.g., conference date, not arXiv submission date). Only after confirming the correct `YYYY-MM` should you proceed.
+2. **Create the subdirectory** following the `YYYY-MM-short-descriptive-name/` pattern. Double-check that the slug matches the verified date before proceeding.
+3. **Download the paper PDF** into the subdirectory. Use the arXiv ID as the filename (e.g., `2302.00093.pdf`). If no arXiv version exists, use the DOI-based or proceedings PDF. Skip this step only if no PDF is publicly available (e.g., some blog posts or Reddit contributions).
+4. **Write `source.md`** with bibliographic metadata (see below). **Verify the directory slug matches the publication date** in `source.md`. If they differ, rename the directory now before proceeding further.
+5. **Add a `cite.bib` file** with the BibTeX entry for this reference. The citation key **must match the directory name** (e.g., `2024-02-lost-in-the-middle`). This allows citing with `\cite{2024-02-lost-in-the-middle}`. If the venue has a `@string` macro defined in `references/_venues.bib`, use the macro name (e.g., `booktitle = NeurIPS`). If the venue is a major conference or journal not yet in `_venues.bib`, add a new `@string` definition there. Only spell out the full venue name inline for one-off venues (e.g., workshops). Run `make references.bib` to regenerate the combined bibliography.
+6. **Read the PDF thoroughly**, then write `analysis.md` following the structure below. Always base the analysis on the actual paper content, not summaries or abstracts alone.
    - **Check the PDF length first.** Before reading, check how many pages the PDF has (e.g., using `pdfinfo` or by reading the first page and noting the total). If the PDF is long (roughly >10 pages including appendices), do **not** attempt to read and process it in a single pass.
    - **Split long PDFs into parts.** For long papers, divide the reading into roughly equal parts. Process each part separately in parallel, extracting the relevant information for the corresponding `analysis.md` sections.
    - **Aggregate into the final file.** After all parts have been processed, combine the extracted information into the complete `analysis.md`. Verify consistency across parts (e.g., notation, claim numbering, cross-references) during this aggregation step.
-6. **Update the YAML front matter** in the new `analysis.md` (see "YAML Front Matter" below).
-7. **Update cross-references** in other papers' `analysis.md` front matter to reflect the new paper (see "Metadata Maintenance" below).
+7. **Update the YAML front matter** in the new `analysis.md` (see "YAML Front Matter" below).
+8. **Update cross-references** in other papers' `analysis.md` front matter to reflect the new paper (see "Metadata Maintenance" below).
 
 ---
 
@@ -139,6 +140,8 @@ key_claims:
     evidence: "Table 2, Section 4"
     status: supported           # supported | contested | unvalidated
     contested_by: YYYY-MM-ref   # if contested (optional)
+    scope: "32K+ context, greedy decoding"  # conditions under which claim holds (optional)
+    magnitude: "50% utilization"            # effect size when quantifiable (optional)
 cross_references:
   - target: YYYY-MM-other-ref
     type: extends               # from ontology.relationship_types
@@ -206,6 +209,7 @@ This is the longest section. Organize it with the following subsections:
 #### Experimental Setup
 - Models, sizes, datasets, training details (steps, learning rate, hardware).
 - Evaluation benchmarks and metrics.
+- **Reproducibility:** Note code/data availability, whether seeds are reported, and any missing details that would impede replication.
 
 #### Key Results
 - Present a comparison table with the proposed method vs. the strongest baselines.
@@ -232,6 +236,13 @@ Describe the paper's limitations, negative results, and known failure modes. Thi
 
 If the paper does not discuss limitations, state this explicitly.
 
+#### Scope and Comparability (optional but recommended)
+
+When relevant for meta-analysis, note:
+
+- **What was not tested:** Models, scales, conditions, or settings excluded from evaluation (whether or not authors acknowledge this).
+- **Comparability notes:** How this paper's experimental setup differs from related work in ways that affect cross-paper comparison (e.g., different effective-length thresholds, different baseline definitions, different decoding strategies).
+
 ### 6. Conclusions
 
 Split into two subsections:
@@ -254,6 +265,8 @@ Discrete numbered claims extracted from the paper, each with:
 - The claim statement (traceable to a specific section, figure, or table).
 - The evidence supporting it.
 - Status: `supported`, `contested`, or `unvalidated`.
+- **Scope conditions** (when relevant): Under what conditions does the claim hold? E.g., "greedy decoding only," "7B--70B scale," "synthetic benchmarks."
+- **Effect magnitude** (when quantifiable): The size of the effect, e.g., "20 percentage point drop," "50% utilization ratio."
 
 This section mirrors the `key_claims` field in the YAML front matter but in human-readable prose. Keep them consistent.
 
@@ -278,13 +291,14 @@ Group references by role using H3 headers (e.g., "Positional Encoding Foundation
 3. **Reproduce key equations.** Use blockquotes for the most important formulas. Inline math (e.g., `b' = b * s^(|D|/(|D|-2))`) is acceptable for shorter expressions.
 4. **Tables for comparisons.** Always present quantitative comparisons in markdown tables, not prose.
 5. **Bold for emphasis.** Use bold for key terms and the core insight of each section.
-6. **No editorializing.** Report what the paper claims and demonstrates. Do not inject personal opinions about the quality of the work.
+6. **No editorializing, but do assess methodology.** Report what the paper claims and demonstrates. Do not inject opinions about paper quality. However, *do* note objective methodological concerns (e.g., "no variance estimates reported," "single model tested," "greedy decoding only") -- these are factual observations that inform evidence quality, not editorial judgments.
 7. **Horizontal rules.** Use `---` between major sections for visual separation.
 8. **Concrete over abstract.** Prefer "0.5-2% of pretraining tokens" over "a small fraction of pretraining compute."
 9. **Reference format.** Use `Author et al. (Year)` in text. Include the short title in italics after a double dash.
 10. **Consistent structure.** Follow the section order defined above. Readers should be able to find the same information in the same place across all analyses.
 11. **Capture negative results explicitly.** If the paper reports cases where the method fails, underperforms, or produces unexpected results, include them in the "Limitations and Failure Modes" section. Negative results are as informative as positive ones.
 12. **Distinguish claims from evidence.** When reporting a finding, always cite the specific table, figure, or section where the evidence appears. Use the format: "Method X improves by Y% (Table Z, Section W)." Do not present claims without evidence pointers.
+13. **Note evidence breadth.** When a claim rests on limited evidence (e.g., one model, one benchmark, no ablation), note this. When evidence is strong (multiple models, controlled ablations, statistical testing), note that too. This information is critical for meta-analysis.
 
 ---
 
@@ -305,6 +319,7 @@ The file `references/metadata.yaml` contains the shared ontology: controlled voc
 1. Write the YAML front matter for the new `analysis.md` using existing ontology identifiers. Add new identifiers to `metadata.yaml` if needed.
 2. Add `cross_references` entries in the new paper's front matter pointing to related papers already in the directory.
 3. **Update existing papers' front matter** to add reciprocal cross-references. For example, if the new paper extends Paper A, add an `extended-by` entry in Paper A's front matter pointing to the new paper.
+4. **Update affected meta-analyses.** Check whether the new paper falls within the corpus of any existing meta-analysis in `meta-analysis/` (match on categories, cross-references, or keyword overlap). If it does, follow the maintenance procedure in `meta-analysis/GUIDELINES.md` § "Maintenance": add the paper to the corpus, integrate its findings into relevant thematic sections, and re-evaluate consensus and contested claims.
 
 **Relationship type conventions:**
 

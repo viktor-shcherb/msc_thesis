@@ -60,6 +60,9 @@ cross_references:
   - target: 2024-05-attention-sinks-streaming
     type: complementary
     detail: "QK/OV circuit analysis helps explain attention sink formation: when the QK circuit produces no strong match, residual attention mass falls on globally visible tokens"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: extended-by
+    detail: "Wu et al. extend the circuits program by identifying retrieval heads — a specific subnet implementing conditional retrieval from long context, analogous to how induction heads implement pattern completion"
 open_questions:
   - question: "How can the framework be extended to include MLP layers, which constitute two-thirds of standard transformer parameters?"
     addressed_by: null

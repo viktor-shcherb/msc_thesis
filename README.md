@@ -95,3 +95,16 @@ This runs:
 ```
 cat references/_venues.bib references/*/cite.bib > references.bib
 ```
+
+## Meta-analyses
+
+Cross-paper synthesis documents live in `meta-analysis/`, each in its own subdirectory:
+
+```
+meta-analysis/
+├── GUIDELINES.md               # Full guidelines for writing meta-analyses
+└── short-descriptive-name/
+    └── analysis.md             # The synthesis document
+```
+
+A meta-analysis draws from multiple per-paper analyses in `references/` to answer a specific research question. Guidelines for scoping, structuring, and maintaining meta-analyses are in `meta-analysis/GUIDELINES.md`.

@@ -57,9 +57,30 @@ cross_references:
   - target: 2025-12-drope-dropping-positional-embeddings
     type: contradicts
     detail: "DroPE shows YaRN's zero-shot extension is equivalent to context cropping (Figure 5) and outperforms YaRN on zero-shot LongBench (30.52 vs 19.94 avg) and NIAH evaluations"
+  - target: 2023-10-mistral-7b
+    type: evaluates
+    detail: "YaRN extends Mistral 7B's context window as one of its evaluation models alongside Llama 2"
   - target: 2024-12-babilong-long-context-reasoning
     type: complementary
     detail: "BABILong evaluates YaRN-extended models on reasoning-in-a-haystack tasks, testing whether context extension methods support genuine long-range reasoning beyond perplexity and passkey retrieval"
+  - target: 2024-07-qwen2-technical-report
+    type: extended-by
+    detail: "Qwen2 adopts YARN combined with Dual Chunk Attention to extend context from 32K to 131K tokens, achieving near-perfect NIAH accuracy at 128K for the 72B and 7B models"
+  - target: 2025-04-kimi-vl-technical-report
+    type: complementary
+    detail: "Kimi-VL uses direct RoPE base frequency scaling (50K to 800K) rather than YARN for 128K context extension"
+  - target: 2025-10-kimi-linear-attention
+    type: complementary
+    detail: "Kimi Linear adopts NoPE for full attention layers, delegating positional encoding entirely to KDA linear attention, avoiding RoPE/YARN extrapolation issues entirely and achieving superior long-context performance (RULER@128k: 84.3 vs 78.8 with RoPE)"
+  - target: 2025-07-kimi-k2-open-agentic-intelligence
+    type: extended-by
+    detail: "Kimi K2 uses YaRN to extend context from 32K (pre-training) to 128K (inference) for its 1.04T parameter MoE model"
+  - target: 2024-05-deepseek-v2-moe
+    type: extended-by
+    detail: "DeepSeek-V2 uses YaRN to extend context from 4K base to 128K, achieving continued perplexity decline at 128K with its Multi-head Latent Attention architecture"
+  - target: 2024-12-deepseek-v3-technical-report
+    type: extended-by
+    detail: "DeepSeek-V3 uses YaRN for two-stage context extension (4K→32K→128K) with 119K H800 GPU hours, achieving perfect NIAH retrieval at 128K"
 open_questions:
   - question: "Why does perplexity improvement from context extension not always translate to downstream task performance?"
     addressed_by: 2025-12-drope-dropping-positional-embeddings

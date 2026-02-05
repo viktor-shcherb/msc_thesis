@@ -38,6 +38,12 @@ cross_references:
   - target: 2023-07-gsm-ic-irrelevant-context
     type: extended-by
     detail: "GSM-IC tests whether chain-of-thought reasoning is robust to irrelevant context added to math problems"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: complementary
+    detail: "Wu et al. show that CoT reasoning heavily depends on retrieval heads because the model must refer back to input information during multi-step reasoning; masking retrieval heads drops GSM8K CoT accuracy from 45.1% to 2.0%"
+  - target: 2025-01-kimi-k1.5-scaling-rl
+    type: extended-by
+    detail: "Kimi k1.5 extends chain-of-thought from prompting to RL training, scaling CoT context to 128k tokens and achieving 96.2% on MATH-500 and 77.5% on AIME 2024"
 open_questions:
   - question: "Does chain of thought emulate actual reasoning, or is it a surface-level pattern that mimics reasoning?"
     addressed_by: null

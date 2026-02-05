@@ -54,6 +54,9 @@ cross_references:
   - target: 2022-03-in-context-learning-induction-heads
     type: complementary
     detail: "Olsson et al. identify attention-based mechanisms for in-context learning; Geva et al. characterize the complementary role of FFN layers in storing input-output mappings"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: complementary
+    detail: "Wu et al. build on the FFN-stores-knowledge / attention-implements-algorithms distinction, showing retrieval heads in the attention layers specifically implement conditional copy-paste from context while FFN layers store intrinsic knowledge"
 open_questions:
   - question: "Does the embedding space transform across layers, and if so, how does the interplay between FFN and attention layers drive this transformation?"
     addressed_by: null

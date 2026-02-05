@@ -53,6 +53,12 @@ cross_references:
   - target: 2025-03-longiclbench-long-in-context-learning
     type: complementary
     detail: "LongICLBench measures the practical limits of ICL scaling with up to 174 classes and 50K tokens, complementing the mechanistic understanding of ICL via induction heads"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: extended-by
+    detail: "Wu et al. extend the concept of specialized attention heads from induction heads (pattern matching for ICL) to retrieval heads (conditional copy-paste from arbitrary context positions for long-context factuality)"
+  - target: 2021-08-context-features-transformer-lm
+    type: complementary
+    detail: "O'Connor & Andreas find that preserving word order matters for context utilization (consistent with induction head hypothesis), but retaining only nouns can improve long-range predictions (partially in tension with the hypothesis)"
 open_questions:
   - question: "Do induction heads account for the majority of in-context learning in large models with MLPs, or do additional mechanisms (other composition heads, MLP-attention interactions) contribute substantially?"
     addressed_by: null

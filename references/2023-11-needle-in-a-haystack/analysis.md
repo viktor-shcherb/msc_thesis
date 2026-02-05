@@ -62,6 +62,15 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: extended-by
     detail: "Gemini 1.5 extends single-needle NIAH to multimodal (text, video, audio) and multi-needle variants at up to 10M tokens"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: extended-by
+    detail: "Wu et al. use NIAH as the core methodology to discover retrieval heads — the sparse set of attention heads mechanistically responsible for NIAH retrieval, explaining when and why models pass or fail the test"
+  - target: 2024-07-qwen2-technical-report
+    type: extended-by
+    detail: "Qwen2 evaluates all model sizes (0.5B to 72B) on NIAH up to 128K tokens, demonstrating near-perfect retrieval accuracy for the 72B and 7B models with YARN+DCA"
+  - target: 2024-12-deepseek-v3-technical-report
+    type: extended-by
+    detail: "DeepSeek-V3 uses NIAH to validate 128K context extension, achieving perfect retrieval scores across all depths and context lengths (Figure 8)"
 open_questions:
   - question: "Does the single-needle, high-lexical-overlap design overestimate model retrieval capabilities compared to real-world information needs?"
     addressed_by: 2025-07-nolima-long-context-evaluation

@@ -91,9 +91,15 @@ cross_references:
   - target: 2024-12-transformers-need-glasses-over-squashing
     type: complementary
     detail: "Barbero et al. provide a complementary theoretical perspective: attention sinks relate to the over-squashing phenomenon where the causal mask topology funnels information from all tokens through the final position, with initial tokens having exponentially more pathways"
+  - target: 2023-12-quantizable-transformers-attention-do-nothing
+    type: complementary
+    detail: "Bondarenko et al. identify quantization outliers caused by attention heads learning no-op behavior, providing the quantization perspective on the attention sink root cause; Xiao et al. cite this paper as observing outsized attention values linked to specific tokens"
   - target: 2020-04-compressive-transformer-pg19
     type: uses-benchmark
     detail: "Uses PG-19 (introduced by Rae et al., 2020) for streaming perplexity evaluation over sequences up to 4M tokens"
+  - target: 2025-04-retrieval-head-long-context-factuality
+    type: complementary
+    detail: "Wu et al. show that when retrieval heads fail to locate relevant information in long context, they default to attending to attention sink tokens, mechanistically linking the attention sink phenomenon to retrieval failure and hallucination"
 open_questions:
   - question: "Are attention sinks a side effect of SoftMax normalization or do they serve a functional computational role in the residual stream?"
     addressed_by: 2025-04-attention-sink-emerges

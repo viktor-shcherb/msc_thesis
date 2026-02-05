@@ -98,6 +98,9 @@ cross_references:
   - target: 2018-07-sharp-nearby-fuzzy-far-away
     type: extends
     detail: "Extends Khandelwal et al.'s analysis of context utilization from LSTM LMs to Transformer LLMs, finding that larger models additionally exhibit primacy bias not seen in the smaller LSTM models"
+  - target: 2023-03-gpt-4-technical-report
+    type: evaluates
+    detail: "Evaluates GPT-4's context utilization patterns on multi-document QA and key-value retrieval tasks"
   - target: 2024-12-babilong-long-context-reasoning
     type: complementary
     detail: "BABILong embeds reasoning tasks in long contexts at controlled positions, complementing the positional bias analysis here with tasks requiring multi-hop reasoning rather than single-fact retrieval"
@@ -119,6 +122,9 @@ cross_references:
   - target: 2024-08-flenqa-input-length-reasoning
     type: complementary
     detail: "FlenQA isolates input length as a variable while keeping reasoning tasks constant, showing that length itself degrades reasoning independently of the position effects documented here"
+  - target: 2018-06-prediction-short-memory
+    type: complementary
+    detail: "Sharan et al. provide theoretical grounding for the diminishing returns of longer context: bounded mutual information between past and future implies average prediction error can be matched by a short-window Markov model"
 open_questions:
   - question: "Is the U-shaped curve a fundamental property of Transformer attention or an artifact of training data distributions and task design?"
     addressed_by: 2024-08-found-in-the-middle

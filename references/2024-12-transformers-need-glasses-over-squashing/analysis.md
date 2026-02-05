@@ -58,6 +58,9 @@ cross_references:
   - target: 2025-07-position-bias-transformers
     type: concurrent
     detail: "Both provide theoretical analysis of position-dependent information flow in causal Transformers; Wu et al. use graph-theoretic cumulative context probability while Barbero et al. use gradient sensitivity bounds from GNN over-squashing theory"
+  - target: 2021-05-gnn-bottleneck-over-squashing
+    type: extends
+    detail: "Adapts the over-squashing framework introduced by Alon & Yahav for GNNs to decoder-only Transformers, using Jacobian sensitivity bounds from Di Giovanni et al. (2023) to show exponentially asymmetric information pathways in the causal mask topology"
   - target: 2020-07-quantifying-attention-flow
     type: extends
     detail: "Extends information flow analysis from encoder-only (BERT) to decoder-only Transformers, showing how the causal mask creates asymmetric information propagation"
@@ -70,6 +73,9 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: evaluates
     detail: "Uses Gemini 1.5 as the primary model for empirical validation of counting and copying failures"
+  - target: 2020-07-theoretical-limitations-self-attention
+    type: extends
+    detail: "Hahn proved that fixed-size self-attention cannot model PARITY or Dyck languages; Barbero et al. extend this line of theoretical analysis to decoder-only Transformers, proving representational collapse and over-squashing"
 open_questions:
   - question: "Can architectural modifications (e.g., bidirectional attention layers, different normalization schemes) eliminate over-squashing while preserving autoregressive generation capability?"
     addressed_by: null

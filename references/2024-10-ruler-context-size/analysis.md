@@ -67,6 +67,15 @@ cross_references:
   - target: 2024-03-gemini-1.5-long-context
     type: evaluates
     detail: "Gemini 1.5 Pro achieves the highest RULER score (95.8% avg) with effective length exceeding 128K tokens"
+  - target: 2023-10-mistral-7b
+    type: evaluates
+    detail: "Mistral 7B evaluated on RULER to measure real context utilization vs claimed context size"
+  - target: 2024-03-yi-open-foundation-models
+    type: evaluates
+    detail: "Yi-34B evaluated on RULER synthetic long-context tasks including multi-needle retrieval"
+  - target: 2025-10-kimi-linear-attention
+    type: extended-by
+    detail: "Kimi Linear uses RULER as primary long-context benchmark, achieving 84.3 at 128k (vs 81.3 MLA) and 94.8 at 1M tokens, demonstrating hybrid linear attention viability for extreme context lengths"
 open_questions:
   - question: "Do RULER's synthetic proxy tasks (variable tracking, frequent words extraction) correlate with performance on realistic long-context NLP tasks?"
     addressed_by: null

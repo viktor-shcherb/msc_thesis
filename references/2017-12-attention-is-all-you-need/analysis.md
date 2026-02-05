@@ -91,6 +91,15 @@ cross_references:
   - target: 2025-04-pine-eliminating-position-bias
     type: extended-by
     detail: "PINE modifies the Transformer's causal attention to bidirectional inter-document attention to provably eliminate position bias at inference time"
+  - target: 2020-07-theoretical-limitations-self-attention
+    type: extended-by
+    detail: "Hahn proves that fixed-size self-attention transformers cannot recognize PARITY or Dyck languages, establishing fundamental computational limitations of the attention mechanism"
+  - target: 2024-07-qwen2-technical-report
+    type: extended-by
+    detail: "Qwen2 builds on the decoder-only Transformer with GQA, SwiGLU, RoPE, Dual Chunk Attention, and a fine-grained MoE variant spanning 0.5B to 72B parameters"
+  - target: 2025-10-kimi-linear-attention
+    type: extended-by
+    detail: "Kimi Linear replaces standard O(n^2) attention with hybrid architecture: 3:1 ratio of linear attention (KDA) to full attention (MLA), achieving O(n) complexity while outperforming full attention on short/long-context and RL benchmarks"
 open_questions:
   - question: "Why do sinusoidal and learned positional encodings produce nearly identical results?"
     addressed_by: null

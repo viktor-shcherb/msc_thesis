@@ -59,9 +59,18 @@ cross_references:
   - target: 2023-12-landmark-attention-infinite-context
     type: extended-by
     detail: "Landmark attention fine-tunes LLaMA 7B with learned block retrieval, extending its context to 32K tokens"
+  - target: 2023-10-mistral-7b
+    type: extended-by
+    detail: "Mistral 7B outperforms LLaMA 1 34B on reasoning, math, and code generation at 7B parameters"
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
     detail: "Third generation of LLaMA family, scaling to 405B parameters and 15.6T tokens with 128K context"
+  - target: 2024-03-yi-open-foundation-models
+    type: extended-by
+    detail: "Yi builds on LLaMA architecture and codebase with GQA for all model sizes, 3.1T bilingual tokens, and 200K context extension"
+  - target: 2023-09-qwen-technical-report
+    type: extended-by
+    detail: "Qwen builds on LLaMA architecture with SwiGLU, RoPE, RMSNorm, adds QKV bias, and introduces training-free context extension via NTK-aware interpolation"
 open_questions:
   - question: "How far beyond Chinchilla-optimal token counts can training be pushed before diminishing returns?"
     addressed_by: null
