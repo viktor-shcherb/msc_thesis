@@ -81,6 +81,12 @@ cross_references:
   - target: 2024-12-deepseek-v3-technical-report
     type: extended-by
     detail: "DeepSeek-V3 uses YaRN for two-stage context extension (4K→32K→128K) with 119K H800 GPU hours, achieving perfect NIAH retrieval at 128K"
+  - target: 2024-07-longrope-context-extension
+    type: extended-by
+    detail: "LongRoPE extends YaRN's targeted interpolation by discovering non-uniform per-dimension rescale factors via evolutionary search rather than fixed formulas, achieving 2048k context with 8x extension beyond fine-tuning length"
+  - target: 2024-06-effective-long-context-scaling
+    type: complementary
+    detail: "Llama 2 Long evaluated against YaRN-7B-128k and YaRN-13B-128k on long-context benchmarks; Llama 2 Long 13B outperforms YaRN-13B-128k on NarrativeQA (25.6 vs 23.4), Qasper (31.2 vs 27.1), QuALITY (57.6 vs 46.4), and QMSum (15.7 vs 11.9)"
 open_questions:
   - question: "Why does perplexity improvement from context extension not always translate to downstream task performance?"
     addressed_by: 2025-12-drope-dropping-positional-embeddings

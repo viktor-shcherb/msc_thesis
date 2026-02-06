@@ -51,6 +51,12 @@ cross_references:
   - target: 2024-05-yarn-context-extension
     type: extended-by
     detail: "YaRN improves on PI by combining NTK-aware interpolation with attention scaling"
+  - target: 2024-07-longrope-context-extension
+    type: extended-by
+    detail: "LongRoPE replaces PI's uniform linear interpolation with non-uniform per-dimension rescale factors found via evolutionary search, extending context to 2048k tokens"
+  - target: 2024-06-effective-long-context-scaling
+    type: contradicts
+    detail: "Xiong et al. show RoPE base frequency adjustment (ABF) outperforms PI on perplexity (6.323 vs 6.341 on 32K books), FIRST-SENTENCE-RETRIEVAL (ABF maintains to 32K while PI degrades at 24K+), and downstream tasks (HumanEval: 17.07 vs 15.24)"
   - target: 2025-12-drope-dropping-positional-embeddings
     type: extended-by
     detail: "DroPE lists PI as a primary RoPE-scaling baseline and outperforms it"

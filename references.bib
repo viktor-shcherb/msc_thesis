@@ -9,7 +9,23 @@
 @string{ICLR="International Conference on Learning Representations"}
 @string{COLM="Conference on Language Modeling"}
 @string{TACL="Transactions of the Association for Computational Linguistics"}
+@string{JMLR="Journal of Machine Learning Research"}
 @string{arXiv="arXiv Technical Report"}
+@article{2014-10-neural-turing-machines,
+  author = {Alex Graves and Greg Wayne and Ivo Danihelka},
+  title = {{Neural Turing Machines}},
+  journal = arXiv,
+  year = {2014},
+  eprint = {1410.5401},
+  archivePrefix = {arXiv},
+}
+@inproceedings{2017-05-moe-sparsely-gated-mixture-experts,
+  author = {Noam Shazeer and Azalia Mirhoseini and Krzysztof Maziarz and Andy Davis and Quoc Le and Geoffrey Hinton and Jeff Dean},
+  title = {{Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer}},
+  year = {2017},
+  booktitle = ICLR,
+  keywords = {conference},
+}
 @inproceedings{2017-12-attention-is-all-you-need,
   author = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and {\L}ukasz Kaiser and Illia Polosukhin},
   title = {{Attention Is All You Need}},
@@ -39,6 +55,14 @@
   url = {https://aclanthology.org/P18-1027/},
   keywords = {published},
 }
+@techreport{2019-02-gpt-2-language-models-unsupervised,
+  author       = {Radford, Alec and Wu, Jeffrey and Child, Rewon and Luan, David and Amodei, Dario and Sutskever, Ilya},
+  title        = {Language Models are Unsupervised Multitask Learners},
+  institution  = {OpenAI},
+  year         = {2019},
+  month        = {2},
+  url          = {https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf}
+}
 @inproceedings{2019-06-bert-pretraining-language-understanding,
   author = {Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova},
   title = {{BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding}},
@@ -54,6 +78,17 @@
   booktitle = ACL,
   pages = {5797--5808},
   keywords = {conference},
+}
+@inproceedings{2019-07-transformer-xl,
+  author = {Dai, Zihang and Yang, Zhilin and Yang, Yiming and Carbonell, Jaime and Le, Quoc V. and Salakhutdinov, Ruslan},
+  title = {{Transformer-XL}: Attentive Language Models beyond a Fixed-Length Context},
+  booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics},
+  month = jul,
+  year = {2019},
+  address = {Florence, Italy},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/P19-1285},
+  pages = {2978--2988},
 }
 @inproceedings{2019-08-bert-attention-analysis,
   author = {Kevin Clark and Urvashi Khandelwal and Omer Levy and Christopher D. Manning},
@@ -110,6 +145,21 @@
   pages = {156--171},
   doi = {10.1162/tacl_a_00306},
   keywords = {journal},
+}
+@inproceedings{2020-12-bigbird-sparse-attention,
+  author = {Manzil Zaheer and Guru Guruganesh and Avinava Dubey and Joshua Ainslie and Chris Alberti and Santiago Ontanon and Philip Pham and Anirudh Ravula and Qifan Wang and Li Yang and Amr Ahmed},
+  title = {{Big Bird: Transformers for Longer Sequences}},
+  booktitle = NeurIPS,
+  year = {2020},
+  address = {Vancouver, Canada},
+}
+@inproceedings{2020-12-gpt-3-few-shot-learners,
+  author = {Tom B. Brown and Benjamin Mann and Nick Ryder and Melanie Subbiah and Jared Kaplan and Prafulla Dhariwal and Arvind Neelakantan and Pranav Shyam and Girish Sastry and Amanda Askell and Sandhini Agarwal and Ariel Herbert-Voss and Gretchen Krueger and Tom Henighan and Rewon Child and Aditya Ramesh and Daniel M. Ziegler and Jeffrey Wu and Clemens Winter and Christopher Hesse and Mark Chen and Eric Sigler and Mateusz Litwin and Scott Gray and Benjamin Chess and Jack Clark and Christopher Berner and Sam McCandlish and Alec Radford and Ilya Sutskever and Dario Amodei},
+  title = {{Language Models are Few-Shot Learners}},
+  booktitle = NeurIPS,
+  year = {2020},
+  pages = {1877--1901},
+  volume = {33},
 }
 @inproceedings{2021-05-gnn-bottleneck-over-squashing,
   author = {Uri Alon and Eran Yahav},
@@ -175,9 +225,41 @@
   booktitle = ICLR,
   keywords = {conference},
 }
+@inproceedings{2022-04-s4-structured-state-spaces,
+  author = {Albert Gu and Karan Goel and Christopher Ré},
+  title = {{Efficiently Modeling Long Sequences with Structured State Spaces}},
+  year = {2022},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@article{2022-06-switch-transformers-moe,
+  author = {William Fedus and Barret Zoph and Noam Shazeer},
+  title = {{Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity}},
+  journal = JMLR,
+  year = {2022},
+  volume = {23},
+  number = {120},
+  pages = {1--39},
+}
 @inproceedings{2022-12-chain-of-thought-prompting,
   author = {Jason Wei and Xuezhi Wang and Dale Schuurmans and Maarten Bosma and Brian Ichter and Fei Xia and Ed H. Chi and Quoc V. Le and Denny Zhou},
   title = {{Chain-of-Thought Prompting Elicits Reasoning in Large Language Models}},
+  year = {2022},
+  booktitle = NeurIPS,
+  keywords = {conference},
+}
+@inproceedings{2022-12-chinchilla-scaling-laws,
+  author = {Jordan Hoffmann and Sebastian Borgeaud and Arthur Mensch and Elena Buchatskaya and Trevor Cai and Eliza Rutherford and Diego de Las Casas and Lisa Anne Hendricks and Johannes Welbl and Aidan Clark and Tom Hennigan and Eric Noland and Katie Millican and George van den Driessche and Bogdan Damoc and Aurelia Guy and Simon Osindero and Karen Simonyan and Erich Elsen and Jack W. Rae and Oriol Vinyals and Laurent Sifre},
+  title = {{Training Compute-Optimal Large Language Models}},
+  year = {2022},
+  booktitle = NeurIPS,
+  pages = {30016--30030},
+  volume = {35},
+  keywords = {conference},
+}
+@inproceedings{2022-12-flashattention,
+  author = {Tri Dao and Daniel Y. Fu and Stefano Ermon and Atri Rudra and Christopher R\'{e}},
+  title = {{FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness}},
   year = {2022},
   booktitle = NeurIPS,
   keywords = {conference},
@@ -244,11 +326,31 @@
   series = {Proceedings of Machine Learning Research},
   keywords = {conference},
 }
+@inproceedings{2023-07-hyena-hierarchy-long-convolutions,
+  author = {Michael Poli and Stefano Massaroli and Eric Nguyen and Daniel Y. Fu and Tri Dao and Stephen Baccus and Yoshua Bengio and Stefano Ermon and Christopher Ré},
+  title = {{Hyena Hierarchy: Towards Larger Convolutional Language Models}},
+  booktitle = ICML,
+  year = {2023},
+  volume = {202},
+  publisher = {PMLR},
+  eprint = {2302.10866},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+}
 @misc{2023-07-llama-2-open-foundation-chat,
   author = {Hugo Touvron and Louis Martin and Kevin Stone and Peter Albert and Amjad Almahairi and Yasmine Babaei and Nikolay Bashlykov and Soumya Batra and Prajjwal Bhargava and Shruti Bhosale and Dan Bikel and Lukas Blecher and Cristian Canton Ferrer and Moya Chen and Guillem Cucurull and David Esiobu and Jude Fernandes and Jeremy Fu and Wenyin Fu and Brian Fuller and Cynthia Gao and Vedanuj Goswami and Naman Goyal and Anthony Hartshorn and Saghar Hosseini and Rui Hou and Hakan Inan and Marcin Kardas and Viktor Kerkez and Madian Khabsa and Isabel Kloumann and Artem Korenev and Punit Singh Koura and Marie-Anne Lachaux and Thibaut Lavril and Jenya Lee and Diana Liskovich and Yinghai Lu and Yuning Mao and Xavier Martinet and Todor Mihaylov and Pushkar Mishra and Igor Molybog and Yixin Nie and Andrew Poulton and Jeremy Reizenstein and Rashi Rungta and Kalyan Saladi and Alan Schelten and Ruan Silva and Eric Michael Smith and Ranjan Subramanian and Xiaoqing Ellen Tan and Binh Tang and Ross Taylor and Adina Williams and Jian Xiang Kuan and Puxin Xu and Zheng Yan and Iliyan Zarov and Yuchen Zhang and Angela Fan and Melanie Kambadur and Sharan Narang and Aurelien Rodriguez and Robert Stojnic and Sergey Edunov and Thomas Scialom},
   title = {{Llama 2: Open Foundation and Fine-Tuned Chat Models}},
   year = {2023},
   eprint = {2307.09288},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
+@misc{2023-07-retnet-retentive-network,
+  author = {Yutao Sun and Li Dong and Shaohan Huang and Shuming Ma and Yuqing Xia and Jilong Xue and Jianyong Wang and Furu Wei},
+  title = {{Retentive Network: A Successor to Transformer for Large Language Models}},
+  year = {2023},
+  eprint = {2307.08621},
   archiveprefix = {arXiv},
   primaryclass = {cs.CL},
   keywords = {preprint},
@@ -279,6 +381,16 @@
   url = {https://github.com/gkamradt/LLMTest_NeedleInAHaystack},
   keywords = {informal},
 }
+@inproceedings{2023-12-gqa-grouped-query-attention,
+  author = {Joshua Ainslie and James Lee-Thorp and Michiel de Jong and Yury Zemlyanskiy and Federico Lebr{\'o}n and Sumit Sanghai},
+  title = {{GQA}: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints},
+  booktitle = EMNLP,
+  year = {2023},
+  url = {https://arxiv.org/abs/2305.13245},
+  eprint = {2305.13245},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+}
 @inproceedings{2023-12-landmark-attention-infinite-context,
   author = {Amirkeivan Mohtashami and Martin Jaggi},
   title = {{Random-Access Infinite Context Length for Transformers}},
@@ -299,6 +411,15 @@
   year = {2023},
   booktitle = NeurIPS,
   keywords = {conference},
+}
+@inproceedings{2023-12-rwkv-reinventing-rnns-transformer,
+  author = {Bo Peng and Eric Alcaide and Quentin Anthony and Alon Albalak and Samuel Arcadinho and Stella Biderman and Huanqi Cao and Xin Cheng and Michael Chung and Xingjian Du and Matteo Grella and Kranthi Kiran GV and Xuzheng He and Haowen Hou and Jiaju Lin and Przemys{\l}aw Kazienko and Jan Koco{\'n} and Jiaming Kong and Bart{\l}omiej Koptyra and Hayden Lau and Krishna Sri Ipsit Mantri and Ferdinand Mom and Atsushi Saito and Guangyu Song and Xiangru Tang and Bolun Wang and Johan S. Wind and Stanis{\l}aw Wo{\'z}niak and Ruichong Zhang and Zhenyuan Zhang and Qihang Zhao and Peng Zhou and Qinghua Zhou and Jian Zhu and Rui-Jie Zhu},
+  title = {{RWKV: Reinventing RNNs for the Transformer Era}},
+  booktitle = FindingsEMNLP,
+  year = {2023},
+  eprint = {2305.13048},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
 }
 @inproceedings{2023-12-zeroscrolls-zero-shot-long-text,
   author = {Uri Shaham and Maor Ivgi and Avia Efrat and Jonathan Berant and Omer Levy},
@@ -367,6 +488,29 @@
   year={2024},
   url={https://arxiv.org/abs/2405.04434}
 }
+@inproceedings{2024-05-flashattention-2,
+  author = {Tri Dao},
+  title = {{FlashAttention-2: Faster Attention with Better Parallelism and Work Partitioning}},
+  year = {2024},
+  booktitle = ICLR,
+  keywords = {conference},
+}
+@inproceedings{2024-05-mamba-selective-state-spaces,
+  author = {Albert Gu and Tri Dao},
+  title = {{Mamba: Linear-Time Sequence Modeling with Selective State Spaces}},
+  booktitle = ICLR,
+  year = {2024},
+  eprint = {2312.00752},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.LG},
+}
+@inproceedings{2024-05-ring-attention-near-infinite-context,
+  title     = {Ring Attention with Blockwise Transformers for Near-Infinite Context},
+  author    = {Liu, Hao and Zaharia, Matei and Abbeel, Pieter},
+  booktitle = ICLR,
+  year      = {2024},
+  url       = {https://openreview.net/forum?id=WsRHpHH4s0}
+}
 @inproceedings{2024-05-yarn-context-extension,
   author = {Bowen Peng and Jeffrey Quesnelle and Honglu Fan and Enrico Shippole},
   title = {{YaRN: Efficient Context Window Extension of Large Language Models}},
@@ -382,6 +526,15 @@
   pages = {3712--3724},
   keywords = {conference},
 }
+@inproceedings{2024-06-effective-long-context-scaling,
+  title     = {Effective Long-Context Scaling of Foundation Models},
+  author    = {Xiong, Wenhan and Liu, Jingyu and Molybog, Igor and Zhang, Hejia and Bhargava, Prajjwal and Hou, Rui and Martin, Louis and Rungta, Rashi and Sankararaman, Karthik Abinav and Oguz, Barlas and Khabsa, Madian and Fang, Han and Mehdad, Yashar and Narang, Sharan and Malik, Kshitiz and Fan, Angela and Bhosale, Shruti and Edunov, Sergey and Lewis, Mike and Wang, Sinong and Ma, Hao},
+  booktitle = NAACL,
+  pages     = {4643--4663},
+  year      = {2024},
+  address   = {Mexico City, Mexico},
+  url       = {https://aclanthology.org/2024.naacl-long.260/}
+}
 @misc{2024-07-llama-3-herd-of-models,
   author = {Abhimanyu Dubey and Abhinav Jauhri and Abhinav Pandey and Abhishek Kadian and Ahmad Al-Dahle and Aiesha Letman and Akhil Mathur and Alan Schelten and Amy Yang and Angela Fan and others},
   title = {{The Llama 3 Herd of Models}},
@@ -390,6 +543,20 @@
   archiveprefix = {arXiv},
   primaryclass = {cs.AI},
   keywords = {preprint},
+}
+@inproceedings{2024-07-longrope-context-extension,
+  author = {Yiran Ding and Li Lyna Zhang and Chengruidong Zhang and Yuanyuan Xu and Ning Shang and Jiahang Xu and Fan Yang and Mao Yang},
+  title = {{LongRoPE: Extending LLM Context Window Beyond 2 Million Tokens}},
+  year = {2024},
+  booktitle = ICML,
+  keywords = {conference},
+}
+@inproceedings{2024-07-mamba-2-transformers-ssms,
+  title     = {Transformers are {SSMs}: Generalized Models and Efficient Algorithms Through Structured State Space Duality},
+  author    = {Dao, Tri and Gu, Albert},
+  booktitle = ICML,
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2405.21060},
 }
 @misc{2024-07-qwen2-technical-report,
   author = {An Yang and Baosong Yang and Binyuan Hui and Bo Zheng and Bowen Yu and Chang Zhou and Chengpeng Li and Chengyuan Li and Dayiheng Liu and Fei Huang and Guanting Dong and Haoran Wei and Huan Lin and Jialong Tang and Jialin Wang and Jian Yang and Jianhong Tu and Jianwei Zhang and Jianxin Ma and Jianxin Yang and Jin Xu and Jingren Zhou and Jinze Bai and Jinzheng He and Junyang Lin and Kai Dang and Keming Lu and Keqin Chen and Kexin Yang and Mei Li and Mingfeng Xue and Na Ni and Pei Zhang and Peng Wang and Ru Peng and Rui Men and Ruize Gao and Runji Lin and Shijie Wang and Shuai Bai and Sinan Tan and Tianhang Zhu and Tianhao Li and Tianyu Liu and Wenbin Ge and Xiaodong Deng and Xiaohuan Zhou and Xingzhang Ren and Xinyu Zhang and Xipin Wei and Xuancheng Ren and Xuejing Liu and Yang Fan and Yang Yao and Yichang Zhang and Yu Wan and Yunfei Chu and Yuqiong Liu and Zeyu Cui and Zhenru Zhang and Zhifang Guo and Zhihao Fan},
@@ -458,9 +625,23 @@
   pages = {3119--3137},
   keywords = {conference},
 }
+@inproceedings{2024-08-scaling-llm-test-time-compute,
+  author = {Charlie Snell and Jaehoon Lee and Kelvin Xu and Aviral Kumar},
+  title = {{Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters}},
+  year = {2025},
+  booktitle = ICLR,
+  keywords = {conference},
+}
 @inproceedings{2024-10-ruler-context-size,
   author = {Cheng-Ping Hsieh and Simeng Sun and Samuel Kriman and Shantanu Acharya and Dima Rekesh and Fei Jia and Yang Zhang and Boris Ginsburg},
   title = {{RULER: What's the Real Context Size of Your Long-Context Language Models?}},
+  year = {2024},
+  booktitle = COLM,
+  keywords = {conference},
+}
+@inproceedings{2024-10-rwkv-eagle-finch-matrix-states,
+  author = {Bo Peng and Daniel Goldstein and Quentin Anthony and Alon Albalak and Eric Alcaide and Stella Biderman and Eugene Cheah and Xingjian Du and Teddy Ferdinan and Haowen Hou and Przemys{\l}aw Kazienko and Kranthi Kiran GV and Jan Koco{\'n} and Bart{\l}omiej Koptyra and Satyapriya Krishna and Ronald McClelland Jr. and Jiaju Lin and Niklas Muennighoff and Fares Obeid and Atsushi Saito and Guangyu Song and Haoqin Tu and Cahya Wirawan and Stanis{\l}aw Wo{\'z}niak and Ruichong Zhang and Bingchen Zhao and Qihang Zhao and Peng Zhou and Jian Zhu and Rui-Jie Zhu},
+  title = {{Eagle and Finch: RWKV with Matrix-Valued States and Dynamic Recurrence}},
   year = {2024},
   booktitle = COLM,
   keywords = {conference},
@@ -488,6 +669,13 @@
   archiveprefix = {arXiv},
   primaryclass  = {cs.CL},
   url           = {https://arxiv.org/abs/2412.19437}
+}
+@inproceedings{2024-12-flashattention-3,
+  author    = {Jay Shah and Ganesh Bikshandi and Ying Zhang and Vijay Thakkar and Pradeep Ramani and Tri Dao},
+  title     = {{FlashAttention-3}: Fast and Accurate Attention with Asynchrony and Low-precision},
+  booktitle = NeurIPS,
+  year      = {2024},
+  url       = {https://arxiv.org/abs/2407.08608},
 }
 @misc{2024-12-lost-in-the-middle-in-between,
   author = {George Arthur Baker and Ankush Raut and Sagi Shaier and Lawrence E Hunter and Katharina von der Wense},
@@ -531,6 +719,15 @@
   issn = {2835-8856},
   keywords = {journal},
 }
+@misc{2025-03-survey-transformer-context-extension,
+  author = {Yijun Liu and Jinzheng Yu and Yang Xu and Zhongyang Li and Qingfu Zhu},
+  title = {{A Survey on Transformer Context Extension: Approaches and Evaluation}},
+  year = {2025},
+  eprint = {2503.13299},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
+}
 @inproceedings{2025-04-attention-sink-emerges,
   author = {Xiangming Gu and Tianyu Pang and Chao Du and Qian Liu and Fengzhuo Zhang and Cunxiao Du and Ye Wang and Min Lin},
   title = {{When Attention Sink Emerges in Language Models: An Empirical View}},
@@ -538,12 +735,28 @@
   booktitle = ICLR,
   keywords = {conference},
 }
+@inproceedings{2025-04-differential-transformer,
+  author = {Tianzhu Ye and Li Dong and Yuqing Xia and Yutao Sun and Yi Zhu and Gao Huang and Furu Wei},
+  title = {{Differential Transformer}},
+  booktitle = ICLR,
+  year = {2025},
+  keywords = {conference-paper},
+}
 @inproceedings{2025-04-effective-context-length-falls-short,
   author = {Chenxin An and Jun Zhang and Ming Zhong and Lei Li and Shansan Gong and Yao Luo and Jingjing Xu and Lingpeng Kong},
   title = {{Why Does the Effective Context Length of LLMs Fall Short?}},
   year = {2025},
   booktitle = ICLR,
   keywords = {conference},
+}
+@inproceedings{2025-04-gated-delta-networks,
+  author = {Songlin Yang and Jan Kautz and Ali Hatamizadeh},
+  title = {{Gated Delta Networks: Improving Mamba2 with Delta Rule}},
+  booktitle = ICLR,
+  year = {2025},
+  eprint = {2412.06464},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
 }
 @inproceedings{2025-04-helmet-long-context-evaluation,
   author = {Howard Yen and Tianyu Gao and Minmin Hou and Ke Ding and Daniel Fleischer and Peter Izsak and Moshe Wasserblat and Danqi Chen},
@@ -560,6 +773,13 @@
   eprint  = {2504.07491},
   archiveprefix = {arXiv},
   primaryclass = {cs.CV}
+}
+@inproceedings{2025-04-longgenbench-long-form-generation,
+  author = {Yuhao Wu and Ming Shan Hee and Zhiqing Hu and Roy Ka-Wei Lee},
+  title = {{LongGenBench: Benchmarking Long-Form Generation in Long Context LLMs}},
+  year = {2025},
+  booktitle = ICLR,
+  keywords = {conference},
 }
 @inproceedings{2025-04-pine-eliminating-position-bias,
   author = {Ziqi Wang and Hanlin Zhang and Xiner Li and Kuan-Hao Huang and Chi Han and Shuiwang Ji and Sham M. Kakade and Hao Peng and Heng Ji},
@@ -581,6 +801,15 @@
   year = {2025},
   booktitle = ICLR,
   keywords = {conference},
+}
+@misc{2025-05-100-longbench-long-context-benchmarks,
+  author = {Wang Yang and Hongye Jin and Shaochen Zhong and Song Jiang and Qifan Wang and Vipin Chaudhary and Xiaotian Han},
+  title = {{100-LongBench: Are \textit{de facto} Long-Context Benchmarks Literally Evaluating Long-Context Ability?}},
+  year = {2025},
+  eprint = {2505.19293},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.CL},
+  keywords = {preprint},
 }
 @article{2025-05-qwen3-technical-report,
   title   = {{Qwen3 Technical Report}},
@@ -606,6 +835,13 @@
   pages = {3639--3664},
   keywords = {conference},
 }
+@inproceedings{2025-07-lv-eval-long-context-benchmark,
+  author = {Tao Yuan and Xuefei Ning and Dong Zhou and Zhijie Yang and Shiyao Li and Minghui Zhuang and Zheyue Tan and Zhuyu Yao and Dahua Lin and Boxun Li and Guohao Dai and Shengen Yan and Yu Wang},
+  title = {{LV-Eval: A Balanced Long-Context Benchmark with 5 Length Levels Up to 256K}},
+  year = {2025},
+  booktitle = COLM,
+  keywords = {conference},
+}
 @inproceedings{2025-07-nolima-long-context-evaluation,
   author = {Ali Modarressi and Hanieh Deilamsalehy and Franck Dernoncourt and Trung Bui and Ryan A. Rossi and Seunghyun Yoon and Hinrich Sch\"{u}tze},
   title = {{NoLiMa: Long-Context Evaluation Beyond Literal Matching}},
@@ -626,6 +862,15 @@
   year = {2025},
   booktitle = ICML,
   keywords = {conference},
+}
+@misc{2025-09-locobench-long-context-code,
+  author = {Jielin Qiu and Zuxin Liu and Zhiwei Liu and Rithesh Murthy and Jianguo Zhang and Haolin Chen and Shiyu Wang and Ming Zhu and Liangwei Yang and Juntao Tan and Zhepeng Cen and Cheng Qian and Shelby Heinecke and Weiran Yao and Silvio Savarese and Caiming Xiong and Huan Wang},
+  title = {{LoCoBench: A Comprehensive Long-Context Code Benchmark for LLMs}},
+  year = {2025},
+  eprint = {2509.09614},
+  archiveprefix = {arXiv},
+  primaryclass = {cs.SE},
+  keywords = {preprint},
 }
 @article{2025-10-kimi-linear-attention,
   title={Kimi Linear: An Expressive, Efficient Attention Architecture},
@@ -669,6 +914,15 @@
   archiveprefix = {arXiv},
   primaryclass = {cs.CL},
   keywords = {preprint},
+}
+@article{2025-12-ttt-e2e-long-context,
+  title     = {End-to-End Test-Time Training for Long Context},
+  author    = {Tandon, Arnuv and Dalal, Karan and Li, Xinhao and Koceja, Daniel and R{\o}d, Marcel and Buchanan, Sam and Wang, Xiaolong and Leskovec, Jure and Koyejo, Sanmi and Hashimoto, Tatsunori and Guestrin, Carlos and McCaleb, Jed and Choi, Yejin and Sun, Yu},
+  journal   = arXiv,
+  year      = {2025},
+  eprint    = {2512.23675},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.LG}
 }
 @misc{2026-01-longbench-pro,
   author = {Ziyang Chen and others},

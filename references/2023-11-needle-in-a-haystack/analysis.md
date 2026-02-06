@@ -71,6 +71,9 @@ cross_references:
   - target: 2024-12-deepseek-v3-technical-report
     type: extended-by
     detail: "DeepSeek-V3 uses NIAH to validate 128K context extension, achieving perfect retrieval scores across all depths and context lengths (Figure 8)"
+  - target: 2025-07-lv-eval-long-context-benchmark
+    type: extended-by
+    detail: "LV-Eval's factrecall-en and factrecall-zh datasets extend NIAH with confusing facts insertion and keyword replacement, showing that standard NIAH is too simple -- performance collapses from near-perfect to near-zero with interference"
 open_questions:
   - question: "Does the single-needle, high-lexical-overlap design overestimate model retrieval capabilities compared to real-world information needs?"
     addressed_by: 2025-07-nolima-long-context-evaluation

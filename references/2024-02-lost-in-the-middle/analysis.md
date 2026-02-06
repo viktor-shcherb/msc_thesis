@@ -125,6 +125,9 @@ cross_references:
   - target: 2018-06-prediction-short-memory
     type: complementary
     detail: "Sharan et al. provide theoretical grounding for the diminishing returns of longer context: bounded mutual information between past and future implies average prediction error can be matched by a short-window Markov model"
+  - target: 2025-03-survey-transformer-context-extension
+    type: complementary
+    detail: "Survey identifies lost-in-the-middle as one of three core challenges in long-context Transformers, situating the U-shaped positional bias within a systematic taxonomy of context extension methods"
 open_questions:
   - question: "Is the U-shaped curve a fundamental property of Transformer attention or an artifact of training data distributions and task design?"
     addressed_by: 2024-08-found-in-the-middle

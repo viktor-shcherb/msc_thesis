@@ -76,6 +76,12 @@ cross_references:
   - target: 2025-10-kimi-linear-attention
     type: extended-by
     detail: "Kimi Linear uses RULER as primary long-context benchmark, achieving 84.3 at 128k (vs 81.3 MLA) and 94.8 at 1M tokens, demonstrating hybrid linear attention viability for extreme context lengths"
+  - target: 2025-07-lv-eval-long-context-benchmark
+    type: concurrent
+    detail: "Both extend NIAH-style evaluation; RULER uses synthetic multi-task evaluation while LV-Eval uses natural-language QA with knowledge-leakage mitigation via keyword replacement and confusing facts insertion"
+  - target: 2025-05-100-longbench-long-context-benchmarks
+    type: complementary
+    detail: "100-LongBench applies LongScore to RULER data (Table 5), showing that traditional RULER rankings are heavily influenced by base ability and may not reflect true long-context capability"
 open_questions:
   - question: "Do RULER's synthetic proxy tasks (variable tracking, frequent words extraction) correlate with performance on realistic long-context NLP tasks?"
     addressed_by: null

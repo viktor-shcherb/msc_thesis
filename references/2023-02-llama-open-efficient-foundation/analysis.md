@@ -35,6 +35,15 @@ key_claims:
     evidence: "Table 10, Section 4"
     status: supported
 cross_references:
+  - target: 2020-12-gpt-3-few-shot-learners
+    type: extends
+    detail: "LLaMA-13B outperforms GPT-3 175B on most benchmarks by training smaller models on substantially more tokens (1T vs 300B), demonstrating that inference-efficient scaling with architectural improvements can surpass much larger models"
+  - target: 2019-02-gpt-2-language-models-unsupervised
+    type: extends
+    detail: "LLaMA continues GPT-2's scaling approach with architectural improvements (RoPE, SwiGLU, RMSNorm) and substantially more training tokens"
+  - target: 2022-12-chinchilla-scaling-laws
+    type: extends
+    detail: "LLaMA explicitly follows Chinchilla scaling laws, training smaller models on more tokens for inference efficiency"
   - target: 2017-12-attention-is-all-you-need
     type: extends
     detail: "LLaMA modifies the original Transformer architecture with pre-normalization, SwiGLU, and RoPE"
@@ -71,6 +80,12 @@ cross_references:
   - target: 2023-09-qwen-technical-report
     type: extended-by
     detail: "Qwen builds on LLaMA architecture with SwiGLU, RoPE, RMSNorm, adds QKV bias, and introduces training-free context extension via NTK-aware interpolation"
+  - target: 2024-05-ring-attention-near-infinite-context
+    type: extended-by
+    detail: "Ring Attention uses LLaMA architecture (3B, 7B, 13B, 30B) to demonstrate context scaling up to 16M+ tokens through distributed blockwise attention"
+  - target: 2025-04-differential-transformer
+    type: extended-by
+    detail: "DIFF Transformer adopts the LLaMA architecture template (RMSNorm, SwiGLU, RoPE) and replaces standard multi-head attention with differential attention that subtracts two softmax maps to cancel noise"
 open_questions:
   - question: "How far beyond Chinchilla-optimal token counts can training be pushed before diminishing returns?"
     addressed_by: null

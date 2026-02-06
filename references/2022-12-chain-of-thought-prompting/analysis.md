@@ -35,6 +35,9 @@ key_claims:
     evidence: "Figure 6, Table 6, Table 7, Section 3.4"
     status: supported
 cross_references:
+  - target: 2019-02-gpt-2-language-models-unsupervised
+    type: extends
+    detail: "Chain-of-thought prompting extends GPT-2's zero-shot paradigm by eliciting reasoning through intermediate natural language steps"
   - target: 2023-07-gsm-ic-irrelevant-context
     type: extended-by
     detail: "GSM-IC tests whether chain-of-thought reasoning is robust to irrelevant context added to math problems"
@@ -44,6 +47,12 @@ cross_references:
   - target: 2025-01-kimi-k1.5-scaling-rl
     type: extended-by
     detail: "Kimi k1.5 extends chain-of-thought from prompting to RL training, scaling CoT context to 128k tokens and achieving 96.2% on MATH-500 and 77.5% on AIME 2024"
+  - target: 2020-12-gpt-3-few-shot-learners
+    type: extends
+    detail: "Extends GPT-3's few-shot prompting paradigm by adding intermediate reasoning steps, unlocking reasoning capabilities that standard few-shot prompting could not achieve"
+  - target: 2024-08-scaling-llm-test-time-compute
+    type: extended-by
+    detail: "Builds on chain-of-thought as a mechanism for using test-time compute, studying how to optimally scale test-time computation for math reasoning"
 open_questions:
   - question: "Does chain of thought emulate actual reasoning, or is it a surface-level pattern that mimics reasoning?"
     addressed_by: null

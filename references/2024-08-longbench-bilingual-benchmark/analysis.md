@@ -69,6 +69,12 @@ cross_references:
   - target: 2025-03-longiclbench-long-in-context-learning
     type: complementary
     detail: "LongICLBench complements LongBench by requiring full-input comprehension via extreme-label ICL (28-174 classes, 2K-50K tokens) rather than retrieval-based tasks"
+  - target: 2025-05-100-longbench-long-context-benchmarks
+    type: extended-by
+    detail: "100-LongBench restructures LongBench datasets with controllable-length context and proposes the LongScore metric to disentangle base ability from long-context capability"
+  - target: 2025-07-lv-eval-long-context-benchmark
+    type: concurrent
+    detail: "LV-Eval uses MultiFieldQA datasets from LongBench, extends evaluation to 256k words with five controlled length levels, and adds knowledge-leakage mitigation via keyword replacement"
 open_questions:
   - question: "Do LongBench results predict performance on tasks with contexts beyond 40K tokens?"
     addressed_by: 2026-01-longbench-pro

@@ -52,6 +52,9 @@ cross_references:
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
     detail: "Llama 3 achieves 95.2% on QuALITY, matching GPT-4"
+  - target: 2025-07-lv-eval-long-context-benchmark
+    type: concurrent
+    detail: "LV-Eval addresses ZeroSCROLLS' insufficient average context length (~14k words) by providing five controlled length levels up to 256k with knowledge-leakage mitigation"
 open_questions:
   - question: "How should automatic metrics be adapted for zero-shot evaluation where output format varies across models?"
     addressed_by: null

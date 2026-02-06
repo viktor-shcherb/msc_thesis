@@ -42,6 +42,9 @@ cross_references:
   - target: 2023-02-llama-open-efficient-foundation
     type: extends
     detail: "Direct successor to LLaMA with doubled context length (4096 tokens), 40% more training data (2T tokens), and GQA for 70B model"
+  - target: 2023-12-gqa-grouped-query-attention
+    type: extends
+    detail: "Llama 2 70B adopts GQA with 8 KV heads serving 64 query heads, reducing KV cache by 8x while matching MHA quality"
   - target: 2017-12-attention-is-all-you-need
     type: extends
     detail: "Retains decoder-only Transformer with modifications (RMSNorm, SwiGLU, RoPE) inherited from LLaMA"
@@ -54,6 +57,9 @@ cross_references:
   - target: 2023-06-pi-positional-interpolation
     type: extended-by
     detail: "Position Interpolation extends Llama 2's RoPE context window through frequency rescaling"
+  - target: 2024-06-effective-long-context-scaling
+    type: extended-by
+    detail: "Llama 2 Long extends Llama 2 to 32K context via continual pretraining with RoPE base frequency adjustment (b=500K), trained with 400B additional tokens"
   - target: 2024-05-attention-sinks-streaming
     type: extended-by
     detail: "StreamingLLM identifies attention sinks in Llama 2 enabling infinite-length streaming inference"

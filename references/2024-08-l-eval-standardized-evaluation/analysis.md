@@ -78,6 +78,9 @@ cross_references:
   - target: 2026-01-longbench-pro
     type: complementary
     detail: "LongBench Pro references L-Eval as a standardized evaluation protocol in the broader long-context evaluation landscape"
+  - target: 2025-07-lv-eval-long-context-benchmark
+    type: concurrent
+    detail: "Both propose improved evaluation metrics for long-context; L-Eval uses LLM-assisted length-instruction-enhanced metrics, while LV-Eval uses keyword-recall-based two-stage F1 with human-annotated answer keywords"
 open_questions:
   - question: "How can LLM judges be adapted to process the full long document rather than relying solely on reference answers and questions?"
     addressed_by: null

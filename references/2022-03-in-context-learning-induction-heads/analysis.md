@@ -59,6 +59,12 @@ cross_references:
   - target: 2021-08-context-features-transformer-lm
     type: complementary
     detail: "O'Connor & Andreas find that preserving word order matters for context utilization (consistent with induction head hypothesis), but retaining only nouns can improve long-range predictions (partially in tension with the hypothesis)"
+  - target: 2020-12-gpt-3-few-shot-learners
+    type: formalizes
+    detail: "Provides mechanistic explanation for GPT-3's in-context learning via induction heads, identifying the training phase change and circuit responsible for the capability"
+  - target: 2024-05-mamba-selective-state-spaces
+    type: extended-by
+    detail: "Mamba uses induction heads as a key synthetic benchmark to demonstrate that selective SSMs can perform associative recall, extrapolating perfectly to 1M+ tokens while attention fails beyond 16K"
 open_questions:
   - question: "Do induction heads account for the majority of in-context learning in large models with MLPs, or do additional mechanisms (other composition heads, MLP-attention interactions) contribute substantially?"
     addressed_by: null

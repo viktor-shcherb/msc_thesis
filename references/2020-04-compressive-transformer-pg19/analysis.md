@@ -42,6 +42,9 @@ cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
     detail: "Extends the Transformer with a secondary compressed memory that stores lossy representations of old activations evicted from the TransformerXL-style granular memory"
+  - target: 2019-07-transformer-xl
+    type: extends
+    detail: "Builds directly on Transformer-XL's segment-level recurrence; adds a secondary compressed memory to store older activations that would otherwise be discarded"
   - target: 2020-04-longformer-long-document-transformer
     type: concurrent
     detail: "Contemporary approach to long-range attention; Longformer uses sparse local+global attention patterns, while Compressive Transformer uses memory compression -- complementary strategies"
@@ -60,6 +63,9 @@ cross_references:
   - target: 2021-11-long-range-models-use-context
     type: complementary
     detail: "Sun et al. analyze long-range LMs on PG-19 and find that compression of infrequent tokens (as in the Compressive Transformer) indeed helps, but overall long-range context beyond 2K tokens has negligible aggregate impact"
+  - target: 2014-10-neural-turing-machines
+    type: extends
+    detail: "The 'most-used' compression scheme is inspired by the garbage collection mechanism from Neural Turing Machines / Differentiable Neural Computer, where low-usage memories are erased"
 open_questions:
   - question: "Can adaptive compression rates per layer improve performance, given that compression loss varies non-monotonically across layers?"
     addressed_by: null

@@ -82,9 +82,15 @@ cross_references:
   - target: 2025-12-drope-dropping-positional-embeddings
     type: extended-by
     detail: "DroPE reinterprets positional embeddings as a transient training scaffold that can be removed after pretraining to enable zero-shot context extension"
+  - target: 2019-02-gpt-2-language-models-unsupervised
+    type: extended-by
+    detail: "GPT-2 uses decoder-only Transformer with modified layer normalization placement for zero-shot multitask learning"
   - target: 2019-06-bert-pretraining-language-understanding
     type: extended-by
     detail: "BERT uses the Transformer encoder with bidirectional self-attention and masked language model pre-training for language understanding"
+  - target: 2019-07-transformer-xl
+    type: extended-by
+    detail: "Transformer-XL introduces segment-level recurrence and relative positional encodings to enable modeling dependencies beyond fixed-length context"
   - target: 2025-04-attention-sink-emerges
     type: extended-by
     detail: "Gu et al. identify the softmax normalization in the Transformer's attention mechanism as the root cause of attention sinks, showing that replacing softmax with sigmoid attention eliminates the phenomenon"
@@ -100,6 +106,30 @@ cross_references:
   - target: 2025-10-kimi-linear-attention
     type: extended-by
     detail: "Kimi Linear replaces standard O(n^2) attention with hybrid architecture: 3:1 ratio of linear attention (KDA) to full attention (MLA), achieving O(n) complexity while outperforming full attention on short/long-context and RL benchmarks"
+  - target: 2024-05-ring-attention-near-infinite-context
+    type: extended-by
+    detail: "Ring Attention reorganizes standard Transformer attention computation for distributed execution across devices in a ring topology, enabling context lengths scaling linearly with device count while preserving exact attention"
+  - target: 2022-06-switch-transformers-moe
+    type: extended-by
+    detail: "Switch Transformer replaces the dense FFN layer with sparse expert routing (k=1), enabling 7x pre-training speedup and scaling to 1.6T parameters"
+  - target: 2017-05-moe-sparsely-gated-mixture-experts
+    type: concurrent
+    detail: "Shazeer et al.'s Sparsely-Gated MoE is cited as a baseline in Table 2, achieving 26.03 BLEU on WMT'14 EN-DE; both papers published in 2017 address scaling neural networks"
+  - target: 2024-05-mamba-selective-state-spaces
+    type: complementary
+    detail: "Mamba proposes selective state space models as an alternative to Transformer attention with O(n) instead of O(n²) complexity, achieving 5× faster inference while matching or exceeding Transformer quality on language modeling"
+  - target: 2023-12-rwkv-reinventing-rnns-transformer
+    type: complementary
+    detail: "RWKV replaces quadratic dot-product attention with a channel-wise linear attention mechanism, achieving O(Td) time and O(d) memory during inference while matching Transformer performance up to 14B parameters"
+  - target: 2023-07-retnet-retentive-network
+    type: extended-by
+    detail: "RetNet proposes a retention mechanism as an alternative to multi-head attention, removing softmax and enabling O(1) recurrent inference while maintaining training parallelism"
+  - target: 2025-04-differential-transformer
+    type: extended-by
+    detail: "DIFF Transformer replaces softmax attention with differential attention that subtracts two softmax maps to cancel noise, amplifying signal-to-noise ratio while retaining the multi-head attention framework"
+  - target: 2025-12-ttt-e2e-long-context
+    type: extended-by
+    detail: "TTT-E2E applies test-time training to a standard Transformer with sliding-window attention, compressing context into MLP weights via meta-learned gradient descent for constant-latency long-context modeling"
 open_questions:
   - question: "Why do sinusoidal and learned positional encodings produce nearly identical results?"
     addressed_by: null

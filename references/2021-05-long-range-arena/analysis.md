@@ -57,6 +57,12 @@ cross_references:
   - target: 2025-03-longiclbench-long-in-context-learning
     type: complementary
     detail: "LongICLBench tests real-world classification at 2K-50K tokens via extreme-label ICL, complementing LRA's synthetic probing tasks at 1K-16K tokens"
+  - target: 2024-05-mamba-selective-state-spaces
+    type: extended-by
+    detail: "Mamba uses LRA to demonstrate selective SSMs match or exceed Transformer attention on long-range tasks while being faster and using less memory"
+  - target: 2025-04-longgenbench-long-form-generation
+    type: complementary
+    detail: "LongGenBench evaluates long-form generation quality (output-side), complementing LRA's focus on efficient input processing; both are synthetic benchmarks for long-sequence capabilities"
 open_questions:
   - question: "Do LRA results on synthetic and byte-level tasks predict model performance on natural language long-context tasks?"
     addressed_by: null

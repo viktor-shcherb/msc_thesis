@@ -46,6 +46,9 @@ cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
     detail: "Based on the Transformer decoder-only architecture with SWA and GQA modifications"
+  - target: 2023-12-gqa-grouped-query-attention
+    type: extends
+    detail: "Uses GQA with 8 KV heads to reduce KV cache memory and improve inference throughput"
   - target: 2023-07-llama-2-open-foundation-chat
     type: evaluates
     detail: "Primary comparison target; Mistral 7B outperforms Llama 2 13B on all benchmarks despite being nearly half the size"
@@ -73,6 +76,9 @@ cross_references:
   - target: 2024-03-gemma-open-models
     type: extended-by
     detail: "Gemma 7B outperforms Mistral 7B on math benchmarks (GSM8K +11 points, MATH +11.6 points) and coding (HumanEval +6.1 points)"
+  - target: 2025-04-longgenbench-long-form-generation
+    type: extended-by
+    detail: "LongGenBench evaluates Mistral 7B v0.2 on long-form generation; achieves 81.8% CR but only 20.4% STIC-2 at 16K tokens"
 open_questions:
   - question: "What is the training data mixture and total token count for Mistral 7B? The paper discloses no pretraining details."
     addressed_by: null

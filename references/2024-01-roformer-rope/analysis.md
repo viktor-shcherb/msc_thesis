@@ -88,6 +88,18 @@ cross_references:
   - target: 2025-10-kimi-linear-attention
     type: complementary
     detail: "Kimi Linear interprets linear attention with gated delta rule as learnable multiplicative position encoding that relaxes RoPE's orthogonality constraint; uses NoPE for full attention layers, delegating positional encoding to KDA layers"
+  - target: 2024-07-longrope-context-extension
+    type: extended-by
+    detail: "LongRoPE modifies RoPE's per-dimension frequencies via learned non-uniform rescale factors found by evolutionary search, extending context to 2048k tokens"
+  - target: 2024-06-effective-long-context-scaling
+    type: extended-by
+    detail: "Llama 2 Long modifies RoPE base frequency from 10,000 to 500,000 to reduce attention decay for distant tokens, enabling 32K context through continual pretraining"
+  - target: 2023-07-retnet-retentive-network
+    type: extended-by
+    detail: "RetNet derives its retention mechanism from xPos (a decay-augmented RoPE variant), connecting rotary position encodings to a linear recurrence with exponential decay"
+  - target: 2025-04-differential-transformer
+    type: complementary
+    detail: "DIFF Transformer uses RoPE for positional encoding within its differential attention mechanism, which subtracts two softmax attention maps to cancel noise"
 open_questions:
   - question: "Why does multiplicative position encoding (RoPE) converge faster than additive position encoding (sinusoidal PE) during pre-training?"
     addressed_by: null

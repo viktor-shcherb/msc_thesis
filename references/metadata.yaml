@@ -43,10 +43,14 @@ ontology:
     description: Evaluation of reasoning capabilities, including chain-of-thought
   - id: learning-theory
     description: Theoretical analysis of learning algorithms, prediction bounds, and sample complexity
+  - id: scaling-laws
+    description: Empirical and theoretical analysis of scaling behavior in neural language models
   - id: quantization
     description: Quantization methods and analysis of quantization effects on Transformers
   - id: graph-neural-networks
     description: Graph neural network theory, message-passing, and over-squashing
+  - id: state-space-models
+    description: State space models (SSMs) and structured sequence models as alternatives to attention
   paper_types:
   - conference-paper
   - journal-paper
@@ -73,10 +77,14 @@ ontology:
   benchmarks:
   - id: glue
     description: GLUE multi-task benchmark for natural language understanding
+  - id: superglue
+    description: SuperGLUE multi-task benchmark for natural language understanding (Wang et al., 2019)
   - id: wmt-translation
     description: WMT machine translation shared tasks
   - id: penn-treebank
     description: Penn Treebank language modeling
+  - id: perplexity-1b-word
+    description: 1 Billion Word Language Modeling Benchmark (Chelba et al., 2013)
   - id: perplexity-pg19
     description: Perplexity evaluation on PG-19 books corpus
   - id: perplexity-proofpile
@@ -87,6 +95,18 @@ ontology:
     description: Perplexity evaluation on WikiText-103 English Wikipedia corpus
   - id: perplexity-govreport
     description: Perplexity evaluation on GovReport long documents
+  - id: perplexity-pg22
+    description: Perplexity evaluation on Project Gutenberg 2019-2022 corpus
+  - id: perplexity-qmsum
+    description: Perplexity evaluation on QMSum meeting summarization corpus
+  - id: perplexity-summscreen
+    description: Perplexity evaluation on SummScreen screenplay summarization corpus
+  - id: perplexity-pile
+    description: Perplexity evaluation on the Pile dataset (Gao et al., 2020)
+  - id: perplexity-books
+    description: Perplexity evaluation on Books subset of the Pile (Gao et al., 2020)
+  - id: perplexity-dclm
+    description: Perplexity evaluation on DCLM-Baseline filtered Common Crawl (Li et al., 2024)
   - id: passkey-retrieval
     description: Synthetic passkey retrieval test
   - id: ruler
@@ -151,6 +171,12 @@ ontology:
     description: Hyperpartisan news detection (SemEval-2019 Task 4)
   - id: arxiv-summarization
     description: arXiv long document summarization
+  - id: xsum
+    description: XSum extreme summarization (Narayan et al., 2018)
+  - id: multinews
+    description: Multi-News multi-document summarization (Fabbri et al., 2019)
+  - id: trec
+    description: TREC question classification
   - id: mnli
     description: MultiNLI natural language inference (matched and mismatched)
   - id: cola
@@ -161,6 +187,22 @@ ontology:
     description: Natural Questions open-domain QA (Kwiatkowski et al., 2019)
   - id: boolq
     description: BoolQ yes/no question answering (Clark et al., 2019)
+  - id: siqa
+    description: SocialIQA social commonsense reasoning (Sap et al., 2019)
+  - id: copa
+    description: COPA Choice of Plausible Alternatives causal reasoning (Roemmele et al., 2018)
+  - id: headqa
+    description: HeadQA graduate-level healthcare QA (Vilares & Gomez-Rodriguez, 2019)
+  - id: openbookqa
+    description: OpenBookQA open book question answering (Mihaylov et al., 2018)
+  - id: record
+    description: ReCoRD reading comprehension with commonsense reasoning (Zhang et al., 2018)
+  - id: sciq
+    description: SciQ multiple-choice science QA (Welbl et al., 2017)
+  - id: mqar
+    description: Multi-Query Associative Recall synthetic benchmark (Arora et al., 2023)
+  - id: bamboo
+    description: Bamboo long-context language modeling benchmark (Dong et al., 2023)
   - id: humaneval
     description: HumanEval code generation (Chen et al., 2021)
   - id: race
@@ -175,8 +217,14 @@ ontology:
     description: StrategyQA multi-hop implicit reasoning (Geva et al., 2021)
   - id: piqa
     description: PIQA physical intuition question answering (Bisk et al., 2020)
+  - id: lambada
+    description: LAMBADA word prediction requiring broad discourse context (Paperno et al., 2016)
   - id: winogrande
     description: WinoGrande commonsense reasoning (Sakaguchi et al., 2021)
+  - id: winograd-schema
+    description: Winograd Schema Challenge coreference resolution (Levesque et al., 2012)
+  - id: storycloze
+    description: Story Cloze Test narrative understanding (Mostafazadeh et al., 2016)
   - id: truthfulqa
     description: TruthfulQA truthfulness and informativeness (Lin et al., 2021)
   - id: toxigen
@@ -291,6 +339,40 @@ ontology:
     description: SWE Multilingual code benchmark (Yang et al., 2025)
   - id: imoanswerbench
     description: IMOAnswerBench mathematical reasoning benchmark (Luong et al., 2025)
+  - id: 100-longbench
+    description: 100-LongBench length-controllable long-context evaluation with LongScore metric (Yang et al., 2025)
+  - id: helmet
+    description: HELMET comprehensive long-context evaluation with controllable lengths and LLM-based metrics (Yen et al., 2024)
+  - id: counting-stars
+    description: Counting Stars multi-evidence position-aware long-context benchmark (Song et al., 2024)
+  - id: locobench
+    description: LoCoBench long-context software engineering benchmark, 8K scenarios across 10 languages at 10K-1M tokens (Qiu et al., 2025)
+  - id: trec
+    description: TREC question classification (Hovy et al., 2001)
+  - id: banking-77
+    description: Banking-77 intent classification (Casanueva et al., 2020)
+  - id: clinic-150
+    description: Clinic-150 intent classification and out-of-scope detection (Larson et al., 2019)
+  - id: xsum
+    description: XSum extreme summarization (Narayan et al., 2018)
+  - id: cnn-dm
+    description: CNN/DailyMail summarization (See et al., 2017)
+  - id: multinews
+    description: MultiNews multi-document summarization (Fabbri et al., 2019)
+  - id: qasper
+    description: Qasper single-document scientific QA (Dasigi et al., 2021)
+  - id: asdiv
+    description: ASDiv diverse math word problems (Miao et al., 2020)
+  - id: mawps
+    description: MAWPS math word problems (Koncel-Kedziorski et al., 2016)
+  - id: carp
+    description: CARP math reasoning (Zhang et al., 2023)
+  - id: tabmwp
+    description: TABMWP tabular math word problems (Lu et al., 2023)
+  - id: collegemath
+    description: CollegeMath college-level mathematics (Tang et al., 2024)
+  - id: longgenbench
+    description: LongGenBench long-form generation benchmark with instruction-following evaluation at 16K–32K tokens (Wu et al., 2025)
   models:
   - id: transformer-base
     description: Original Transformer (Vaswani et al., 2017)
@@ -302,10 +384,16 @@ ontology:
     description: AWD-LSTM language model (Merity et al., 2018)
   - id: gpt-2
     description: GPT-2 (Radford et al., 2019)
+  - id: transformer-xl
+    description: Transformer-XL (Dai et al., 2019)
   - id: compressive-transformer
     description: Compressive Transformer (Rae et al., 2020)
   - id: routing-transformer
     description: Routing Transformer 490M (Roy et al., 2021)
+  - id: moe-sparsely-gated
+    description: Sparsely-Gated MoE up to 137B parameters (Shazeer et al., 2017)
+  - id: switch-transformer
+    description: Switch Transformer sparse MoE up to 1.6T parameters (Fedus et al., 2022)
   - id: llama-7b
     description: LLaMA 7B (Touvron et al., 2023a)
   - id: llama-13b
@@ -314,6 +402,14 @@ ontology:
     description: LLaMA 33B (Touvron et al., 2023a)
   - id: llama-65b
     description: LLaMA 65B (Touvron et al., 2023a)
+  - id: llama-2-long-7b
+    description: Llama 2 Long 7B 32K context (Xiong et al., 2024)
+  - id: llama-2-long-13b
+    description: Llama 2 Long 13B 32K context (Xiong et al., 2024)
+  - id: llama-2-long-34b
+    description: Llama 2 Long 34B 32K context (Xiong et al., 2024)
+  - id: llama-2-long-70b
+    description: Llama 2 Long 70B 32K context (Xiong et al., 2024)
   - id: llama-2-7b
     description: Llama 2 7B (Touvron et al., 2023b)
   - id: llama-2-13b
@@ -330,6 +426,10 @@ ontology:
     description: Llama 3.1 70B (Meta, 2024)
   - id: llama-3.1-405b
     description: Llama 3.1 405B (Dubey et al., 2024)
+  - id: llama-3.2-1b
+    description: Llama 3.2 1B (Meta, 2024)
+  - id: llama-3.2-3b
+    description: Llama 3.2 3B (Meta, 2024)
   - id: qwen2-0.5b
     description: Qwen2 0.5B (Yang et al., 2024)
   - id: qwen2-1.5b
@@ -340,6 +440,10 @@ ontology:
     description: Qwen2 57B-A14B MoE (Yang et al., 2024)
   - id: qwen2-72b
     description: Qwen2 72B (Yang et al., 2024)
+  - id: phi-3-mini
+    description: Phi-3-mini 3.8B (Abdin et al., 2024)
+  - id: phi-3-medium
+    description: Phi-3-medium 14B (Abdin et al., 2024)
   - id: code-llama-7b
     description: Code Llama 7B (Roziere et al., 2023)
   - id: mistral-7b
@@ -350,6 +454,16 @@ ontology:
     description: MPT 7B (MosaicML, 2023)
   - id: pythia-series
     description: Pythia scaling suite (Biderman et al., 2023)
+  - id: mamba-130m
+    description: Mamba 130M selective SSM (Gu & Dao, 2024)
+  - id: mamba-370m
+    description: Mamba 370M selective SSM (Gu & Dao, 2024)
+  - id: mamba-790m
+    description: Mamba 790M selective SSM (Gu & Dao, 2024)
+  - id: mamba-1.4b
+    description: Mamba 1.4B selective SSM (Gu & Dao, 2024)
+  - id: mamba-2.8b
+    description: Mamba 2.8B selective SSM (Gu & Dao, 2024)
   - id: smollm-360m
     description: SmolLM 360M (Allal et al., 2024)
   - id: smollm-1.7b
@@ -390,6 +504,16 @@ ontology:
     description: Longformer large (Beltagy et al., 2020)
   - id: led-large
     description: Longformer-Encoder-Decoder large (Beltagy et al., 2020)
+  - id: bigbird-base
+    description: BigBird base sparse attention model (Zaheer et al., 2020)
+  - id: bigbird-large
+    description: BigBird large sparse attention model (Zaheer et al., 2020)
+  - id: bigbird-roberta
+    description: BigBird-RoBERTa (Zaheer et al., 2020)
+  - id: bigbird-pegasus
+    description: BigBird-PEGASUS for summarization (Zaheer et al., 2020)
+  - id: bigbird-etc
+    description: BigBird Extended Transformer Construction (Zaheer et al., 2020)
   - id: palm-540b
     description: PaLM 540B (Chowdhery et al., 2022)
   - id: lamda-137b
@@ -402,10 +526,18 @@ ontology:
     description: Tulu 2 7B (Wang et al., 2023)
   - id: gpt-3-175b
     description: GPT-3 175B / InstructGPT text-davinci-002 (Brown et al., 2020; Ouyang et al., 2022)
+  - id: gopher-280b
+    description: Gopher 280B (Rae et al., 2021)
+  - id: chinchilla-70b
+    description: Chinchilla 70B compute-optimal model (Hoffmann et al., 2022)
   - id: chatglm2-6b
     description: ChatGLM2 6B (Du et al., 2022; Zeng et al., 2023)
   - id: chatglm2-6b-32k
     description: ChatGLM2 6B 32K context (Zeng et al., 2023)
+  - id: chatglm3-6b-32k
+    description: ChatGLM3 6B 32K context (THUDM, 2023)
+  - id: bluelm-7b-32k
+    description: BlueLM 7B 32K context (vivo AI Lab, 2023)
   - id: longchat-v1.5-7b-32k
     description: LongChat v1.5 7B 32K (Li et al., 2023)
   - id: xgen-7b-8k
@@ -422,6 +554,8 @@ ontology:
     description: Qwen2.5 14B (Alibaba, 2024)
   - id: qwen2.5-32b
     description: Qwen2.5 32B (Alibaba, 2024)
+  - id: qwen2.5-72b
+    description: Qwen2.5 72B (Alibaba, 2024)
   - id: gpt-4o
     description: GPT-4o (OpenAI, 2024)
   - id: claude-3.5-sonnet
@@ -498,6 +632,8 @@ ontology:
     description: Llama 4 Scout MoE (Meta, 2025)
   - id: gemini-2.5-pro
     description: Gemini 2.5 Pro (Google DeepMind, 2025)
+  - id: gemini-2.5-flash
+    description: Gemini 2.5 Flash (Google DeepMind, 2025)
   - id: qwq-32b
     description: QwQ-32B reasoning model (Qwen Team, 2024)
   - id: gemma-3-1b
@@ -536,3 +672,67 @@ ontology:
     description: Claude 4.5 Sonnet (Anthropic, 2025)
   - id: minimax-m2
     description: MiniMax M2 (MiniMax, 2025)
+  - id: moonshot-v1-128k
+    description: Moonshot-v1 128K context (Moonshot AI, 2024)
+  - id: llama3-8b-1m
+    description: Llama 3 8B 1M context extended by Gradient (gradient.ai, 2024)
+  - id: rwkv-169m
+    description: RWKV 169M linear RNN (Peng et al., 2023)
+  - id: rwkv-430m
+    description: RWKV 430M linear RNN (Peng et al., 2023)
+  - id: rwkv-1.5b
+    description: RWKV 1.5B linear RNN (Peng et al., 2023)
+  - id: rwkv-3b
+    description: RWKV 3B linear RNN (Peng et al., 2023)
+  - id: rwkv-7b
+    description: RWKV 7B linear RNN (Peng et al., 2023)
+  - id: rwkv-14b
+    description: RWKV 14B linear RNN (Peng et al., 2023)
+  - id: bloom-series
+    description: BLOOM multilingual Transformer family (Scao et al., 2022)
+  - id: eagle-0.4b
+    description: Eagle (RWKV-5) 0.46B (Peng et al., 2024)
+  - id: eagle-1.5b
+    description: Eagle (RWKV-5) 1.5B (Peng et al., 2024)
+  - id: eagle-3b
+    description: Eagle (RWKV-5) 2.8B (Peng et al., 2024)
+  - id: eagle-7b
+    description: Eagle (RWKV-5) 7.5B (Peng et al., 2024)
+  - id: finch-1.6b
+    description: Finch (RWKV-6) 1.6B (Peng et al., 2024)
+  - id: finch-3b
+    description: Finch (RWKV-6) 3.1B (Peng et al., 2024)
+  - id: s4
+    description: S4 Structured State Space model (Gu et al., 2022)
+  - id: h3
+    description: H3 (Hungry Hungry Hippos) SSM-based language model (Dao et al., 2022)
+  - id: hyena
+    description: Hyena long convolution model (Poli et al., 2023)
+  - id: linear-transformer
+    description: Linear Transformer with kernel-based attention (Katharopoulos et al., 2020)
+  - id: retnet-1.3b
+    description: RetNet 1.3B with retention mechanism (Sun et al., 2023)
+  - id: retnet-2.7b
+    description: RetNet 2.7B with retention mechanism (Sun et al., 2023)
+  - id: retnet-6.7b
+    description: RetNet 6.7B with retention mechanism (Sun et al., 2023)
+  - id: gated-deltanet-1.3b
+    description: Gated DeltaNet 1.3B linear recurrent model (Yang et al., 2025)
+  - id: gated-deltanet-h1-1.3b
+    description: Gated DeltaNet-H1 1.3B hybrid with SWA (Yang et al., 2025)
+  - id: gated-deltanet-h2-1.3b
+    description: Gated DeltaNet-H2 1.3B hybrid with Mamba2 + SWA (Yang et al., 2025)
+  - id: diff-transformer-3b
+    description: Diff Transformer 3B with differential attention (Ye et al., 2025)
+  - id: gpt-4o-mini
+    description: GPT-4o-mini cost-efficient 128K context model (OpenAI, 2024)
+  - id: film-7b
+    description: FILM-7B 128K context creative and technical generation model (An et al., 2024)
+  - id: longwriter-llama3.1-8b
+    description: LongWriter-Llama3.1-8B optimized for 10K+ word generation (Bai et al., 2024)
+  - id: phi-3-mini-3.8b
+    description: Phi-3-mini 3.8B 128K context model (Microsoft, 2024)
+  - id: phi-3.5-moe
+    description: Phi-3.5-MoE 8x7B 128K context mixture-of-experts (Microsoft, 2024)
+  - id: palm-2-s
+    description: PaLM 2-S* (Codey) base model (Anil et al., 2023)

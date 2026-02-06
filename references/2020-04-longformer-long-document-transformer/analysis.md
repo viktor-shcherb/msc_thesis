@@ -73,12 +73,30 @@ cross_references:
   - target: 2020-04-compressive-transformer-pg19
     type: concurrent
     detail: "Contemporary approach to long-range attention; Longformer uses sparse local+global attention for bidirectional pretrain-finetune, while Compressive Transformer compresses old memories for autoregressive LM"
+  - target: 2020-12-bigbird-sparse-attention
+    type: concurrent
+    detail: "Concurrent sparse attention work; BigBird adds random attention and provides theoretical proofs of universal approximation and Turing completeness"
   - target: 2024-08-gemma-2-technical-report
     type: extended-by
     detail: "Gemma 2 adopts interleaved local-global attention in decoder-only LLMs: alternating layers use 4096-token sliding window (local) and 8192-token span (global)"
   - target: 2025-10-kimi-linear-attention
     type: complementary
     detail: "Kimi Linear takes a different approach to O(n) attention: hybrid architecture interleaving linear attention (KDA) with full attention at 3:1 ratio, achieving 6× decoding speedup at 1M context while outperforming full attention on benchmarks"
+  - target: 2022-12-flashattention
+    type: complementary
+    detail: "FlashAttention provides IO-aware exact attention with O(N) memory; orthogonal to Longformer's sparse attention — combining FlashAttention with Longformer's patterns yields efficient long-context implementations"
+  - target: 2024-05-ring-attention-near-infinite-context
+    type: complementary
+    detail: "Ring Attention distributes exact full attention across devices for even longer contexts (up to 100M+ tokens), taking a different approach than Longformer's sparse attention patterns"
+  - target: 2024-05-mamba-selective-state-spaces
+    type: complementary
+    detail: "Mamba takes a fundamentally different approach to O(n) complexity: replacing attention entirely with selective state space models rather than sparsifying attention patterns, achieving 5× faster inference while matching Transformer quality"
+  - target: 2023-12-rwkv-reinventing-rnns-transformer
+    type: complementary
+    detail: "RWKV uses channel-wise time decay for linear attention rather than Longformer's sparse local+global attention, achieving O(d) memory during inference at up to 14B parameters"
+  - target: 2025-12-ttt-e2e-long-context
+    type: complementary
+    detail: "TTT-E2E uses sliding-window attention as its base architecture and adds test-time training on MLP weights for long-range context compression, achieving constant latency and full-attention-level scaling up to 128K"
 open_questions:
   - question: "Can pretraining objectives beyond MLM further improve Longformer and LED?"
     addressed_by: null

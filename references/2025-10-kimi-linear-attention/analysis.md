@@ -67,6 +67,9 @@ cross_references:
   - target: 2025-04-attention-sink-emerges
     type: complementary
     detail: "Cites gated attention mechanism as alleviating attention sink phenomenon (Section 4, citing Qiu et al. 2025)"
+  - target: 2025-04-gated-delta-networks
+    type: extends
+    detail: "Kimi Linear extends Gated DeltaNet with fine-grained channel-wise gating (KDA) instead of head-wise gating, achieving further improvements at scale"
 open_questions:
   - question: "How does Kimi Linear's performance scale beyond 48B total parameters?"
     addressed_by: null
