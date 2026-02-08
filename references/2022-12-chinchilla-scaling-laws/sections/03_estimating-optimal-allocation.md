@@ -51,3 +51,49 @@ L_hat(N, D) = E + A / N^alpha + B / D^beta.  (2)
 min_{A, B, E, alpha, beta} sum_{Runs i} Huber_delta(log L_hat(N_i, D_i) - log L_i)  (3)
 
 Possible local minima are accounted for by selecting the best fit from a grid of initialisations. The Huber loss (delta = 10^-3) is robust to outliers, which is found important for good predictive performance over held-out data points. Section D.2 details the fitting procedure and the loss decomposition.
+
+---
+[p. 7 continued]
+
+**Figure 4** (p. 7): "Parametric fit. We fit a parametric modelling of the loss L_hat(N, D) and display contour (left) and isoFLOP slices (right). For each isoFLOP slice, we include a corresponding dashed line in the left plot. In the left plot, we show the efficient frontier in blue, which is a line in log-log space. Specifically, the curve goes through each iso-loss contour at the point with the fewest FLOPs. We project the optimal model size given the Gopher FLOP budget to be 40B parameters."
+
+The figure consists of two panels:
+- **Left panel ("IsoLoss contours"):** Model size (y-axis, 100M to 100B, log scale) vs Training FLOPs (x-axis, 10^18 to 10^23, log scale). Red iso-loss contours are shown across the space. The efficient frontier is plotted in blue as a straight line in log-log space, passing through each iso-loss contour at its minimum-FLOP point. Empirical data points are shown as black dots. IsoFLOP slices are shown as dashed vertical lines. A green marker indicates the *Gopher* compute budget projection.
+- **Right panel ("IsoFLOPs slices"):** Loss (y-axis, ~2.0-5.0) vs Model size (x-axis, 100M to 40B, log scale). Multiple U-shaped curves are shown for different training FLOP budgets ranging from 6e+18 to 3e+21 plus *Gopher*. Each curve shows how loss varies with model size at a fixed FLOP budget.
+
+**Efficient frontier.** The functions N_opt and D_opt can be approximated by minimizing the parametric loss L_hat under the constraint FLOPs(N, D) approximately equals 6ND (Kaplan et al., 2020). The resulting N_opt and D_opt balance the two terms in Equation (3) that depend on model size and data. By construction, they have a power-law form:
+
+N_opt(C) = G * (C/6)^a,    D_opt(C) = G^{-1} * (C/6)^b,    where    G = (alpha * A / (beta * B))^{1/(alpha + beta)},    a = beta / (alpha + beta),    and b = alpha / (alpha + beta).    (4)
+
+Contours of the fitted function L_hat are shown in Figure 4 (left), and the closed-form efficient computational frontier in blue. From this approach, a = 0.46 and b = 0.54 -- as summarized in Table 2.
+
+## 3.4 Optimal model scaling [p. 7-8]
+
+[p. 7-8] The three approaches, despite using different fitting methodologies and different trained models, yield comparable predictions for the optimal scaling in parameters and tokens with FLOPs (shown in Table 2). All three approaches suggest that as compute budget increases, model size and the amount of training data should be increased in approximately equal proportions. The first and second approaches yield very similar predictions for optimal model sizes, as shown in Figure 1 and Figure A3. The third approach predicts even smaller models being optimal at larger compute budgets. It is noted that the observed points (L, N, D) for low training FLOPs (C <= 1e21) have larger residuals ||L - L_hat(N, D)||_2^2 than points with higher computational budgets. The fitted model places increased weight on the points with more FLOPs -- automatically considering the low-computational budget points as outliers due to the Huber loss. As a consequence of the empirically observed negative curvature in the frontier C -> N_opt (see Appendix E), this results in predicting a lower N_opt than the two other approaches.
+
+**Table 2** (p. 8): "Estimated parameter and data scaling with increased training compute. The listed values are the exponents, a and b, on the relationship N_opt proportional to C^a and D_opt proportional to C^b. Our analysis suggests a near equal scaling in parameters and data with increasing compute which is in clear contrast to previous work on the scaling of large models. The 10th and 90th percentiles are estimated via bootstrapping data (80% of the dataset is sampled 100 times) and are shown in parenthesis."
+
+| Approach | Coeff. a where N_opt proportional to C^a | Coeff. b where D_opt proportional to C^b |
+|---|---|---|
+| 1. Minimum over training curves | 0.50 (0.488, 0.502) | 0.50 (0.501, 0.512) |
+| 2. IsoFLOP profiles | 0.49 (0.462, 0.534) | 0.51 (0.483, 0.529) |
+| 3. Parametric modelling of the loss | 0.46 (0.454, 0.455) | 0.54 (0.542, 0.543) |
+| Kaplan et al. (2020) | 0.73 | 0.27 |
+
+**Table 3** (p. 8): "Estimated optimal training FLOPs and training tokens for various model sizes. For various model sizes, we show the projections from Approach 1 of how many FLOPs and training tokens would be needed to train compute-optimal models. The estimates for Approach 2 & 3 are similar (shown in Section D.3)"
+
+| Parameters | FLOPs | FLOPs (in *Gopher* unit) | Tokens |
+|---|---|---|---|
+| 400 Million | 1.92e+19 | 1/29,968 | 8.0 Billion |
+| 1 Billion | 1.21e+20 | 1/4,761 | 20.2 Billion |
+| 10 Billion | 1.23e+22 | 1/46 | 205.1 Billion |
+| 67 Billion | 5.76e+23 | 1 | 1.5 Trillion |
+| 175 Billion | 3.85e+24 | 6.7 | 3.7 Trillion |
+| 280 Billion | 9.90e+24 | 17.2 | 5.9 Trillion |
+| 520 Billion | 3.43e+25 | 59.5 | 11.0 Trillion |
+| 1 Trillion | 1.27e+26 | 221.3 | 21.2 Trillion |
+| 10 Trillion | 1.30e+28 | 22515.9 | 216.2 Trillion |
+
+[p. 8] Current large language models are considerably over-sized, given their respective compute budgets, as shown in Figure 1. For example, a 175 billion parameter model should be trained with a compute budget of 4.41 x 10^24 FLOPs and on over 4.2 trillion tokens. A 280 billion *Gopher*-like model is the optimal model to train given a compute budget of approximately 10^25 FLOPs and should be trained on 6.8 trillion tokens. Unless one has a compute budget of 10^26 FLOPs (over 250x the compute used to train *Gopher*), a 1 trillion parameter model is unlikely to be the optimal model to train. Furthermore, the amount of training data that is projected to be needed is far beyond what is currently used to train large models, and underscores the importance of dataset collection in addition to engineering improvements that allow for model scale. While there is significant uncertainty extrapolating out many orders of magnitude, the analysis clearly suggests that given the training compute budget for many current LLMs, smaller models should have been trained on more tokens to achieve the most performant model.
+
+In Appendix C, the IsoFLOP analysis is reproduced on two additional datasets: C4 (Raffel et al., 2020a) and GitHub code (Rae et al., 2021). In both cases the similar conclusion is reached that model size and number of training tokens should be scaled in equal proportions.

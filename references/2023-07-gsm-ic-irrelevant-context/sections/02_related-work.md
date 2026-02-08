@@ -1,0 +1,27 @@
+# 2. Related Work [p. 2-3]
+
+## Few-shot prompting
+
+[p. 2] Few-shot prompting (Brown et al., 2020; Chowdhery et al., 2022, *inter alia*) has been significantly boosted by various techniques, including generating intermediate steps (Ling et al., 2017; Cobbe et al., 2021; Nye et al., 2021; Wei et al., 2022; Suzgun et al., 2022; Shi et al., 2022b, *inter alia*), problem decomposition (Zhou et al., 2022; Drozdov et al., 2022; Dohan et al., 2022; Khot et al., 2022; Press et al., 2022, *inter alia*), generating programs (Austin et al., 2021; Chowdhery et al., 2022; Gao et al., 2022; Chen et al., 2022, *inter alia*), marginalizing intermediate steps that share the same result (Wang et al., 2022c; Shi et al., 2022a), and ensemble (Wang et al., 2022b; Drozdov et al., 2022). [p. 2]
+
+Kojima et al. (2022) demonstrate that appropriate hint in prompts also leads to decent performance, even without any exemplar. This work examines these cutting-edge prompting techniques (Wei et al., 2022; Zhou et al., 2022; Kojima et al., 2022; Wang et al., 2022c) on the GSM-IC benchmark, demonstrating that they are sensitive to irrelevant input context. [p. 2]
+
+## Natural language benchmarks with input perturbations
+
+[p. 2] There has been a long line of work on adding input perturbations for natural language tasks, including model-agnostic input transformations (Liang et al., 2022; Ravichander et al., 2022, *inter alia*) and adversarial example generation against individual models (Jia & Liang, 2017; Shi et al., 2018; Morris et al., 2020; Wang et al., 2021). Prior work has constructed arithmetic reasoning benchmarks through paraphrasing or rewriting sentences in the base problems from clean datasets (Patel et al., 2021; Kumar et al., 2021). Meanwhile, Liang et al. (2022) evaluate various large language models under several metrics, including accuracy, robustness, fairness, etc. Their robustness evaluation includes semantics-preserving and semantics-altering perturbations, such as injecting typos and modifying sentences to change the ground-truth classification labels. [p. 2]
+
+In contrast to the above work where the meaning of problem descriptions may be changed with perturbations, GSM-IC keeps all sentences in the original problem, and introduces an irrelevant sentence that is ensured not to affect the standard answer. [p. 2]
+
+## Natural language benchmarks with irrelevant input context
+
+[p. 2-3] Jia & Liang (2017) have shown that neural question answering systems are largely affected by adversarial distracting sentences, whereas follow up work (Khashabi et al., 2017; Ni et al., 2019) proposes learning strategies that mitigate the problem. Similar issues have been found for general-purpose pretrained language models, on the tasks of factual reasoning (Kassner & Schütze, 2020; Pandia & Ettinger, 2021; Misra et al., 2023; Li et al., 2022), code generation (Jones & Steinhardt, 2022), and syntactic generalization (Chaves & Richter, 2021). [p. 2-3]
+
+[p. 3] Li et al. (2022) evaluated T5 (Raffel et al., 2020) and PaLM (Chowdhery et al., 2022) with few-shot prompts, and proposed knowledge-aware finetuning that finetunes the model on problems with counterfactual and irrelevant context, which strengthens the model robustness to noisy context. In contrast, this work shows that without training or finetuning, adding irrelevant context into demonstrations in the prompt also mitigates the distractibility of the underlying language model and significantly improves the model performance on the GSM-IC benchmark. [p. 3]
+
+[p. 3] There exist some logical reasoning benchmarks that contain irrelevant content in task descriptions (Weston et al., 2015; Sinha et al., 2019; Clark et al., 2021; Han et al., 2022; Tafjord et al., 2020, *inter alia*). However, previous work largely focuses on designing models that require extra training, and prompting alone still hardly achieves the same level of performance as finetuned models for these tasks (Han et al., 2022; Creswell et al., 2022). This work focuses on arithmetic reasoning, where prompting techniques have achieved the state-of-the-art results (e.g., on GSM8K), while showing that adding a single irrelevant sentence into the problem description significantly degrades the performance. [p. 3]
+
+## Prompting with noisy ground truth
+
+[p. 3] A line of work studies the model performance with incorrect prompting exemplars, i.e., example problems paired with wrong answers (Min et al., 2022; Kim et al., 2022). Prior work has also investigated model sensitivity to other parts of the prompt, such as instruction tuning with misleading and irrelevant instructions (Webson & Pavlick, 2021) and wrong reasoning steps in the examples (Madaan & Yazdanbakhsh, 2022; Wang et al., 2022a). Madaan & Yazdanbakhsh (2022) conclude that the correctness of numbers and equations in chain-of-thought prompts does not play a key role in model performance, but using wrong entities and removing either equations or text explanation in the reasoning steps drastically hamper the performance. [p. 3]
+
+Different from this line of work, GSM-IC always includes correct answers to example problems in the prompt, and ensures that the irrelevant context added to the problem description does not change the ground truth answer. The paper shows that model performance significantly drops when presented with irrelevant context in problem descriptions, and different distributions of numbers and entities in the irrelevant context also lead to different levels of performance degradation. [p. 3]

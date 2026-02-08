@@ -8,36 +8,50 @@ categories: ["context-extension", "position-encoding"]
 scope: ["RoPE-based LLMs", "context window extension", "positional encoding interpolation"]
 benchmarks_used: ["perplexity-proofpile", "perplexity-govreport", "passkey-retrieval", "arc", "hellaswag", "mmlu", "truthfulqa"]
 models_introduced: []
-models_evaluated: ["llama-2-7b", "llama-2-13b", "mistral-7b", "code-llama-7b"]
+models_evaluated: ["llama-2-7b", "llama-2-13b", "mistral-7b", "code-llama-7b", "code-llama-13b"]
 key_claims:
   - id: C1
     claim: "YaRN achieves state-of-the-art context extension with 10x fewer tokens than Code Llama and 2.5x fewer training steps than PI"
     evidence: "Section 4, Table 1 (400M tokens vs 1B for PI/NTK at s=2)"
     status: supported
+    scope: "Llama 2 7B/13B, s=2/16/32, Proof-pile perplexity evaluation"
+    magnitude: "2.5x fewer training steps (400 vs 1000), 10x fewer tokens vs Code Llama; perplexity 2.37 vs 2.71 (Code Llama 7B at 128k)"
   - id: C2
     claim: "NTK-by-parts interpolation preserves high-frequency RoPE dimensions while interpolating low-frequency dimensions, outperforming both PI and NTK-aware after fine-tuning"
     evidence: "Section 3.2, Definition 2, Tables 1-2"
     status: supported
+    scope: "LLaMA family with alpha=1, beta=32; Llama 2 7B at s=2 and s=16/32"
+    magnitude: "At s=2: YaRN 3.91/3.50/3.51/3.35 vs PI 3.92/3.51/3.51/3.34 (comparable) with 2.5x fewer tokens; at 10240 extrapolation: 6.04 vs 8.07 PI"
   - id: C3
     claim: "Attention temperature scaling with sqrt(1/t) = 0.1*ln(s) + 1 uniformly improves perplexity across positions and samples, with near-universal applicability across LLaMA and Llama 2 model sizes"
     evidence: "Section 3.4, Equation 22, Figures 2-4, Appendix A.2"
     status: supported
+    scope: "LLaMA 7B/13B/33B/65B and Llama 2 7B/13B/70B, s=8, 896 RedPajama 16k-token documents"
+    magnitude: "Optimal sqrt(1/t) ~1.208 at s=8; perplexity improvement up to 40-50% at extended positions vs t=1"
   - id: C4
     claim: "YaRN (s=32) models trained on 64k data extrapolate to 128k context with continued declining perplexity, demonstrating train-short-test-long"
     evidence: "Table 2, Section 4.2"
     status: supported
+    scope: "Llama 2 7B and 13B, Proof-pile sliding window perplexity (S=256)"
+    magnitude: "7B: perplexity 3.56 at 8k to 2.37 at 128k; 13B: 3.29 at 8k to 2.24 at 128k"
   - id: C5
     claim: "Transfer learning from s=16 to s=32 requires only 200 additional steps with average 0.49% benchmark score drop"
     evidence: "Table 3, Section 4.3.3"
     status: supported
+    scope: "Llama 2 7B and 13B, Hugging Face Open LLM Leaderboard (ARC-c, HellaSwag, MMLU, TruthfulQA)"
+    magnitude: "0.49% average score drop; 7B: ARC-c 52.3->52.1, HellaSwag 78.8->78.4, MMLU 42.5->41.7, TruthfulQA 38.2->37.3"
   - id: C6
     claim: "YaRN 7B/13B (s=32) achieve >99% passkey retrieval accuracy at 128k context"
     evidence: "Table 5, Section 4.3.2"
     status: supported
+    scope: "Llama 2 7B and 13B, s=32, passkey retrieval task (10 iterations per context size, random uniform placement)"
+    magnitude: "99.4% average accuracy for both 7B and 13B at 128k context"
   - id: C7
     claim: "Dynamic-YaRN outperforms Dynamic-PI for context extension of pretrained models without any fine-tuning"
     evidence: "Figure 5, Appendix B.3"
     status: supported
+    scope: "Llama 2 7B pretrained (4k context), single GovReport sample, no fine-tuning"
+    magnitude: "Slight perplexity advantage (~0.1-0.15 lower perplexity) in extended range beyond 4k tokens"
 cross_references:
   - target: 2023-06-pi-positional-interpolation
     type: extends
@@ -297,9 +311,14 @@ Dynamic-YaRN (combining YaRN with Dynamic Scaling) on the original Llama 2 7B (p
 
 5. **Empirically fitted parameters.** The temperature formula sqrt(1/t) = 0.1 * ln(s) + 1 and the alpha/beta values (1 and 32 for LLaMA) are empirically determined without theoretical justification (Section 3.4, Section 3.2). Applicability to architectures beyond LLaMA/Llama 2/Mistral is unknown.
 
-6. **No evaluation on complex long-context tasks.** Evaluation is limited to perplexity, passkey retrieval, and short-context benchmarks. The paper does not test whether extended models can effectively reason over information distributed across the full extended context (e.g., multi-hop QA, long-form summarization, or tasks requiring information integration from distant positions).
+6. **[Inferred] No evaluation on complex long-context tasks.** Evaluation is limited to perplexity, passkey retrieval, and short-context benchmarks. The paper does not test whether extended models can effectively reason over information distributed across the full extended context (e.g., multi-hop QA, long-form summarization, or tasks requiring information integration from distant positions).
 
-7. **Limited to RoPE-based models.** The method is specific to models using RoPE positional encoding. The paper states applicability to "the LLaMA, the GPT-NeoX, and the PaLM families" (Section 1) but only evaluates on Llama 2 and Mistral.
+7. **[Inferred] Evaluation limited to two RoPE model families despite broader claims.** The method is specific to models using RoPE positional encoding. The paper states applicability to "the LLaMA, the GPT-NeoX, and the PaLM families" (Section 1) but only evaluates on Llama 2 and Mistral. Whether the alpha/beta parameters and temperature formula generalize to GPT-NeoX, PaLM, or other RoPE-based architectures is untested.
+
+### Scope and Comparability
+
+- **What was not tested:** GPT-NeoX and PaLM model families (claimed as applicable but not evaluated). No model sizes above 13B for the main experiments (temperature formula fitted on LLaMA up to 65B but YaRN fine-tuning only done at 7B/13B). No evaluation on downstream long-context tasks (multi-hop QA, summarization, long-form generation). No evaluation on non-English data.
+- **Comparability notes:** Code Llama uses NTK-aware scaling with b = 1M (a manually chosen base, not the formula-derived b'), which is a different parameterization than Definition 1; its s = 88.6 is far larger than YaRN's s = 16/32, complicating direct comparison. Together's LLaMA-2-7B-32K uses PI with different training data (undisclosed mix vs. PG19) and different training duration, making perplexity comparisons imperfect. Passkey retrieval tests used 10 iterations with random placement, which may not capture positional biases with high confidence. The sliding window perplexity method (S = 256) from Press et al. (2022) evaluates local prediction quality rather than global context utilization.
 
 ---
 
@@ -333,17 +352,17 @@ Dynamic-YaRN (combining YaRN with Dynamic Scaling) on the original Llama 2 7B (p
 
 ## Key Claims
 
-**C1. YaRN achieves state-of-the-art context extension with 10x fewer tokens than Code Llama and 2.5x fewer training steps than PI.** At s = 2, YaRN uses 400M tokens vs 1B for PI and NTK-aware, while matching or surpassing perplexity at all evaluation windows (Table 1). At s = 16/32, YaRN achieves the best Proof-pile perplexity at 128k (2.37 for 7B, 2.24 for 13B) vs Code Llama's 2.71/2.54 trained with 10x more data (Table 2). Status: **supported**.
+**C1. YaRN achieves state-of-the-art context extension with 10x fewer tokens than Code Llama and 2.5x fewer training steps than PI.** At s = 2, YaRN uses 400M tokens vs 1B for PI and NTK-aware, while matching or surpassing perplexity at all evaluation windows (Table 1). At s = 16/32, YaRN achieves the best Proof-pile perplexity at 128k (2.37 for 7B, 2.24 for 13B) vs Code Llama's 2.71/2.54 trained with 10x more data (Table 2). Tested across 2 model sizes (7B, 13B) and 2 perplexity datasets (Proof-pile, GovReport) (moderate evidence; compute efficiency claim is a direct training budget comparison). Status: **supported**.
 
-**C2. NTK-by-parts interpolation preserves high-frequency RoPE dimensions while interpolating low-frequency dimensions, outperforming both PI and NTK-aware after fine-tuning.** The ramp function gamma classifies dimensions by wavelength ratio r = L/lambda: no interpolation for r > beta (high frequency), full interpolation for r < alpha (low frequency). With alpha = 1, beta = 32 for LLaMA, this avoids the out-of-bounds extrapolation of NTK-aware while preserving local positional resolution that PI destroys (Definition 2, Section 3.2). Status: **supported**.
+**C2. NTK-by-parts interpolation preserves high-frequency RoPE dimensions while interpolating low-frequency dimensions, outperforming both PI and NTK-aware after fine-tuning.** The ramp function gamma classifies dimensions by wavelength ratio r = L/lambda: no interpolation for r > beta (high frequency), full interpolation for r < alpha (low frequency). With alpha = 1, beta = 32 for LLaMA, this avoids the out-of-bounds extrapolation of NTK-aware while preserving local positional resolution that PI destroys (Definition 2, Section 3.2). Tested at 7B with s = 2 (Table 1) and s = 16/32 (Table 2); alpha/beta values only tuned for LLaMA family (limited architecture breadth). Status: **supported**.
 
-**C3. Attention temperature scaling with sqrt(1/t) = 0.1*ln(s) + 1 uniformly improves perplexity across positions and samples.** Tested on 896 16k-token RedPajama documents at s = 8: the optimal sqrt(1/t) value is consistent across 8 position segments (0-2048, 2048-4096, ..., 14336-16384) and across different samples (Figures 2-4, Appendix A.2). The formula generalizes from LLaMA 7B-65B to Llama 2 7B-70B (Section 3.4). Status: **supported**.
+**C3. Attention temperature scaling with sqrt(1/t) = 0.1*ln(s) + 1 uniformly improves perplexity across positions and samples.** Tested on 896 16k-token RedPajama documents at s = 8: the optimal sqrt(1/t) value is consistent across 8 position segments (0-2048, 2048-4096, ..., 14336-16384) and across different samples (Figures 2-4, Appendix A.2). The formula generalizes from LLaMA 7B-65B to Llama 2 7B-70B (Section 3.4). Tested across 7 model sizes in 2 model families (strong evidence for universality within LLaMA/Llama 2; untested on non-LLaMA architectures). Status: **supported**.
 
-**C4. YaRN (s = 32) models trained on 64k data extrapolate to 128k context with continued declining perplexity.** Both 7B and 13B s = 32 models show perplexity declining from 8192 through 131072 evaluation windows (7B: 3.56 to 2.37; 13B: 3.29 to 2.24), despite training data limited to 64k tokens (Table 2, Section 4.2). Status: **supported**.
+**C4. YaRN (s = 32) models trained on 64k data extrapolate to 128k context with continued declining perplexity.** Both 7B and 13B s = 32 models show perplexity declining from 8192 through 131072 evaluation windows (7B: 3.56 to 2.37; 13B: 3.29 to 2.24), despite training data limited to 64k tokens (Table 2, Section 4.2). Tested across 2 model sizes on Proof-pile (10 samples); no variance estimates reported (moderate evidence). Status: **supported**.
 
-**C5. Transfer learning from s = 16 to s = 32 requires only 200 additional steps with 0.49% average benchmark drop.** Benchmark scores for 7B: ARC-c 52.3 to 52.1, HellaSwag 78.8 to 78.4, MMLU 42.5 to 41.7, TruthfulQA 38.2 to 37.3. For 13B: ARC-c 58.1 to 58.0, HellaSwag 82.3 to 82.2, MMLU 52.8 to 51.9, TruthfulQA 37.8 to 37.3 (Table 3, Section 4.3.3). Status: **supported**.
+**C5. Transfer learning from s = 16 to s = 32 requires only 200 additional steps with 0.49% average benchmark drop.** Benchmark scores for 7B: ARC-c 52.3 to 52.1, HellaSwag 78.8 to 78.4, MMLU 42.5 to 41.7, TruthfulQA 38.2 to 37.3. For 13B: ARC-c 58.1 to 58.0, HellaSwag 82.3 to 82.2, MMLU 52.8 to 51.9, TruthfulQA 37.8 to 37.3 (Table 3, Section 4.3.3). Tested across 2 model sizes and 4 benchmarks; only one transfer hop tested (s=16 to s=32), no variance reported (moderate evidence). Status: **supported**.
 
-**C6. YaRN 7B/13B (s = 32) achieve > 99% passkey retrieval accuracy at 128k context.** Both 7B and 13B models achieve 99.4% average accuracy across all context sizes up to 128k on the passkey retrieval task (Table 5, Section 4.3.2). Status: **supported**.
+**C6. YaRN 7B/13B (s = 32) achieve > 99% passkey retrieval accuracy at 128k context.** Both 7B and 13B models achieve 99.4% average accuracy across all context sizes up to 128k on the passkey retrieval task (Table 5, Section 4.3.2). Tested across 2 model sizes with 10 iterations per context size (limited evidence; passkey retrieval is a simple synthetic task, not indicative of general long-context reasoning). Status: **supported**.
 
 **C7. Dynamic-YaRN outperforms Dynamic-PI for context extension without fine-tuning.** On a GovReport sample evaluated with Llama 2 7B (pretrained at 4k context, no fine-tuning), Dynamic-YaRN maintains lower perplexity than Dynamic-PI across the extended range beyond 4k tokens, while both prevent the catastrophic blow-up seen with standard RoPE (Figure 5, Appendix B.3). Status: **supported**.
 

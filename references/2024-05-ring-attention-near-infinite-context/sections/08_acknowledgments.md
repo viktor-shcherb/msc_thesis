@@ -1,0 +1,3 @@
+# Acknowledgments [p. 10]
+
+[p. 10] This project is supported in part by Office of Naval Research grant N00014-21-1-2769. The authors express gratitude to the BAIR and RLL communities for insightful discussions and feedback. They are thankful to David Patterson for addressing questions about TPUs and giving insightful feedback on early versions of this work. Appreciation goes to Yash Katariya and Sharad Vikram from the Jax developers' team for assisting with Jax related questions. They also thank Tri Dao for valuable feedback on this work. Google TPU Research Cloud is thanked for granting access to TPUs.

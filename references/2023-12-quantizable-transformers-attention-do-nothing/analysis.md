@@ -14,30 +14,44 @@ key_claims:
     claim: "Strong activation outliers are caused by attention heads learning no-op behavior: heads that do not update the residual concentrate attention on low-information tokens with small value outputs, but softmax's inability to produce exact zeros forces ever-larger input magnitudes, creating outliers in FFN outputs"
     evidence: "Section 3, Figure 1, Figure 2, Figure 3 (BERT: >97% of outliers at delimiter tokens; ViT: >99% in 10 hidden dims at background patches)"
     status: supported
+    scope: "BERT-base (MNLI fine-tuned), ViT-S/16 (ImageNet-1K), outlier analysis on FFN outputs in later layers"
+    magnitude: ">97% outlier-delimiter correlation in BERT layers #10-#11; >99% of ViT outliers in 10 hidden dimensions"
   - id: C2
     claim: "Clipped softmax eliminates outliers in BERT while improving FP16 perplexity: max infinity norm drops from 735 to 21.5, W8A8 perplexity from 1294 to 4.52, FP16 perplexity improves from 4.49 to 4.39"
     evidence: "Table 2, Table 5 (gamma=-0.025, zeta=1)"
     status: supported
+    scope: "BERT-base-uncased, MLM pre-training, sequence length 128, per-tensor W8A8 PTQ"
+    magnitude: "max inf norm 735->21.5 (97% reduction), W8A8 ppl 1294->4.52, FP16 ppl 4.49->4.39"
   - id: C3
     claim: "Gated attention eliminates outliers across all tested architectures (BERT, OPT, ViT) while maintaining or improving FP performance"
     evidence: "Table 2 (OPT: FP16 ppl 15.84->15.55, max inf norm 340->8.7; ViT: FP32 acc 80.75->81.01%), Table 3 (OPT-350m, OPT-1.3B)"
     status: supported
+    scope: "BERT-base, OPT-125m/350m/1.3B, ViT-S/16, per-tensor W8A8 PTQ"
+    magnitude: "OPT-125m: inf norm 340->8.7, W8A8 ppl 21.18->16.02; ViT: W8A8 acc 69.24%->79.82%; OPT-1.3B: W8A8 ppl 989.6->29.95"
   - id: C4
     claim: "Both methods enable full INT8 post-training quantization of activations without any additional workarounds, closing the gap between quantized and floating-point performance"
     evidence: "Table 2 (BERT W8A8 ppl: 4.52 vs FP16 4.39; OPT W8A8 ppl: 16.02 vs FP16 15.55; ViT W8A8 acc: 79.82% vs FP32 81.01%)"
     status: supported
+    scope: "BERT-base, OPT-125m, ViT-S/16, uniform affine per-tensor PTQ, symmetric weights/asymmetric activations"
+    magnitude: "BERT W8A8 ppl gap 0.13 from FP16; OPT W8A8 ppl gap 0.47 from FP16; ViT W8A8 acc gap 1.19% from FP32"
   - id: C5
     claim: "Clipped softmax fails on OPT decoder models, dramatically increasing kurtosis while reducing max infinity norm"
     evidence: "Table 6 (kurtosis increases from 1777 to 19727 with clipped softmax on OPT-125m)"
     status: supported
+    scope: "OPT-125m, causal LM, with LN gamma weight decay"
+    magnitude: "kurtosis 1777->19727 (11x increase), W8A8 ppl 21.18->37.22 despite inf norm 340->63.2"
   - id: C6
     claim: "Only the lower clipping parameter gamma < 0 matters for outlier reduction; the upper stretch parameter zeta > 1 has negligible effect"
     evidence: "Table 1, Table 8, Section 5.1"
     status: supported
+    scope: "BERT-base and ViT-S/16, tested across multiple gamma/zeta combinations"
+    magnitude: "gamma=-0.03 alone: inf norm 735->20, kurtosis 3076->80; zeta=1.03 alone: inf norm 741, kurtosis 1707 (similar to vanilla)"
   - id: C7
     claim: "Both methods extend to low-bit quantization: at W4A8 on BERT, clipped softmax achieves 4.90 ppl vs vanilla 6.52; at W6A6, gated attention achieves 5.90 vs vanilla 42.8"
     evidence: "Table 10, Appendix B.7"
     status: supported
+    scope: "BERT-base only, MSE weight range estimation, W6A8/W4A8/W6A6 bitwidths"
+    magnitude: "W4A8: CS 4.90 vs vanilla 6.52 (25% improvement); W6A6: GA 5.90 vs vanilla 42.8 (86% improvement)"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -172,7 +186,7 @@ The Linear variant adds ~0.009% extra parameters for BERT-base. Bias initializat
 | OPT-125m (ppl) | Vanilla | 15.84 +/- 0.05 | 340 +/- 47 | 1778 +/- 444 | 21.18 +/- 1.89 |
 | | Clipped softmax | 16.29 +/- 0.07 | 63.2 +/- 8.8 | 19728 +/- 7480 | 37.20 +/- 2.40 |
 | | Gated attention | **15.55 +/- 0.05** | **8.7 +/- 0.6** | **18.9 +/- 0.9** | **16.02 +/- 0.07** |
-| ViT-S/16 (acc %) | Vanilla | 80.75 +/- 0.10 | 359 +/- 81 | 1018 +/- 472 | 69.24 +/- 6.93 |
+| ViT-S/16 (acc %) | Vanilla | 80.75 +/- 0.10 | 359 +/- 81 | 1018 +/- 471 | 69.24 +/- 6.93 |
 | | Clipped softmax | 80.89 +/- 0.13 | **73.7 +/- 14.9** | **22.9 +/- 1.6** | 79.77 +/- 0.25 |
 | | Gated attention | **81.01 +/- 0.06** | 79.8 +/- 0.5 | **19.9 +/- 0.3** | **79.82 +/- 0.11** |
 
@@ -236,9 +250,16 @@ Fine-tuning reduces outliers without training from scratch, though improvements 
 
 - **Hyperparameter sensitivity.** Both methods introduce a hyperparameter each: gamma (or alpha) for clipped softmax, pi_init for gated attention. While the effective ranges are reasonably wide (alpha in [2, 4]; pi_init in [0.1, 0.9] depending on model), optimal values differ across architectures.
 
-- **ViT outlier source extends beyond attention.** In ViT, distinct outliers already originate after patch embeddings (before the attention mechanism). Adding LayerNorm after patch embeddings addresses this independently; the proposed attention modifications provide incremental improvement on top (Table 7).
+- **[Inferred]** **ViT outlier source extends beyond attention.** In ViT, distinct outliers already originate after patch embeddings (before the attention mechanism). Adding LayerNorm after patch embeddings addresses this independently; the proposed attention modifications provide incremental improvement on top (Table 7). The authors note this observation but do not explicitly flag it as a limitation of their attention-focused approach.
 
 - **FP performance improvements are small.** The authors note: "We show a very small improvement in FP16/FP32 performance due to our methods, but we do not deem our results exhaustive enough to claim that this will hold in general" (Section 6).
+
+- **[Inferred]** No evaluation on non-English languages or tasks beyond MLM perplexity and image classification accuracy, limiting generalizability claims for downstream NLP tasks.
+
+### Scope and Comparability
+
+- **What was not tested:** Models larger than 1.3B parameters trained from scratch; decoder-only models beyond the OPT family (e.g., LLaMA, GPT); tasks beyond MLM perplexity, CLM perplexity, and ImageNet top-1 accuracy (no downstream fine-tuning evaluation with the proposed methods); non-English data; quantization schemes beyond uniform affine (e.g., non-uniform, mixed-precision); dynamic activation quantization (only static range estimation used).
+- **Comparability notes:** The paper trains all models from scratch on BookCorpus + Wikipedia (not the original OPT training data), making direct comparison to publicly released OPT checkpoints imprecise. The ViT experiments add LayerNorm after patch embeddings (not standard), which independently reduces outliers -- the vanilla ViT baseline without this LN has much worse W8A8 performance (69.24%) than vanilla with LN (79.62%), complicating attribution of improvements to the proposed methods vs. the LN fix. The quantization setup uses per-tensor granularity, which is the most challenging setting; per-channel or per-group quantization would likely reduce the gap between vanilla and proposed methods.
 
 ---
 

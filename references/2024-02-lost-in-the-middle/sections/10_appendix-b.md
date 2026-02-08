@@ -1,0 +1,7 @@
+# B Random Distractors in Multi-Document QA [p. 14]
+
+The authors also run multi-document question answering experiments with random Wikipedia documents as distractors, which allows them to ablate the impact of retrieved distractors (hard negatives). In this setting, the document containing the answer can often be identified with simple heuristics (e.g., lexical overlap with the query). Figure 13 presents the results of this experiment. Although all models have higher absolute accuracy in this setting, they surprisingly still struggle to reason over their entire input context, indicating that their performance degradation is not solely due to an inability to identify relevant documents. [p. 14]
+
+**Figure 13** (p. 15): "Language model performance on multi-document QA when using random distractors, rather than retrieved distractors."
+
+The figure shows accuracy (y-axis, approximately 63-80%) vs. position of document with the answer (x-axis, 1st to 20th) for 20 total retrieved documents (~4K tokens, random distractors). Six models are shown: claude-1.3, claude-1.3-100k, gpt-3.5-turbo-0613, gpt-3.5-turbo-16k-0613, mpt-30b-instruct, and longchat-13b-16k. All models show higher absolute accuracy than in the retrieved-distractor setting. The U-shaped pattern is still present but less pronounced. GPT-3.5-Turbo-16K starts at approximately 80% in the 1st position and dips to around 72% in the middle. Claude-1.3 and Claude-1.3-100K show relatively flat performance around 74-76%. MPT-30B-Instruct and LongChat-13B-16K show performance around 63-70%.

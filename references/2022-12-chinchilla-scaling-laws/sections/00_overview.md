@@ -25,3 +25,17 @@
    - 3.1 Approach 1: Fix model sizes and vary number of training tokens
    - 3.2 Approach 2: IsoFLOP profiles
    - 3.3 Approach 3: Fitting a parametric loss function
+   - 3.4 Optimal model scaling
+4. *Chinchilla*
+   - 4.1 Model and training details
+   - 4.2 Results
+     - 4.2.1 Language modelling
+     - 4.2.2 MMLU
+     - 4.2.3 Reading comprehension
+     - 4.2.4 BIG-bench
+     - 4.2.5 Common sense
+     - 4.2.6 Closed-book question answering
+     - 4.2.7 Gender bias and toxicity
+5. Discussion & Conclusion
+6. Acknowledgements
+References

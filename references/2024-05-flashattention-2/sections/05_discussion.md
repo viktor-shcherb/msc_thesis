@@ -1,0 +1,5 @@
+# 5 Discussion and Future Directions [p. 11-12]
+
+[p. 11-12] FlashAttention-2 is 2x faster than FlashAttention, which means that models with 16k longer context can be trained for the same price as previously training a 8k context model. The authors express excitement about how this can be used to understand long books and reports, high resolution images, audio and video. FlashAttention-2 will also speed up training, finetuning, and inference of existing models.
+
+In the near future, the authors plan to collaborate with researchers and engineers to make FlashAttention widely applicable in different kinds of devices (e.g., H100 GPUs, AMD GPUs), as well as new data types such as FP8. As an immediate next step, they plan to optimize FlashAttention-2 for H100 GPUs to use new hardware features (TMA, 4th-gen Tensor Cores, fp8). Combining the low-level optimizations in FlashAttention-2 with high-level algorithmic changes (e.g., local, dilated, block-sparse attention) could allow training AI models with much longer context. The authors are also excited to work with compiler researchers to make these optimization techniques easily programmable.

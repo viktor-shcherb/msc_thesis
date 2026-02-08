@@ -1,0 +1,8 @@
+# Appendix A: Question Answering [p. 17]
+
+[p. 17] LLaMA is evaluated on Natural Questions and TriviaQA. For Natural Questions, the test split used for open-domain question answering containing 3610 questions is used. For TriviaQA, evaluation is on the dev set of the filtered set. This differs from GPT-3 and PaLM, which evaluate on the test set of the unfiltered set for which the online evaluation server is not available anymore (footnote 5: https://competitions.codalab.org/competitions/17208).
+
+Answers are generated using greedy decoding, and an answer is extracted from the generation by stopping at the first line break, final dot or comma. Generated answers are evaluated with the standard exact match metric: a generated answer is considered correct if it matches any answer of the list of answers after normalization. For this normalization step, generated answers are lowercased and articles, punctuation and duplicate whitespaces are removed. [p. 17]
+
+**Figure 3** (p. 17): "Formatted dataset example for Natural Questions (left) & TriviaQA (right)."
+The figure shows two side-by-side formatted prompt examples. The left panel (Natural Questions) shows a context prompt "Answer these questions:" with Q/A pairs: "Q: Who sang who wants to be a millionaire in high society? A: Frank Sinatra / Q: Who wrote the book the origin of species? A:" with Target -> Charles Darwin. The right panel (TriviaQA) shows "Answer these questions:" with "Q: In Scotland a bothy/bothie is a? A: House / Q: The ancient city of Troy is located in what modern country? A:" with Target -> Turkey. In all settings, the string `Answer these questions:\n` is prepended to the list of questions and answers. These are formatted examples in the 1-shot setting. [p. 17]

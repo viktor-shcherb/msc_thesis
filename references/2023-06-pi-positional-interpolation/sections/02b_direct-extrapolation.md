@@ -1,0 +1,21 @@
+# 2.2 Direct Extrapolation [p. 3-4]
+
+[p. 3] While the attention score in RoPE only depends on the relative positions, which is what we want, its extrapolation performance is not great. In particular, when directly extending to larger context windows unseen in the training, the perplexity may shoot up to very high numbers (i.e., $> 10^3$), comparable to untrained models.
+
+Ideally, the authors want to see the model trained on a context window of size $L = 2048$ to still work reasonably well on longer context window, but may not have the capability to leverage information that appears beyond $L$. For example, to answer a question located at 3000, the model trained on maximal window size of $L = 2048$ cannot leverage evidences provided at location 0, but still can leverage the evidences provided at location 2900. In contrast, in reality they see catastrophic behaviors, i.e., question at location 3000 cannot be answered correctly, even if the evidences are located at location 2900. [p. 3]
+
+[p. 3-4] The reason behind this: the attention score $a_{m-n}$ decays as the relative distance $|m - n|$ increases, according to Section 3.4.3 of Su et al. (2021), and content from very far distances should not matter that much. However, the upper bound derived in Section 3.4.3 of Su et al. (2021) may be too loose: while it indeed decays with respect to $|m - n|$, the bound can still be quite large (i.e., the bound can be critically depends on the magnitude of $v_j$) and thus vacuous.
+
+If all trigonometric functions are treated as basis functions (i.e., $\phi_j(s) := e^{\mathrm{i}s\theta_j}$), and Eqn. 2 is viewed as a basis expansion:
+
+$$a(s) = \mathrm{Re}\left[\sum_{j=0}^{d/2-1} h_j e^{\mathrm{i}s\theta_j}\right] \tag{3}$$
+
+where $s$ is the positional span between a query and a key and $h_j := (q_{2j} + \mathrm{i}q_{2j+1})(k_{2j} - \mathrm{i}k_{2j+1})$ are complex coefficients depending on $\mathbf{q}$ and $\mathbf{k}$ (here the definition of $h_j$ is exactly the same as the definition of $h_j$ in Sec 3.4.3 in RoPE (Su et al., 2021)). [p. 4]
+
+[p. 4] The issue becomes clear: as shown in Fig. 2, $a_s$ can be small in magnitude in the range of $[0, 2048]$, but gives huge values out of the region. The underlying reason is that the trigonometric family $\{\phi_j\}$ (with sufficiently large $d$) is a universal approximator and can fit any arbitrary functions. Therefore, for $a_s$, there always exist coefficients $\{h_j\}$ (i.e., key and query) that corresponds to small function values in $[0, 2048]$ but much larger in regions beyond. [p. 4]
+
+## Figure 2
+
+**Figure 2** (p. 4): "Extrapolation versus interpolation. **Left:** a fitted attention score function (in red) in the form of Eqn. 3 with $d = d_{\text{model}}/n_{\text{head}} = 4096/32 = 128$ (setting of LLaMA 7B). Dots are random input points to be fitted and red curve is the fitted score function via least square, which is approximately within $[-1, 1]$. **Middle:** While the fitted function seems to be well bounded in $[0, L]$, where $L = 2048$, out of this region it may goes beyond 8000, causing catastrophic issues in attention computation. Note that here we do not cherry pick at all: almost every learned curve from a set of randomly generated input points within $[0, L]$ has the extrapolation issue. **Right:** On the other hand, interpolation is much more stable. Curves in between vertical dotted lines (i.e., integer positional difference) are smooth and well-behaved. Please check Appendix C.1 for the source code used to generate the figure."
+
+The figure has three panels. Left panel: x-axis "Positional difference $s$" (range 0 to 2000), y-axis "Attention score $a(s)$" (range approximately -3 to 3). Blue scatter dots (random input points) and a red fitted curve are shown, approximately within [-1, 1]. Middle panel: x-axis "Positional difference $s$" (range 0 to ~4000), y-axis (range 0 to ~8000). Shows the same red fitted curve and blue dots; beyond position 2048 (marked by a vertical dashed line at $L$), the function shoots up to values near 8000, demonstrating catastrophic extrapolation. Right panel: x-axis "Positional difference $s$" (range ~30 to ~70), y-axis (range approximately -0.2 to 0.2). Shows the interpolated attention score which is smooth and well-behaved between vertical dotted lines at integer positional differences. [p. 4]

@@ -15,12 +15,13 @@ key_claims:
     evidence: "Table 1, Figure 2, Sections 2-3"
     status: unvalidated
     scope: "1.3B-6.7B scale, 100B training tokens"
+    magnitude: "qualitative"
   - id: C2
     claim: "RetNet achieves comparable perplexity to Transformer at 1.3B and outperforms Transformer at 2.7B and 6.7B scale"
     evidence: "Figure 5, Section 3.2"
     status: supported
     scope: "1.3B-6.7B, 100B tokens, Pile/C4/Stack training data, 2048 max length"
-    magnitude: "~0.3 PPL improvement at 6.7B"
+    magnitude: "~0.2 PPL improvement at 6.7B (estimated from Figure 5)"
   - id: C3
     claim: "RetNet 6.7B decodes 8.4x faster, saves 70% GPU memory, and achieves 15.6x lower latency than Transformer at 8K sequence length"
     evidence: "Figure 1, Figure 6, Section 3.4"
@@ -38,6 +39,7 @@ key_claims:
     evidence: "Table 5, Section 3.5"
     status: supported
     scope: "200M parameters, 16 layers, 1024 hidden dim"
+    magnitude: "3.9 PPL improvement over next-best H3 on in-domain (26.05 vs 29.97)"
   - id: C6
     claim: "The swish gate and GroupNorm are essential components of retention -- removing either degrades in-domain perplexity by 1.5-1.8 points"
     evidence: "Table 6, Section 3.6"
@@ -61,15 +63,15 @@ cross_references:
     type: complementary
     detail: "RetNet compares training efficiency against FlashAttention-optimized Transformers, claiming competitive throughput without custom CUDA kernels"
 open_questions:
-  - question: "Can RetNet scale beyond 6.7B parameters and maintain its advantages over Transformers?"
+  - question: "Can RetNet scale beyond 6.7B parameters and maintain its advantages over Transformers at 70B+ scale with trillions of training tokens?"
     addressed_by: null
-  - question: "Does RetNet's fixed exponential decay limit its ability to model long-range dependencies compared to softmax attention?"
+  - question: "Does RetNet's fixed exponential decay inherently limit its ability to model truly long-range dependencies compared to softmax attention's dynamic weighting?"
     addressed_by: null
-  - question: "Can kernel fusion or FlashAttention-style optimization further improve RetNet's training and inference efficiency?"
+  - question: "Would making gamma learnable or input-dependent improve performance at the cost of complicating the recurrent formulation?"
     addressed_by: null
-  - question: "How does RetNet perform on actual long-context understanding tasks (e.g., retrieval, multi-hop QA) beyond perplexity?"
+  - question: "How does RetNet perform with instruction tuning, RLHF, chain-of-thought prompting, and other techniques essential for practical LLM deployment?"
     addressed_by: null
-  - question: "Does RetNet's competitive performance hold when trained on significantly more data (e.g., trillions of tokens) as in modern LLM training?"
+  - question: "Can custom kernels (analogous to FlashAttention for Transformers) significantly improve RetNet's wall-clock performance beyond vanilla PyTorch?"
     addressed_by: null
 ---
 
@@ -196,7 +198,7 @@ where FFN(X) = gelu(XW_1)W_2. Parameters are initialized following DeepNet (Wang
 
 **Training Data:** The Pile (Gao et al., 2020), C4 (Dodge et al., 2021), and The Stack (Kocetkov et al., 2022).
 
-**Training Details:** 2048 max sequence length, 25K training steps, AdamW optimizer (β₁=0.9, β₂=0.98), weight decay 0.05, 375 warmup steps with linear learning rate decay. Polynomial decay LR scheduler, gradient clipping at 2.0, dropout 0.1. DeepNet initialization. Implementation based on TorchScale (Ma et al., 2022). Trained on **512 AMD MI200 GPUs**.
+**Training Details:** 2048 max sequence length, 25K training steps, AdamW optimizer (β₁=0.9, β₂=0.98), weight decay 0.05 (Section 3.1 text; Table 7 in Appendix A reports 0.01), 375 warmup steps. LR scheduler described as "linear learning rate decay" in Section 3.1 but "Polynomial decay" in Table 7 (Appendix A). Gradient clipping at 2.0, dropout 0.1. DeepNet initialization. Implementation based on TorchScale (Ma et al., 2022). Trained on **512 AMD MI200 GPUs**.
 
 **200M Comparison Setup:** 16 layers, 1024 hidden dimension, head dimension 8 (for H3) or matching, batch size 0.5M tokens, 10K steps. Compared architectures: Linear Transformer, RWKV, H3, Hyena, RetNet.
 
@@ -214,9 +216,9 @@ RetNet achieves comparable perplexity to Transformer, with RetNet outperforming 
 |---|---|---|
 | 1.3B | ~14.8 | ~14.5 |
 | 2.7B | ~13.2 | ~13.4 |
-| 6.7B | ~12.0 | ~12.8 |
+| 6.7B | ~12.8 | ~13.0 |
 
-(Values estimated from Figure 5; exact numbers not provided in text.)
+(Values estimated from Figure 5; exact numbers not provided in text. The paper states RetNet "tends to outperform Transformer when the model size is larger than 2B.")
 
 #### Context Length Perplexity (Appendix B, Table 8)
 
@@ -297,15 +299,15 @@ RetNet outperforms all compared architectures on every corpus, with 3.9 points b
 
 2. **Short training context.** Maximum training length is 2048 tokens. The paper evaluates inference up to 8K but does not train or evaluate on sequences longer than 2048, leaving long-context modeling capability unvalidated.
 
-3. **No long-context task evaluation.** The paper evaluates only perplexity and short-context downstream tasks. No evaluation on retrieval, multi-hop QA, summarization of long documents, or other tasks that specifically require long-range reasoning.
+3. **[Inferred] No long-context task evaluation.** The paper evaluates only perplexity and short-context downstream tasks. No evaluation on retrieval, multi-hop QA, summarization of long documents, or other tasks that specifically require long-range reasoning.
 
-4. **No variance estimates.** Single runs only; no error bars, confidence intervals, or multi-seed experiments.
+4. **[Inferred] No variance estimates.** Single runs only; no error bars, confidence intervals, or multi-seed experiments.
 
-5. **Vanilla PyTorch implementation.** RetNet's training cost comparison uses vanilla PyTorch while FlashAttention uses highly optimized CUDA kernels. The comparison favors RetNet in "ease of implementation" but does not reflect the best achievable performance for either architecture.
+5. **Vanilla PyTorch implementation.** RetNet's training cost comparison uses vanilla PyTorch while FlashAttention uses highly optimized CUDA kernels. The comparison favors RetNet in "ease of implementation" but does not reflect the best achievable performance for either architecture. The authors acknowledge this, noting kernel fusion is "left for future work" (Section 3.3).
 
-6. **Fixed exponential decay.** The decay rates γ are fixed hyperparameters, not learned or input-dependent. This may limit the model's ability to adapt its effective context window to different tasks or inputs, in contrast to attention which can dynamically attend to arbitrary positions.
+6. **[Inferred] Fixed exponential decay.** The decay rates γ are fixed hyperparameters, not learned or input-dependent. This may limit the model's ability to adapt its effective context window to different tasks or inputs, in contrast to attention which can dynamically attend to arbitrary positions.
 
-7. **Rejected at major venues.** The paper was rejected at both ICLR 2024 and NeurIPS 2024, suggesting the research community had significant concerns about the claims or methodology.
+7. **[Inferred] Rejected at major venues.** The paper was rejected at both ICLR 2024 and NeurIPS 2024, suggesting the research community had significant concerns about the claims or methodology.
 
 ### Scope and Comparability
 
@@ -340,7 +342,7 @@ RetNet outperforms all compared architectures on every corpus, with 3.9 points b
 
 1. **C1: "Impossible triangle" broken** (Table 1, Figure 2). RetNet achieves training parallelism, O(1) inference cost, O(N) memory complexity, and competitive performance simultaneously. **Status: unvalidated** -- the claim rests on experiments at limited scale (≤6.7B, 100B tokens). The "performance" criterion is demonstrated only via perplexity and simple downstream tasks, not on the breadth of capabilities expected of modern LLMs.
 
-2. **C2: Favorable scaling** (Figure 5, Section 3.2). RetNet matches Transformer perplexity at 1.3B and outperforms at 2.7B and 6.7B scale (improvement of ~0.3 PPL at 6.7B). **Status: supported** within the tested regime. Note: only three data points on the scaling curve; no variance estimates; extrapolation to larger scales is uncertain.
+2. **C2: Favorable scaling** (Figure 5, Section 3.2). RetNet matches Transformer perplexity at 1.3B and outperforms at 2.7B and 6.7B scale (improvement of ~0.2 PPL at 6.7B, estimated from Figure 5). **Status: supported** within the tested regime. Note: only three data points on the scaling curve; no variance estimates; extrapolation to larger scales is uncertain.
 
 3. **C3: Massive inference efficiency gains** (Figure 1, Figure 6, Section 3.4). At 6.7B/8K: 8.4x throughput, 70% memory savings, 15.6x latency reduction vs Transformer. **Status: supported** -- these follow directly from the O(1) recurrent formulation. The advantage grows with sequence length as Transformer costs scale linearly.
 

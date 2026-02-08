@@ -6,42 +6,58 @@ venue: "arXiv preprint 2024"
 paper_type: preprint
 categories: ["long-context-evaluation", "model-release", "architecture", "in-context-learning", "benchmarking"]
 scope: ["multimodal long-context", "mixture-of-experts", "million-token context windows", "long-context retrieval"]
-benchmarks_used: ["niah", "mrcr", "mtob", "mmlu", "humaneval", "gsm8k", "hellaswag", "bbh", "wmt-translation", "math-hendrycks", "gpqa", "egoschema"]
+benchmarks_used: ["niah", "mrcr", "mtob", "mmlu", "humaneval", "gsm8k", "hellaswag", "bbh", "wmt-translation", "math-hendrycks", "gpqa", "egoschema", "drop", "mmmu", "mgsm"]
 models_introduced: ["gemini-1.5-pro", "gemini-1.5-flash"]
-models_evaluated: ["gemini-1.5-pro", "gemini-1.5-flash", "gpt-4", "claude-2.1"]
+models_evaluated: ["gemini-1.5-pro", "gemini-1.5-flash", "gpt-4", "claude-2.1", "gpt-3.5-turbo", "gemini-pro"]
 key_claims:
   - id: C1
     claim: "Gemini 1.5 Pro achieves >99% recall on needle-in-a-haystack retrieval up to at least 10M tokens across text, video, and audio modalities"
     evidence: "Figure 1, Section 5 (100% text recall up to 530K, >99.7% at 1M, 99.2% at 10M; 100% audio recall; >99.8% video recall up to 2M tokens)"
     status: supported
+    scope: "synthetic single-needle retrieval task, greedy decoding, Paul Graham essays haystack (text), AlphaGo documentary (video), VoxPopuli (audio)"
+    magnitude: "100% text recall up to 530K, >99.7% at 1M, 99.2% at 10M; 100% audio at 107h; 100% video at 10.5h"
   - id: C2
     claim: "Next-token prediction loss follows a power law L(x) = alpha * x^beta + gamma with context length, holding up to at least 1M tokens for documents and 10M tokens for code"
     evidence: "Figure 7, Section 5.1 (R^2 = 0.997 for documents, R^2 = 0.995 for code)"
     status: supported
+    scope: "held-out long documents up to 1M tokens, code repositories up to 10M tokens, instruction-tuned checkpoint"
+    magnitude: "R^2 = 0.997 (documents), R^2 = 0.995 (code); power-law fit deviates near 10M for code"
   - id: C3
     claim: "Gemini 1.5 Pro matches or surpasses Gemini 1.0 Ultra on 78% of core capability benchmarks while using significantly less training compute"
     evidence: "Table 1 (35/45 wins across text, vision, audio)"
     status: supported
+    scope: "45 core capability benchmarks spanning text (19), vision (21), audio (5); greedy decoding"
+    magnitude: "35/45 wins (77.8%); main gains in math/science (+18.1%), charts & documents (+39.6%); main losses in audio ASR (-3.8%), AST (-3.9%)"
   - id: C4
     claim: "Given a Kalamang grammar book (~250K tokens) in context, Gemini 1.5 Pro learns to translate at a level approaching a human learner"
     evidence: "Tables 4-5 (kgv-to-eng: 4.00 vs 5.52 human; eng-to-kgv: 5.46 vs 5.60 human on 0-6 scale)"
     status: supported
+    scope: "single language (Kalamang), ~250K tokens of grammar + dictionary + parallel sentences, single human evaluator"
+    magnitude: "kgv-to-eng: 4.00 vs 5.52 human (gap 1.52); eng-to-kgv: 5.46 vs 5.60 human (gap 0.14) on 0-6 scale"
   - id: C5
     claim: "Gemini 1.5 Pro performance improves monotonically with more in-context examples on planning tasks, while GPT-4 Turbo plateaus or degrades"
     evidence: "Figure 16 (Logistics, Mini-Grid, Trip Planning, Calendar Scheduling)"
     status: supported
+    scope: "4 planning tasks (Logistics, Mini-Grid, Trip Planning, Calendar Scheduling), up to 400-600 shots, greedy decoding"
+    magnitude: "Mini-Grid 1-shot 28% to 400-shot 77%; Calendar Scheduling 1-shot 33% to 100-shot 52%; GPT-4 Turbo degrades after ~80 shots on Logistics"
   - id: C6
     claim: "Full-context (710K tokens) Gemini 1.5 Pro dramatically outperforms RAG-augmented baselines on long-document QA"
     evidence: "Figure 14 (Bradley-Terry strength 6.24 vs 1.77 for RAG Gemini 1.5 Pro, 1.64 for RAG GPT-4 Turbo)"
     status: supported
+    scope: "single book (Les Miserables, 710K tokens), 100 auto-generated questions, TF-IDF retrieval with 4K-token chunks, auto-rater evaluation"
+    magnitude: "Bradley-Terry strength 6.24 vs 1.77 (RAG 1.5 Pro) vs 1.64 (RAG GPT-4 Turbo); wins 78% vs own RAG, 83% vs RAG GPT-4 Turbo"
   - id: C7
     claim: "Gemini 1.5 Flash, online-distilled from 1.5 Pro, outperforms Gemini 1.0 Pro on 82% of core benchmarks while being substantially faster"
     evidence: "Table 2 (41/50 wins); Table 3 (>650 chars/sec English, >30% faster than Claude 3 Haiku)"
     status: supported
+    scope: "50 core benchmarks spanning text, vision, audio; latency measured on Vertex AI streaming API with 10K-char inputs"
+    magnitude: "41/50 wins (82%); 1.5 ms/char English (vs 2.2 for Claude 3 Haiku); >650 chars/sec English"
   - id: C8
     claim: "On 1H-VideoQA, Gemini 1.5 Pro at full 1fps achieves 72.2% accuracy vs 52.3% for GPT-4V at 150 frames, showing performance continues scaling with more frames"
     evidence: "Table 9, Figure 15"
     status: supported
+    scope: "125 five-way MCQ over 40-105 minute public videos, zero-shot, 1fps frame extraction"
+    magnitude: "72.2% at full 1fps vs 52.3% GPT-4V at 150 frames; 45.2% vs 36.5% at 16 frames; EgoSchema saturates at 16 frames"
 cross_references:
   - target: 2023-11-needle-in-a-haystack
     type: extends
@@ -75,6 +91,8 @@ open_questions:
   - question: "Why does the power-law relationship between NLL and context length hold so precisely (R^2 > 0.995), and does this reflect a fundamental property of Transformer architectures or training data structure?"
     addressed_by: null
   - question: "Can the full-context advantage over RAG (Figure 14) be maintained as retrieval systems improve, or will RAG close the gap at lower compute cost?"
+    addressed_by: null
+  - question: "Can the in-context translation capability generalize beyond Kalamang to other complex skill acquisition tasks requiring structured reasoning from novel material?"
     addressed_by: null
 ---
 # Gemini 1.5: Unlocking Multimodal Understanding Across Millions of Tokens of Context
@@ -154,6 +172,8 @@ Evaluation is organized into three categories:
 #### Diagnostic Long-Context Results
 
 **Perplexity follows a power law with context length (Figure 7):**
+
+> L(x) = alpha * x^beta + gamma
 
 | Fit | R^2 | Range |
 |---|---|---|
@@ -293,25 +313,36 @@ Adversarial needle-in-the-haystack safety evaluation embeds harmful prompts in P
 
 ## Limitations and Failure Modes
 
-1. **Undisclosed architecture.** The paper does not disclose parameter counts, number of experts, positional encoding scheme, or the specific architectural changes enabling long context. This limits reproducibility and scientific analysis of the long-context capability.
+1. **Undisclosed architecture.** The paper does not disclose parameter counts, number of experts, positional encoding scheme, or the specific architectural changes enabling long context. The authors acknowledge this by describing only "a series of significant architecture changes" (Section 3.1). This limits reproducibility and scientific analysis of the long-context capability.
 
-2. **Prompt injection susceptibility.** Handcrafted prompt injection attacks achieve 73-100% success rates (Table 32). Better instruction following is a double-edged sword: the model more readily follows both legitimate and injected instructions. Email address exfiltration shows +75.2% increase over 1.0 Ultra.
+2. **Prompt injection susceptibility.** Handcrafted prompt injection attacks achieve 73-100% success rates (Table 32). The authors acknowledge that better instruction following is a double-edged sword: the model more readily follows both legitimate and injected instructions. Email address exfiltration shows +75.2% increase over 1.0 Ultra.
 
-3. **Tone regression.** Gemini 1.5 Pro shows an 11% regression in tone quality compared to Gemini 1.0 Ultra (Table 29b).
+3. **Tone regression.** Gemini 1.5 Pro shows an 11% regression in tone quality compared to Gemini 1.0 Ultra (Table 29b). The authors note this is "an area being prioritized for future work" (Section 9.4.2).
 
-4. **Audio parity gaps.** Gemini 1.5 Pro shows a 5.7% WER gap between genders in ASR, much worse than USM's 0.4% (Table 35). AAVE recognition recall is low (0.21 for Flash, 0.44 for Pro).
+4. **Audio parity gaps.** Gemini 1.5 Pro shows a 5.7% WER gap between genders in ASR, much worse than USM's 0.4% (Table 35). AAVE recognition recall is low (0.21 for Flash, 0.44 for Pro). The authors acknowledge this and note "more research is needed" (Section 9.4.4).
 
-5. **Income-based accuracy gap.** While overall accuracy improves on the Dollar Street dataset, the gap between best- and worst-performing income groups increases for 1.5 Pro (20.4 vs 16.6 for Ultra, Table 34).
+5. **Income-based accuracy gap.** While overall accuracy improves on the Dollar Street dataset, the gap between best- and worst-performing income groups increases for 1.5 Pro (20.4 vs 16.6 for Ultra, Table 34). The authors acknowledge that "special attention may be needed" for equitable improvement across groups.
 
-6. **Grounded over-refusal.** Both 1.5 models show increased refusal rates on grounded queries (where context clues support an answer), not just ungrounded ones (Figure 22). Flash shows a 140% increase in grounded refusals over Ultra.
+6. **Grounded over-refusal.** Both 1.5 models show increased refusal rates on grounded queries (where context clues support an answer), not just ungrounded ones (Figure 22). Flash shows a 140% increase in grounded refusals over Ultra. The authors acknowledge this tradeoff between safety and helpfulness (Section 9.4.2).
 
-7. **Audio regression in 1.5 series.** Slight regressions on multilingual ASR/AST benchmarks relative to 1.0 Ultra, attributed to post-training data containing only 5 head languages (Table 10).
+7. **Audio regression in 1.5 series.** Slight regressions on multilingual ASR/AST benchmarks relative to 1.0 Ultra, attributed by the authors to post-training data containing only 5 head languages (Table 10, Section 6).
 
-8. **Long-context divergence vulnerability.** Longer prompts make divergence attacks easier (61.5% success with 999K-token prompts vs 35.6% with 1K-token prompts), which can lead to training data emission (Figure 24).
+8. **Long-context divergence vulnerability.** Longer prompts make divergence attacks easier (61.5% success with 999K-token prompts vs 35.6% with 1K-token prompts), which can lead to training data emission (Section 9.4.3). The authors acknowledge this increased attack surface from longer context.
 
-9. **DROP regression.** 1.5 Pro (74.9 F1) underperforms 1.0 Ultra (82.4 F1) on the DROP benchmark (Table 11).
+9. **DROP regression.** 1.5 Pro (74.9 F1) underperforms 1.0 Ultra (82.4 F1) on the DROP benchmark (Table 11). The paper reports this without explanation.
 
-10. **Benchmark saturation concerns.** BBQ bias accuracy approaches 100% for 1.5 models (Figure 26b), suggesting the benchmark may lose diagnostic value for measuring biases in future models.
+10. **Benchmark saturation concerns.** BBQ bias accuracy approaches 100% for 1.5 models (Figure 26b), suggesting the benchmark may lose diagnostic value for measuring biases in future models. The authors note existing benchmarks "may not be helpful for measuring biases in future, more capable models" (Section 9.4.4).
+
+11. **[Inferred] Single-task evidence for full-context vs RAG.** The dramatic full-context advantage over RAG (C6) is demonstrated on only one book (Les Miserables) with auto-generated questions and an auto-rater, limiting generalizability of the claim that full-context processing obviates retrieval.
+
+12. **[Inferred] No variance reporting.** Planning task results (Figure 16) use 70% confidence intervals, but most other evaluations report single-run results without variance estimates or statistical significance tests, making it difficult to assess reliability.
+
+13. **[Inferred] Kalamang evaluation relies on a single non-native human evaluator.** The MTOB human evaluation scores come from one language learner who can identify their own translations, introducing potential bias. The authors acknowledge this constraint (footnote 13) but it limits the strength of the human-parity claim.
+
+#### Scope and Comparability
+
+- **What was not tested:** No evaluation on context lengths between 1M and 10M for realistic tasks (only diagnostic NIAH tested at 10M). No evaluation of reasoning tasks requiring multi-hop integration across the full 10M-token context. No comparison with open-source long-context models (e.g., Llama 2 Long, YaRN-extended models). Flash-8B results are preliminary and incomplete. No evaluation of generation quality at very long output lengths.
+- **Comparability notes:** GPT-4 Turbo comparisons are capped at 128K tokens; Claude 3 comparisons are capped at 200K tokens. The RAG baseline uses TF-IDF retrieval with 4K-token chunks -- more sophisticated retrieval (dense retrieval, ColBERT, multi-step) would be a stronger baseline. MTOB human evaluation uses a single non-native evaluator rather than multiple independent raters. Latency measurements (Table 3) use minimum-of-32 queries rather than median or percentile, potentially understating typical latency. The paper's "win rate" metric counts any improvement as a win regardless of magnitude, which obscures the size of gains and losses. Evaluation uses greedy decoding throughout, so results may differ under sampling.
 
 ---
 

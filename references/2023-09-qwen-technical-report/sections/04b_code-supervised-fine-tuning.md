@@ -1,0 +1,3 @@
+# 4.2 Code Supervised Fine-Tuning [p. 17]
+
+[p. 17] After conducting a series of empirical experiments, the authors have determined that the multi-stage SFT strategy yields the best performance compared to other methods. In the supervised fine-tuning stage, the model CODE-QWEN-CHAT initialized by the code foundation model CODE-QWEN is optimized by the AdamW (Kingma & Ba, 2014; Loshchilov & Hutter, 2017) optimizer (beta_1 = 0.9, beta_2 = 0.95, epsilon = 10^{-8}) with a learning rate of 2.0 x 10^{-6} and 1.0 x 10^{-5} for the 14B and 7B model respectively. The learning rate increases to the peaking value with the cosine learning rate schedule (3% warm-up steps) and then remains constant.

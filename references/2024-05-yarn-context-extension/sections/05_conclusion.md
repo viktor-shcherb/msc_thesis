@@ -1,0 +1,3 @@
+# 5 Conclusion [p. 10]
+
+In conclusion, the authors have shown that YaRN improves upon all existing RoPE interpolation methods and can act as a drop-in replacement to PI, with no downsides and minimal implementation effort. The fine-tuned models preserve their original abilities on multiple benchmarks while being able to attend to a very large context size. Furthermore, YaRN allows efficient extrapolation with fine-tuning on shorter datasets and can take advantage of transfer learning for faster convergence, both of which are crucial under compute-constrained scenarios. Finally, they have shown the effectiveness of extrapolation with YaRN where it is able to "train short, and test long". [p. 10]

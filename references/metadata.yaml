@@ -149,6 +149,8 @@ ontology:
     description: L-Eval standardized long-context evaluation
   - id: ada-leval
     description: Ada-LEval length-adaptable evaluation
+  - id: drop
+    description: DROP reading comprehension with discrete reasoning (Dua et al., 2019)
   - id: gsm-ic
     description: GSM-IC irrelevant context reasoning
   - id: longicl-bench
@@ -446,6 +448,8 @@ ontology:
     description: Phi-3-medium 14B (Abdin et al., 2024)
   - id: code-llama-7b
     description: Code Llama 7B (Roziere et al., 2023)
+  - id: code-llama-13b
+    description: Code Llama 13B (Roziere et al., 2023)
   - id: mistral-7b
     description: Mistral 7B (Jiang et al., 2023)
   - id: falcon-7b

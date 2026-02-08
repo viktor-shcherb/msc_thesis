@@ -1,6 +1,7 @@
 # Needle In A Haystack -- Pressure Testing LLMs
 
 **Author:** Greg Kamradt
+**Affiliation:** Data Independent / Leverage (AI Product & Education Studio)
 
 ## Publication Status
 
@@ -9,7 +10,7 @@
 - **Conference/Journal:** None. This is a community contribution (X/Twitter thread with accompanying GitHub repository and YouTube video), not a formal paper. There is no arXiv PDF.
 - **Status:** Informal community contribution
 
-The Needle in a Haystack (NIAH) test was first announced via an X thread on GPT-4-128K (November 8, 2023), followed by a second thread on Claude 2.1-200K (November 21, 2023). The methodology and code were released on GitHub. Despite being informal, NIAH became one of the most widely adopted long-context evaluation methods, cited as a standard benchmark in numerous peer-reviewed papers (RULER, BABILong, NoLiMa, LongBench v2, among others) and adopted in official model evaluation reports (e.g., Llama 3.1).
+The Needle in a Haystack (NIAH) test was first announced via an X thread on GPT-4-128K (November 8, 2023), followed by a second thread on Claude 2.1-200K (November 21, 2023). The methodology and code were released on GitHub (repository created November 11, 2023).
 
 ## Preferred Citation
 

@@ -1,0 +1,3 @@
+# Acknowledgements [p. 6]
+
+[p. 6] The authors are grateful to CoreWeave for their 24/7 help in marshalling their cluster. They thank the CINECA/EuroHPC team, and in particular the operators of Leonardo, for their resources and help. They thank the maintainers of FlashAttention, vLLM, xFormers, Skypilot for their assistance in implementing new features and integrating their solutions. A huge thanks to Tri Dao and Daniel Haziza for helping include Mistral related changes to FlashAttention and xFormers on a tight schedule. They thank the teams of Hugging Face, AWS, GCP, Azure ML for their help in making the model compatible everywhere. [p. 6]

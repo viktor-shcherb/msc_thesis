@@ -1,0 +1,3 @@
+# 6 Conclusion [p. 9]
+
+[p. 9] The authors introduce ZeroSCROLLS, a benchmark for zero-shot natural language understanding over long texts. ZeroSCROLLS enables systematic comparison of LLMs on tasks with naturally long input texts, and ones that require contextualizing and aggregating information from multiple documents. They evaluate open-source and production-grade LLMs to find that GPT-4 and Claude are currently the best performing models, while open-source models such as Flan-UL2 also prove powerful at long-context question answering tasks. ZeroSCROLLS remains an open challenge for LLM research, with the two new aggregation tasks proving to be particularly difficult for contemporary LLMs. [p. 9]

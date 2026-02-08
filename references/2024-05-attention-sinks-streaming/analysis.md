@@ -6,42 +6,58 @@ venue: "ICLR 2024"
 paper_type: conference-paper
 categories: ["streaming-inference", "attention-analysis"]
 scope: ["streaming LLM inference", "attention sink phenomenon", "KV cache management"]
-benchmarks_used: ["perplexity-pg19", "arc", "hellaswag", "piqa", "winogrande", "longbench"]
+benchmarks_used: ["perplexity-pg19", "arc", "hellaswag", "piqa", "winogrande", "lambada", "openbookqa", "longbench"]
 models_introduced: []
-models_evaluated: ["llama-2-7b", "llama-2-13b", "llama-2-70b", "falcon-7b", "mpt-7b", "pythia-series"]
+models_evaluated: ["llama-2-7b", "llama-2-13b", "llama-2-70b", "falcon-7b", "mpt-7b", "pythia-series", "bert-base"]
 key_claims:
   - id: C1
     claim: "Autoregressive LLMs allocate massive attention scores to initial tokens regardless of semantic content — the attention sink phenomenon"
     evidence: "Figure 2, Figure 12 (Appendix F), Table 1, Section 3.1"
     status: supported
+    scope: "Llama-2-[7,13,70]B, Falcon-7B, MPT-7B, Pythia-12B; sequences 16–4096 tokens"
+    magnitude: "Attention score on first token exceeds 0.6–0.9 of total in most layers beyond the bottom two (Figure 12, 4096-token sequences)"
   - id: C2
     claim: "Window attention fails because evicting initial tokens removes dominant terms from the SoftMax denominator, not because of lost semantic information"
     evidence: "Table 1 (linebreak substitution recovers PPL from 5158 to 5.60), Figure 3, Section 3.1"
     status: supported
+    scope: "Llama-2-13B, first book of PG19 (65K tokens), cache 1024"
+    magnitude: "PPL 5158 -> 5.60 with linebreak tokens vs 5.40 with original tokens"
   - id: C3
     claim: "StreamingLLM with 4 sink tokens + sliding window enables stable language modeling over 4M+ tokens across model families and scales"
     evidence: "Figure 5 (Llama-2-[7,13,70]B, Falcon-[7,40]B, Pythia-[2.8,6.9,12]B, MPT-[7,30]B), Section 4.1"
     status: supported
+    scope: "4 model families, 2.8B–70B parameters, PG19 test set, half-pretraining-window cache"
+    magnitude: "Stable perplexity over 4M tokens; matches sliding window with recomputation baseline"
   - id: C4
     claim: "Four initial tokens generally suffice as attention sinks; fewer tokens do not fully restore perplexity, more yield diminishing returns"
     evidence: "Table 2, Section 4.4"
     status: supported
+    scope: "Llama-2-7B (cache 4096), Falcon-7B, MPT-7B, Pythia-12B (cache 2048); PG19 400K tokens"
+    magnitude: "Llama-2-7B: 1 token PPL 11.88, 4 tokens PPL 9.59, 8 tokens PPL 9.54"
   - id: C5
     claim: "Pre-training with a learnable sink token consolidates the attention sink into a single token without harming convergence or downstream performance"
     evidence: "Table 3, Table 4, Figure 6, Figure 7, Section 3.3 and 4.2"
     status: supported
+    scope: "160M-parameter models trained from scratch on deduplicated Pile, 143K steps"
+    magnitude: "Sink token model PPL 18.01 with 1+1023 cache vs vanilla PPL 18.05 with 4+1020; zero-shot accuracy comparable across 7 benchmarks"
   - id: C6
     claim: "StreamingLLM achieves up to 22.2x speedup over sliding window with recomputation at equivalent perplexity"
     evidence: "Figure 10, Section 4.5"
     status: supported
+    scope: "Llama-2-7B and Llama-2-13B, single NVIDIA A6000 GPU, HuggingFace Transformers, cache sizes 256–4096"
+    magnitude: "Llama-2-7B cache 4096: 145ms vs 1411ms (9.7x); Llama-2-13B cache 4096: ~106ms vs 2355ms (22.2x)"
   - id: C7
     claim: "StreamingLLM does not extend context length — accuracy drops to zero when query-answer distance exceeds cache size"
     evidence: "Table 7 (Appendix C), Section A (Limitations)"
     status: supported
+    scope: "Llama-2-7B-32K-Instruct on StreamEval, cache configs 4+2044 through 4+16380"
+    magnitude: "Accuracy drops from 85.80% (20 lines distance) to 0.00% (100 lines / 2300 tokens) with 4+2044 cache"
   - id: C8
     claim: "Increasing cache size does not consistently lower perplexity, suggesting models do not fully utilize the provided context"
     evidence: "Table 6, Section 4.4"
     status: supported
+    scope: "Llama-2-7B, Falcon-7B, MPT-7B, Pythia-12B; PG19 400K tokens"
+    magnitude: "Llama-2-7B: best PPL 9.08 at 4+2044, rising to 9.59 at 4+4092; MPT-7B: best PPL 14.12 at 4+252, rising to 14.99 at 4+2044"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -120,9 +136,9 @@ open_questions:
 
 ## Core Research Problem
 
-Deploying LLMs in streaming applications — such as multi-round dialogue or persistent assistants — requires processing input sequences that grow indefinitely over time. Two challenges make this intractable with standard Transformer-based LLMs: (1) the KV cache grows linearly with sequence length, leading to unbounded memory consumption during decoding, and (2) LLMs cannot generalize beyond their pre-training attention window size (e.g., 4,096 tokens for Llama-2), with performance degrading sharply on longer inputs (Section 1).
+Deploying LLMs in streaming applications -- such as multi-round dialogue or persistent assistants -- requires processing input sequences that grow indefinitely over time. Two challenges make this intractable with standard Transformer-based LLMs: (1) the KV cache grows linearly with sequence length, leading to unbounded memory consumption during decoding, and (2) LLMs cannot generalize beyond their pre-training attention window size (e.g., 4,096 tokens for Llama-2), with performance degrading sharply on longer inputs (Section 1).
 
-Window attention (caching only the most recent L tokens' KV states) is the natural efficiency solution, but empirically collapses the moment the initial tokens are evicted from the cache — even evicting just the first token causes perplexity to spike from 5.40 to 5,158 on Llama-2-13B (Table 1, Figure 3). Sliding window with re-computation rebuilds KV states from the L most recent tokens for each new token, recovering quality but incurring O(TL^2) cost per token, making it impractical for real-time streaming. Context window extension methods (PI, NTK-RoPE, YaRN) expand the finite window but do not enable truly infinite-length generation (Section 2).
+Window attention (caching only the most recent L tokens' KV states) is the natural efficiency solution, but empirically collapses the moment the initial tokens are evicted from the cache -- even evicting just the first token causes perplexity to spike from 5.40 to 5,158 on Llama-2-13B (Table 1, Figure 3). Sliding window with re-computation rebuilds KV states from the L most recent tokens for each new token, recovering quality but incurring O(TL^2) cost per token, making it impractical for real-time streaming. Context window extension methods (PI, NTK-RoPE, YaRN) expand the finite window but do not enable truly infinite-length generation (Section 2).
 
 The core challenge is: **how to enable LLMs trained with a finite attention window to handle infinite-length input streams without fine-tuning, while maintaining bounded memory and constant decoding latency.**
 
@@ -130,7 +146,7 @@ The core challenge is: **how to enable LLMs trained with a finite attention wind
 
 ## Problem Solutions
 
-The paper identifies the **attention sink** phenomenon — autoregressive LLMs allocate disproportionately high attention scores to initial tokens regardless of their semantic content — and leverages this insight to propose **StreamingLLM**, a simple framework for infinite-length streaming inference. The solution rests on three observations:
+The paper identifies the **attention sink** phenomenon -- autoregressive LLMs allocate disproportionately high attention scores to initial tokens regardless of their semantic content -- and leverages this insight to propose **StreamingLLM**, a simple framework for infinite-length streaming inference. The solution rests on three observations:
 
 1. **Window attention fails because it evicts attention sinks.** The perplexity spike occurs precisely when initial tokens are removed from the cache, because these tokens serve as a repository for excess attention probability mass required by SoftMax normalization (Section 3.1, Figure 3).
 
@@ -163,7 +179,7 @@ Even when the current embedding has sufficient self-contained information, the m
 
 **Semantic content is irrelevant.** Replacing the first four tokens with linebreak tokens "\n" restores perplexity from 5,158 to 5.60 on Llama-2-13B (vs. 5.40 with original tokens), confirming that the absolute position, not the semantic value, drives the sink effect (Table 1).
 
-**Number of sink tokens.** Four initial tokens suffice across all tested models. Introducing only 1 token does not fully restore perplexity for models lacking a consistent starting token: for Llama-2-7B, 1 sink token yields PPL 11.88 vs. 9.59 with 4 tokens (cache 4,096). Adding more than 4 yields diminishing returns (Table 2, Section 4.4). This occurs because most models do not have a consistent starting token across pre-training samples — although Llama-2 prepends "<s>", text chunking places a mostly random token at position zero.
+**Number of sink tokens.** Four initial tokens suffice across all tested models. Introducing only 1 token does not fully restore perplexity for models lacking a consistent starting token: for Llama-2-7B, 1 sink token yields PPL 11.88 vs. 9.59 with 4 tokens (cache 4,096). Adding more than 4 yields diminishing returns -- 8 tokens give PPL 9.54, only marginally better (Table 2, Section 4.4). This occurs because most models do not have a consistent starting token across pre-training samples -- although Llama-2 prepends "<s>", text chunking places a mostly random token at position zero.
 
 **Dedicated sink token for pre-training.** Pre-training with a learnable placeholder token prepended to all training samples consolidates the attention sink into a single token. Three 160M-parameter models were trained from scratch under identical settings (Section 3.3, 4.2):
 
@@ -183,32 +199,36 @@ This is equivalent to prepending a token with all-zero Key and Value features. I
 
 **Cache position re-indexing.** Critical for correctness with relative position encodings. Without re-indexing, the gap between sink token positions and rolling window positions would create out-of-distribution positional distances. For RoPE, Keys are stored pre-rotation and the rotary transformation is reapplied each step; for ALiBi, contiguous linear biases are applied within the cache (Section 3.2).
 
+**Additional sink tokens during pre-training.** Adding 2 sink tokens during pre-training does not improve streaming performance over 1 sink token, and the model becomes dependent on both tokens: with 2 sink tokens, the 1+1023 cache config yields PPL 25.73 (needing both sink tokens), while 2+1022 restores to PPL 18.05 (Table 10, Appendix I). Zero-shot accuracy with 2 sink tokens is not consistently better than 1 (Table 9). This contrasts with ViTs where multiple registers are beneficial (Darcet et al., 2023).
+
 ### Experimental Setup
 
-**Models:** Llama-2-[7, 13, 70]B (RoPE, 4K pre-training window), MPT-[7, 30]B (ALiBi), Falcon-[7, 40]B (RoPE), Pythia-[2.8, 6.9, 12]B (RoPE). Chat variants (Llama-2-[7, 13, 70]B-Chat) for streaming QA (Section 4).
+**Models:** Llama-2-[7, 13, 70]B (RoPE, 4K pre-training window), MPT-[7, 30]B (ALiBi), Falcon-[7, 40]B (RoPE), Pythia-[2.8, 6.9, 12]B (RoPE). Chat variants (Llama-2-[7, 13, 70]B-Chat) for streaming QA. Context-extended models (LongChat-7b-v1.5-32k, Llama-2-7B-32K-Instruct) for complementarity experiments (Section 4).
 
 **Pre-training experiments:** 160M-parameter models trained from scratch using the Pythia-160M codebase on the deduplicated Pile dataset, 143K steps, batch size 256, 8x A6000 GPUs. Three variants: Vanilla, Zero Sink (SoftMax_1), Learnable Sink Token (Section 4.2).
 
 **Language modeling evaluation:** Concatenated PG19 test set (100 long books, up to 4M tokens). Cache sizes: 2,048 for Llama-2, 1,024 for Falcon/Pythia/MPT (half the pre-training window) (Section 4.1).
 
-**Streaming QA evaluation:** ARC-[Easy, Challenge] concatenated into a continuous stream with cache size 1,024; StreamEval benchmark (custom dataset inspired by LongEval — queries every 10 lines, answers 20 lines prior, 100 samples with 100 queries each, each line containing 23 tokens) (Section 4.3, Figure 8).
+**Streaming QA evaluation:** ARC-[Easy, Challenge] concatenated into a continuous stream with cache size 1,024; StreamEval benchmark (custom dataset inspired by LongEval -- queries every 10 lines, answers 20 lines prior, 100 samples with 100 queries each, each line containing 23 tokens) (Section 4.3, Figure 8).
 
 **Downstream tasks for sink token validation:** ARC-E/C, HellaSwag, LAMBADA, OpenbookQA, PIQA, Winogrande (zero-shot) (Table 4).
 
 **Efficiency benchmarks:** Per-token decoding latency and memory usage on a single NVIDIA A6000 GPU using Llama-2-7B and Llama-2-13B, implemented in HuggingFace Transformers (Section 4.5).
 
+**Reproducibility:** Code and datasets publicly available at https://github.com/mit-han-lab/streaming-llm. All evaluated models are openly available. Training details (hyperparameters, protocols) provided in Section 4. No variance estimates or multiple-seed runs reported for pre-training experiments (limited evidence for 160M-parameter results).
+
 ### Key Results
 
-**Language modeling perplexity (PG19, 400K tokens):**
+**Language modeling perplexity (PG19, 400K tokens, Table 2 -- window attention vs. StreamingLLM with 4 initial tokens):**
 
-| Model | Window (0+cache) | StreamingLLM (4+cache) |
-|---|---|---|
-| Llama-2-7B (cache 4,096) | 3,359.95 | 9.59 |
-| Falcon-7B (cache 2,048) | 17.90 | 12.12 |
-| MPT-7B (cache 2,048) | 460.29 | 14.99 |
-| Pythia-12B (cache 2,048) | 21.62 | 12.09 |
+| Model | Cache | Window (0+cache) | StreamingLLM (4+rest) |
+|---|---|---|---|
+| Llama-2-7B | 4,096 | 3,359.95 | 9.59 |
+| Falcon-7B | 2,048 | 17.90 | 12.12 |
+| MPT-7B | 2,048 | 460.29 | 14.99 |
+| Pythia-12B | 2,048 | 21.62 | 12.09 |
 
-**Perplexity on first book (65K tokens), Llama-2-13B:**
+**Perplexity on first book (65K tokens), Llama-2-13B (Figure 1):**
 
 | Method | PPL |
 |---|---|
@@ -217,29 +237,52 @@ This is equivalent to prepending a token with all-zero Key and Value features. I
 | Sliding Window w/ Recomputation | 5.43 |
 | StreamingLLM (4+1,020) | 5.40 |
 
-**Streaming QA accuracy (%, cache 1,024):**
+**Streaming QA accuracy (%, cache 1,024, Table 5):**
 
 | Model | Method | ARC-E | ARC-C |
 |---|---|---|---|
 | Llama-2-7B-Chat | One-shot | 71.25 | 53.16 |
-| | Window | 3.58 | 1.39 |
+| | Dense | 3.58 | 1.39 |
+| | Window | 71.34 | 55.03 |
 | | StreamingLLM | 71.34 | 55.03 |
+| Llama-2-13B-Chat | One-shot | 78.16 | 63.31 |
+| | Dense | OOM | OOM |
+| | Window | 0.25 | 0.34 |
+| | StreamingLLM | 80.89 | 65.61 |
 | Llama-2-70B-Chat | One-shot | 91.29 | 78.50 |
+| | Dense | 0.12 | 0.32 |
 | | Window | 0.12 | 0.32 |
 | | StreamingLLM | 91.37 | 80.20 |
 
-**Decoding efficiency (Llama-2-7B, single A6000):**
+Note: For Llama-2-7B-Chat with cache 1,024, Window and StreamingLLM achieve identical accuracy (71.34/55.03), likely because the ARC evaluation stream is short enough that initial tokens have not yet been evicted. Window attention collapses for Llama-2-13B-Chat (0.25/0.34) and Llama-2-70B-Chat (0.12/0.32) where the stream exceeds cache (Section 4.3).
+
+**Decoding efficiency (Llama-2-7B, single A6000, Figure 10):**
 
 | Cache Size | StreamingLLM (ms) | Recomputation (ms) | Speedup |
 |---|---|---|---|
-| 256 | 31 | 63 | 2.0x |
-| 4,096 | 65 | 1,411 | 22.2x |
+| 256 | 31 | 83 | 2.7x |
+| 512 | 35 | 103 | 2.9x |
+| 1,024 | 45 | 223 | 5.0x |
+| 2,048 | 75 | 523 | 7.0x |
+| 4,096 | 145 | 1,411 | 9.7x |
 
-- StreamingLLM matches the sliding window with re-computation baseline in perplexity while achieving up to **22.2x speedup** in per-token decoding latency (Figure 10, Section 4.5).
-- All tested model families across scales (2.8B–70B) maintain stable perplexity over **4 million tokens** (Figure 5).
+**Decoding efficiency (Llama-2-13B, single A6000, Figure 10):**
+
+| Cache Size | StreamingLLM (ms) | Recomputation (ms) | Speedup |
+|---|---|---|---|
+| 256 | 48 | 99 | 2.1x |
+| 512 | 69 | 109 | 1.6x |
+| 1,024 | 110 | 361 | 3.3x |
+| 2,048 | 175 | 860 | 4.9x |
+| 4,096 | [not in notes] | 2,355 | up to 22.2x |
+
+The paper's headline figure of **22.2x speedup** is achieved at the largest cache size on Llama-2-13B (Figure 10, Section 4.5). StreamingLLM's latency scales linearly with cache size while recomputation scales quadratically, so the speedup advantage grows with larger caches.
+
+- All tested model families across scales (2.8B--70B) maintain stable perplexity over **4 million tokens** (Figure 5, tested on Llama-2-[7,13,70]B, Falcon-[7,40]B, Pythia-[2.8,6.9,12]B, MPT-[7,30]B -- strong evidence across 4 families and 11 model sizes).
 - Window attention collapses immediately when initial tokens are evicted; dense attention fails when sequence length exceeds the pre-training window (Figure 3).
 - StreamingLLM's accuracy on StreamEval drops to zero when the query-answer distance exceeds the cache size (Table 7, Appendix C), confirming it does **not** extend the context window.
-- Models pre-trained with a sink token need only that single token (not 4 initial tokens) for stable streaming, with no degradation on standard benchmarks (Table 3, Table 4).
+- Models pre-trained with a sink token need only that single token (not 4 initial tokens) for stable streaming, with no degradation on standard benchmarks (Table 3, Table 4 -- single run, no variance reported -- limited evidence at 160M scale only).
+- Memory footprint of StreamingLLM is comparable to the recomputation baseline across all cache sizes (Figure 10).
 
 ### Cache Size Ablation
 
@@ -255,7 +298,18 @@ Increasing cache size does not consistently lower perplexity (Table 6, Section 4
 |---|---|---|---|---|
 | Llama-2-7B | 9.73 | 9.32 | **9.08** | 9.59 |
 
-For Llama-2-7B, Falcon-7B, and MPT-7B, the best perplexity is not at the largest cache size. This suggests these models may not fully utilize the provided context, consistent with observations by Liu et al. (2023).
+For Llama-2-7B, Falcon-7B, and MPT-7B, the best perplexity is not at the largest cache size. This suggests these models may not fully utilize the provided context, consistent with observations by Liu et al. (2023) (single-run results, no variance reported -- limited evidence).
+
+### Sink Token Pre-Training Validation
+
+**Zero-shot accuracy (%, Table 4):**
+
+| Methods | ARC-c | ARC-e | HS | LBD | OBQA | PIQA | WG |
+|---|---|---|---|---|---|---|---|
+| Vanilla | 18.6 | 45.2 | 29.4 | 39.6 | 16.0 | 62.2 | 50.1 |
+| +Sink Token | 19.6 | 45.6 | 29.8 | 39.9 | 16.6 | 62.6 | 50.8 |
+
+The sink token model matches or marginally improves on the vanilla model across all 7 benchmarks (single 160M-parameter model, no variance reported -- limited evidence).
 
 ### Attention Sinks in Other Architectures
 
@@ -263,7 +317,7 @@ The paper demonstrates that attention sinks extend beyond autoregressive decoder
 - **BERT-base-uncased** exhibits disproportionately high attention scores on the [SEP] token across most layers (Figure 14, Appendix H).
 - **Vision Transformers** show analogous attention concentration on background patch tokens (concurrent work by Darcet et al., 2023, who term these "register" tokens).
 
-This suggests attention sinks are a universal property of SoftMax-based Transformer architectures, not specific to autoregressive language models (Section A, Appendix H).
+This suggests attention sinks are a universal property of SoftMax-based Transformer architectures, not specific to autoregressive language models (Section A, Appendix H). A key difference: ViT "registers" function as global information holders in intermediate layers, whereas attention sinks are positionally determined in autoregressive models (Appendix B).
 
 ### Impact and Adoption
 
@@ -281,9 +335,18 @@ StreamingLLM has been integrated into NVIDIA TensorRT-LLM, Intel Extension for T
 
 - **Streaming-only design.** The framework is designed for streaming (sequential token-by-token decoding) settings. It does not address the prefill phase for long prompts (Section A).
 
-- **Sink token pre-training validated only at small scale.** The dedicated sink token experiments use 160M-parameter models. Whether the benefits scale to larger models (7B+) is not validated.
+- **Sink token pre-training validated only at small scale.** The dedicated sink token experiments use 160M-parameter models. Whether the benefits scale to larger models (7B+) is not validated (Section 4.2).
 
 - **Additional sink tokens do not help.** Adding 2 sink tokens during pre-training does not improve streaming performance over 1 sink token, and the model becomes dependent on both tokens (Table 10, Appendix I). This contrasts with ViTs where multiple registers are beneficial (Darcet et al., 2023).
+
+- **[Inferred]** No evaluation on non-English languages. All experiments use English-language data (PG19, ARC), limiting generalizability claims for multilingual models.
+
+- **[Inferred]** No evaluation with different decoding strategies (e.g., beam search, nucleus sampling). All streaming experiments use greedy or standard autoregressive decoding.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models with >70B parameters; non-English evaluation sets; non-RoPE/non-ALiBi positional encodings (e.g., absolute positional embeddings); instruction-tuned models beyond Llama-2-Chat for streaming QA; streaming with beam search or other non-greedy decoding; sink token pre-training at scales >160M parameters.
+- **Comparability notes:** The paper's cache sizes (half the pre-training window) differ from the full pre-training window that would be natural for comparison. The PG19 perplexity evaluation concatenates 100 books, so book-boundary transitions create perplexity fluctuations not present in single-document evaluations. StreamEval is a custom benchmark introduced in this paper, so cross-paper comparison on streaming QA requires caution. The 22.2x speedup figure is implementation-specific (HuggingFace Transformers on a single A6000); optimized implementations (e.g., with FlashAttention) may yield different relative speedups.
 
 ---
 
@@ -293,7 +356,7 @@ StreamingLLM has been integrated into NVIDIA TensorRT-LLM, Intel Extension for T
 
 1. **Identified the attention sink phenomenon in autoregressive Transformers.** Autoregressive LLMs consistently assign disproportionate attention to initial tokens regardless of semantic content, driven by SoftMax's constraint that attention weights must sum to one and the autoregressive visibility of initial tokens (Section 3.1, Figure 2, Figure 12).
 
-2. **Explained why window attention fails.** The perplexity collapse is caused by removing the dominant terms in the SoftMax denominator, shifting the entire attention score distribution away from its trained regime — not by losing semantically important information (Table 1, Section 3.1).
+2. **Explained why window attention fails.** The perplexity collapse is caused by removing the dominant terms in the SoftMax denominator, shifting the entire attention score distribution away from its trained regime -- not by losing semantically important information (Table 1, Section 3.1).
 
 3. **Introduced StreamingLLM for infinite-length streaming.** By preserving 4 initial tokens as attention sinks alongside a rolling KV cache, LLMs can process arbitrarily long input streams with O(TL) complexity, constant memory, and no fine-tuning. Stable perplexity is demonstrated over 4M tokens across four model families and scales from 2.8B to 70B (Figure 5, Section 4.1).
 
@@ -317,27 +380,27 @@ StreamingLLM has been integrated into NVIDIA TensorRT-LLM, Intel Extension for T
 
 ## Key Claims
 
-1. **C1: Attention sinks are a universal property of autoregressive Transformers.** LLMs consistently assign massive attention scores to initial tokens regardless of their semantic content. In Llama-2-7B with 4,096-token sequences, attention scores on the first token exceed 50% of total attention in most layers beyond the bottom two (Figure 2, Figure 12, Appendix F). Status: **supported**.
+1. **C1: Attention sinks are a universal property of autoregressive Transformers.** LLMs consistently assign massive attention scores to initial tokens regardless of their semantic content. In Llama-2-7B with 4,096-token sequences, attention scores on the first token exceed 0.6--0.9 of total attention in most layers beyond the bottom two (Figure 2, Figure 12, Appendix F). Tested across Llama-2-[7,13,70]B, Falcon-7B, MPT-7B, and Pythia-12B (strong evidence across 4 model families). Status: **supported**. Scope: Llama-2, Falcon, MPT, Pythia; sequences 16--4096 tokens. Magnitude: >60--90% of total attention in layers 2+.
 
-2. **C2: Window attention fails due to SoftMax distribution shift, not lost semantics.** Replacing the first four tokens with linebreak tokens "\n" restores perplexity from 5,158 to 5.60 (vs. 5.40 with original tokens) on Llama-2-13B (Table 1). The failure is caused by removing the dominant terms e^{x_1} from the SoftMax denominator (Equation 1, Section 3.1). Status: **supported**.
+2. **C2: Window attention fails due to SoftMax distribution shift, not lost semantics.** Replacing the first four tokens with linebreak tokens "\n" restores perplexity from 5,158 to 5.60 (vs. 5.40 with original tokens) on Llama-2-13B (Table 1). The failure is caused by removing the dominant terms e^{x_1} from the SoftMax denominator (Equation 1, Section 3.1). Scope: Llama-2-13B, cache 1024, PG19 first book. Magnitude: PPL 5158 to 5.60 with linebreak substitution. Status: **supported** (single model, single dataset -- moderate evidence).
 
-3. **C3: StreamingLLM enables stable streaming over 4M+ tokens.** All tested model families — Llama-2-[7,13,70]B, Falcon-[7,40]B, Pythia-[2.8,6.9,12]B, MPT-[7,30]B — maintain stable perplexity when processing 4 million tokens with StreamingLLM, matching the sliding window with recomputation baseline (Figure 5, Section 4.1). Status: **supported**.
+3. **C3: StreamingLLM enables stable streaming over 4M+ tokens.** All tested model families -- Llama-2-[7,13,70]B, Falcon-[7,40]B, Pythia-[2.8,6.9,12]B, MPT-[7,30]B -- maintain stable perplexity when processing 4 million tokens with StreamingLLM, matching the sliding window with recomputation baseline (Figure 5, Section 4.1). Status: **supported** (strong evidence: 4 families, 11 model sizes, 2.8B--70B parameters). Scope: PG19 concatenated test set, half-pretraining-window cache size. Magnitude: stable PPL over 4M tokens matching recomputation baseline.
 
-4. **C4: Four initial tokens suffice as attention sinks.** Introducing 4 initial tokens generally restores perplexity; 1–2 tokens are insufficient (Llama-2-7B: 1 token = PPL 11.88, 4 tokens = PPL 9.59, cache 4,096). Adding more than 4 yields diminishing returns (Table 2, Section 4.4). Status: **supported**.
+4. **C4: Four initial tokens suffice as attention sinks.** Introducing 4 initial tokens generally restores perplexity; 1--2 tokens are insufficient (Llama-2-7B: 1 token = PPL 11.88, 4 tokens = PPL 9.59, cache 4,096). Adding more than 4 yields diminishing returns -- 8 tokens give PPL 9.54 (Table 2, Section 4.4). Status: **supported** (tested across 4 models, 2 cache sizes -- moderate evidence). Scope: Llama-2-7B (cache 4096), Falcon-7B, MPT-7B, Pythia-12B (cache 2048). Magnitude: PPL 11.88 (1 token) to 9.59 (4 tokens) to 9.54 (8 tokens).
 
-5. **C5: A dedicated learnable sink token eliminates the need for multiple initial tokens.** A 160M-parameter model pre-trained with a sink token achieves PPL 18.01 with just the sink token (1+1,023), matching the vanilla model with 4 initial tokens (PPL 18.05 at 4+1,020). The sink token does not harm convergence or zero-shot accuracy across 7 benchmarks (Table 3, Table 4, Figure 6). Status: **supported**.
+5. **C5: A dedicated learnable sink token eliminates the need for multiple initial tokens.** A 160M-parameter model pre-trained with a sink token achieves PPL 18.01 with just the sink token (1+1,023), matching the vanilla model with 4 initial tokens (PPL 18.05 at 4+1,020). The sink token does not harm convergence or zero-shot accuracy across 7 benchmarks (Table 3, Table 4, Figure 6). Status: **supported** (single scale, single seed -- limited evidence at 160M parameters only). Scope: 160M-parameter Pythia-architecture, Pile dataset, 143K training steps. Magnitude: PPL 18.01 (1+1023) vs vanilla 18.05 (4+1020).
 
-6. **C6: StreamingLLM achieves up to 22.2x decoding speedup.** At cache size 4,096, StreamingLLM decodes at 65ms/token vs. 1,411ms/token for sliding window with recomputation on Llama-2-7B (Figure 10). The speedup grows with cache size because StreamingLLM scales linearly while recomputation scales quadratically (Section 4.5). Status: **supported**.
+6. **C6: StreamingLLM achieves up to 22.2x decoding speedup.** The 22.2x figure is the maximum speedup observed on Llama-2-13B at cache size 4,096 (Figure 10). For Llama-2-7B at the same cache size, the speedup is 1411/145 = 9.7x. The speedup grows with cache size because StreamingLLM scales linearly while recomputation scales quadratically (Section 4.5). Status: **supported** (two models, one GPU, one implementation -- moderate evidence, implementation-dependent). Scope: Llama-2-7B and Llama-2-13B, single A6000 GPU, HuggingFace Transformers. Magnitude: 2.1x--22.2x depending on model and cache size.
 
-7. **C7: StreamingLLM does not extend context length.** On StreamEval with Llama-2-7B-32K-Instruct, accuracy drops to 0.00% when the query-answer distance (100 lines, 2,300 tokens) exceeds the cache capacity (4+2,044 = 2,048 tokens). Accuracy is maintained only when the relevant information falls within the cache window (Table 7, Appendix C). Status: **supported**.
+7. **C7: StreamingLLM does not extend context length.** On StreamEval with Llama-2-7B-32K-Instruct, accuracy drops to 0.00% when the query-answer distance (100 lines, 2,300 tokens) exceeds the cache capacity (4+2,044 = 2,048 tokens). Accuracy is maintained only when the relevant information falls within the cache window (Table 7, Appendix C). Status: **supported**. Scope: Llama-2-7B-32K-Instruct, StreamEval benchmark, cache configs 4+2044 through 4+16380. Magnitude: 85.80% accuracy at 20-line distance to 0.00% at 100-line distance with 4+2044 cache.
 
-8. **C8: Larger cache does not consistently improve perplexity.** For Llama-2-7B, best perplexity is 9.08 at cache 4+2,044, rising to 9.59 at 4+4,092 (Table 6). Similar non-monotonic behavior is observed for Falcon-7B and MPT-7B. This aligns with Liu et al.'s observation that LLMs do not fully utilize long contexts (Section 4.4). Status: **supported**.
+8. **C8: Larger cache does not consistently improve perplexity.** For Llama-2-7B, best perplexity is 9.08 at cache 4+2,044, rising to 9.59 at 4+4,092 (Table 6). Similar non-monotonic behavior is observed for Falcon-7B (best 12.34 at 4+1020, rising to 12.84 at 4+2044) and MPT-7B (best 14.12 at 4+252, rising to 14.99 at 4+2044). This aligns with Liu et al.'s observation that LLMs do not fully utilize long contexts (Section 4.4). Status: **supported** (4 models, single-run -- moderate evidence). Scope: Llama-2-7B, Falcon-7B, MPT-7B, Pythia-12B; PG19 400K tokens. Magnitude: non-monotonic PPL; Llama-2-7B ranges from 9.08 to 9.73 across cache sizes.
 
 ---
 
 ## Open Questions
 
-1. **Are attention sinks a side effect of SoftMax normalization or do they serve a functional computational role in the residual stream?** The paper attributes sinks to SoftMax's sum-to-one constraint but does not determine whether sink tokens carry useful information (e.g., global statistics) through their Value vectors or merely absorb unused probability mass. Darcet et al.'s finding that ViT "registers" store global image information suggests a functional role. Not yet addressed by subsequent work in this directory.
+1. **Are attention sinks a side effect of SoftMax normalization or do they serve a functional computational role in the residual stream?** The paper attributes sinks to SoftMax's sum-to-one constraint but does not determine whether sink tokens carry useful information (e.g., global statistics) through their Value vectors or merely absorb unused probability mass. Darcet et al.'s finding that ViT "registers" store global image information suggests a functional role. Addressed by Gu et al. (2025-04-attention-sink-emerges), who identify SoftMax normalization as the root cause and show sigmoid attention eliminates sinks.
 
 2. **Would sink token pre-training improve streaming performance at larger scales?** The dedicated sink token experiments are conducted at 160M parameters only. Whether the single-token sufficiency and zero-cost-to-benchmarks results hold for 7B+ parameter models is unvalidated. Not addressed.
 
@@ -395,7 +458,7 @@ StreamingLLM has been integrated into NVIDIA TensorRT-LLM, Intel Extension for T
 
 - **Dao et al. (2022)** -- *FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness.* System-level optimization for attention computation; orthogonal to StreamingLLM's KV cache management strategy.
 
-- **Zhang et al. (2023b)** -- *H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models.* KV cache eviction policy based on accumulated attention scores. Complementary to StreamingLLM's fixed sink + rolling window strategy — H2O dynamically selects which tokens to retain based on attention patterns.
+- **Zhang et al. (2023b)** -- *H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models.* KV cache eviction policy based on accumulated attention scores. Complementary to StreamingLLM's fixed sink + rolling window strategy -- H2O dynamically selects which tokens to retain based on attention patterns.
 
 ### Attention Sink Precursors
 

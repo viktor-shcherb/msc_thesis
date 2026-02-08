@@ -1,0 +1,3 @@
+# Acknowledgments [p. 11]
+
+The authors thank Luke Zettlemoyer, who served as the TACL action editor, and the anonymous reviewers for their comments and feedback. They also thank Claudiu Leoveanu-Condrei, Megan Leszczynski, Dmytro Okhonko, Maithra Raghu, Eric Wallace, and Sang Michael Xie for feedback and discussions that helped improve this work. Further, they are grateful to Sewon Min for her help with the AmbigQA dataset. This work was supported by the Stanford Center for Research on Foundation Models (CRFM), by OpenAI via an API credits grant to the Stanford CRFM, and by Anthropic via the Claude academic access program. [p. 11]

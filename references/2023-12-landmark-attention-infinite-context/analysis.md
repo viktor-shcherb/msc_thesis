@@ -8,32 +8,44 @@ categories: ["attention-efficiency", "context-extension", "streaming-inference"]
 scope: ["block-level retrieval via attention", "landmark tokens as learned gates", "infinite context inference"]
 benchmarks_used: ["perplexity-pg19", "perplexity-proofpile", "passkey-retrieval"]
 models_introduced: []
-models_evaluated: ["llama-7b"]
+models_evaluated: ["llama-7b", "transformer-xl"]
 key_claims:
   - id: C1
     claim: "Landmark tokens trained with Grouped Softmax enable attention-based block retrieval without a separate retriever"
     evidence: "Section 3.1, Equations 1-4, Figure 1"
     status: supported
+    scope: "causal language modeling, GPT-2-like 12-layer architecture and LLaMA 7B"
+    magnitude: "qualitative — mechanism demonstrated via perplexity parity with full attention (16.23 vs 16.12 at 512 tokens) and interpretable retrieval patterns"
   - id: C2
-    claim: "Landmark attention trained on 512-token windows achieves 14.72 perplexity at 4096-token evaluation on PG-19, comparable to Transformer-XL at 14.55"
+    claim: "Landmark attention trained on 512-token windows achieves 14.72 perplexity at 4096-token evaluation on PG-19, matching Transformer-XL at 14.55"
     evidence: "Table 1, Section 4.1"
     status: supported
+    scope: "PG-19 English books corpus, GPT-2-like 12-layer architecture, l_block=50, k=4, 80 cached blocks"
+    magnitude: "14.72 PPL vs Transformer-XL 14.55 PPL at eval length 4096 (0.17 PPL gap); 3.18 PPL on arXiv Math at same setting"
   - id: C3
     claim: "Fine-tuning LLaMA 7B with landmarks for 15K steps at context length 512 extends retrieval to 32K tokens with 98% passkey accuracy"
     evidence: "Figure 3b, Section 4.2, Appendix G"
     status: supported
+    scope: "LLaMA 7B, passkey retrieval task only, per-head retrieval with k=5, KV cache offloaded to CPU"
+    magnitude: "98% accuracy at 32K tokens (16x training context length) vs 0% for base LLaMA 7B beyond ~3K tokens"
   - id: C4
     claim: "Landmark attention reduces inference computation by a factor of block length (50x in experiments) compared to full attention"
     evidence: "Section 3.3"
     status: supported
+    scope: "autoregressive generation, l_block=50, excluding retrieved-block attention cost"
+    magnitude: "50x reduction in attention operations for block selection; retrieved-block cost constant regardless of total context length"
   - id: C5
     claim: "Context Miss Token can eliminate 57% of retrieval calls with only 0.05 perplexity degradation"
     evidence: "Table 3, Appendix D"
     status: supported
+    scope: "PG-19, eval length 2048, k=4, 60K training steps (not full 240K), cutoff threshold 0.3"
+    magnitude: "57% drop rate at 0.05 PPL cost (16.43 vs 16.38); baseline without CMT is 16.28"
   - id: C6
     claim: "Reducing retrieval flexibility to per-head only (not per-token) costs 0.18 perplexity at eval length 2048 with k=4"
     evidence: "Table 2, Section 4.1"
     status: supported
+    scope: "PG-19, eval length 2048, k=4, GPT-2-like 12-layer architecture"
+    magnitude: "0.18 PPL increase (15.10 vs 14.92); unique retrieved blocks typically below 10 out of 32 possible"
 cross_references:
   - target: 2020-04-longformer-long-document-transformer
     type: complementary
@@ -67,7 +79,7 @@ cross_references:
     detail: "Grouped Softmax distributes attention differently among landmark tokens, potentially interacting with attention sink behavior"
   - target: 2024-08-infinitebench-long-context-evaluation
     type: extended-by
-    detail: "∞Bench adapts the passkey retrieval task to 100K+ contexts with 59 positions and 590 examples"
+    detail: "InfiniteBench adapts the passkey retrieval task to 100K+ contexts with 59 positions and 590 examples"
   - target: 2020-04-compressive-transformer-pg19
     type: uses-benchmark
     detail: "Uses PG-19 (introduced by Rae et al., 2020) for language modelling perplexity evaluation"
@@ -81,6 +93,7 @@ open_questions:
   - question: "How does landmark attention perform on downstream tasks beyond perplexity and passkey retrieval (e.g., question answering, summarization, multi-document reasoning)?"
     addressed_by: null
 ---
+
 # Random-Access Infinite Context Length for Transformers
 
 **Authors:** Amirkeivan Mohtashami, Martin Jaggi (EPFL)
@@ -92,13 +105,15 @@ The method is commonly referred to as **Landmark Attention** in follow-up litera
 
 ## Core Research Problem
 
-Standard Transformer attention allows each token to access the representation of any other token, but this flexibility comes with quadratic computational cost and memory footprint in sequence length, limiting the context that can be processed. Prior approaches to overcoming this limit fall into three categories, each with fundamental drawbacks:
+Standard Transformer attention allows each token to access the representation of any other token, but this flexibility comes with **quadratic computational cost and memory footprint** in sequence length, limiting the context that can be processed. Prior approaches to overcoming this limit fall into three categories, each with fundamental drawbacks:
 
-1. **Recurrent memory methods** (Transformer-XL, Memory Transformers, Infinite Memory Transformer) compress past context into fixed-size memory states. This sacrifices the **random-access flexibility** of attention -- the model can no longer attend to specific past tokens, only to lossy summaries. Mu et al. (2023) -- *Learning to Compress Prompts with Gist Tokens* -- show concretely that gist tokens trained to summarize prompts fail to remember specific details that must be copied into the output (Section 2).
+1. **Recurrent memory methods** (Transformer-XL, Memory Transformers, Infinite Memory Transformer, Recurrent Memory Transformer) compress past context into fixed-size memory states. This sacrifices the **random-access flexibility** of attention -- the model can no longer attend to specific past tokens, only to lossy summaries. Mu et al. (2023) -- *Learning to Compress Prompts with Gist Tokens* -- show concretely that gist tokens trained to summarize prompts fail to remember specific details that must be copied into the output (Section 2).
 
-2. **Retrieval-augmented methods** (REALM, Atlas, Dense Passage Retrieval) use a separate retriever module to find relevant documents from a knowledge base. The retriever is not fully compatible with the model's own attention mechanism, cannot easily be updated for fresh long input data, and may fail to retrieve what the model's attention would find useful (Section 2).
+2. **Retrieval-augmented methods** (REALM, Atlas, Dense Passage Retrieval) use a separate retriever module to find relevant documents from a knowledge base. The retriever is not fully compatible with the model's own attention mechanism, cannot easily be updated for fresh long input data, and may fail to retrieve what the model's attention would find useful. Previous work using attention in the reader to build a retriever relied on manually crafted rules to reduce token scores to document scores (Section 2).
 
 3. **Approximate and sparse attention methods** (Longformer, BigBird, Performer, Reformer, Linformer, Combiner) reduce attention cost but significantly restrict which tokens can be attended to, using fixed patterns (local windows, random subsets, global tokens) or heuristic reductions (max-pooling for block representations in Combiner) that limit the current token's control over attention weights (Section 2).
+
+Additionally, Transformers have a well-known limitation in **extrapolating to context lengths not observed during training**, even with relative positional encodings. Current solutions to this problem often weaken attention scores for long-range tokens or require windowed attention, undermining the benefits of a longer context (Section 2, citing Press et al. (2022) and Sun et al. (2022)).
 
 The core challenge is: **how to enable Transformers to access arbitrarily long contexts while retaining the random-access flexibility of full attention, without requiring a separate retrieval mechanism or compressing past context into lossy summaries.**
 
@@ -138,17 +153,21 @@ This grouping ensures: (a) normal tokens within a block share a softmax group, (
 > AttWeight(Q, K)_{i,j} := S_{i,j}   if G_{i,j} = G_{i,i} and p_j != j   (same-group tokens: direct weight)
 > AttWeight(Q, K)_{i,j} := S_{i,j} * S_{i,p_j}   if G_{i,j} != G_{i,i} and p_j != j   (other-group tokens: gated by landmark)
 
-Attention weights sum to one under this scheme. The key property is that **attending to tokens in other blocks is gated by the attention score to their landmark token**. Since landmarks and current-block tokens share a softmax group, the model must trade off between attending to its local context and retrieving from other blocks (Section 3.1).
+Attention weights sum to one under this scheme. The key property is that **attending to tokens in other blocks is gated by the attention score to their landmark token**. Since landmarks and current-block tokens share a softmax group, the model must trade off between attending to its local context and retrieving from other blocks. The intuition is to force the model to only attend to relevant blocks due to this trade-off (Section 3.1).
 
 ### Key Technical Components
 
-**Stingy position mapping.** Transformers cannot extrapolate to positional indices beyond those seen during training. To handle arbitrarily long contexts at inference, the paper uses an approximate position mapping scheme. A prefix segment of length `(k+1) * (l_block + 1)` is allocated before the current chunk. The latest k cached blocks are mapped to their corresponding positions within the last k slots of this prefix. All older blocks are mapped to the position of the `(k+1)`-th last block. Retrieved blocks are then distributed across the prefix respecting their relative order. This uses RoPE (Su et al., 2021), which adds position information to key and query vectors just before computing attention, enabling position-free storage in the cache (Section 3.2.1, Figure 2).
+**Stingy position mapping.** Transformers cannot extrapolate to positional indices beyond those seen during training. To handle arbitrarily long contexts at inference, the paper uses an approximate position mapping scheme (Section 3.2.1, Figure 2). A prefix segment of length `(k+1) * (l_block + 1)` is allocated before the current chunk. The latest k cached blocks are mapped to their corresponding positions within the last k slots of this prefix. All older blocks are mapped to the position of the `(k+1)`-th last block. Retrieved blocks are then distributed across the prefix respecting their relative order. This uses RoPE (Su et al., 2021), which adds position information to key and query vectors just before computing attention, enabling **position-free storage** in the cache.
+
+When k = 1, mapping memory blocks to a segment of at least 2 blocks is crucial: using only a single block maps all memory blocks to the same index, making it impossible to retrieve the last block based on position information alone (Section 3.2.1).
 
 **Positional augmentation (Appendix E).** To improve extrapolation, the authors propose inserting random positional jumps (between 1 and `p_jump`) after each landmark token during training. With `p_jump = 100` and 10-11 landmarks per input (training length 512), the model extrapolates to ~1400 tokens without cache, compared to ~1024 tokens with standard positional encoding (Figure 6).
 
-**Context Miss Token (CMT) (Appendix D).** A hierarchical extension where a special token at position -1 acts as a gate over landmark tokens themselves. The grouping scheme is extended so that some landmarks (randomly selected during training with probability P_CMT = 0.5) are controlled by CMT, and the attention weight for tokens in CMT-controlled blocks becomes `S_{i,j} * S_{i,p_j} * S_{i,-1}` (Eqs. 5-6). At inference, setting `S_{i,-1}` to zero when below a cutoff threshold emulates skipping retrieval.
+**Context Miss Token (CMT) (Appendix D).** A hierarchical extension where a special token at position -1 acts as a gate over landmark tokens themselves. The grouping scheme is extended so that some landmarks (randomly selected during training with probability P_CMT = 0.5) are controlled by CMT, and the attention weight for tokens in CMT-controlled blocks becomes `S_{i,j} * S_{i,p_j} * S_{i,-1}` (Eqs. 5-6). At inference, setting `S_{i,-1}` to zero when below a cutoff threshold emulates skipping retrieval entirely.
 
 **Retrieval granularity.** At the most permissive level, each token and each head can retrieve different blocks. Efficiency can be improved by merging scores across tokens (taking the maximum landmark score across all tokens in a chunk per head) or across heads (taking the maximum across heads). This reduces bandwidth for cache loading at a moderate perplexity cost (Section 4.1, Table 2).
+
+**FlashAttention compatibility.** Landmark Attention integrates naturally with FlashAttention by matching the landmark frequency to the FlashAttention block size. A Triton implementation is provided. This combination allows fine-tuning LLaMA 7B with 2048 context length instead of the maximum 512 without FlashAttention (Appendix F).
 
 ### Experimental Setup
 
@@ -160,6 +179,7 @@ Attention weights sum to one under this scheme. The key property is that **atten
 - Training: 240K steps with l_seq = 512, l_block = 50. Effective batch size 128 via gradient accumulation and data-parallel training across 4 nodes. Mixed-precision bfloat16 on up to 4 NVIDIA A100 GPUs.
 - Datasets: PG-19 (3.7B tokens, English books) and arXiv Math (5.6B tokens, cleaned arXiv math subset of proof-pile).
 - Baseline: Transformer-XL with window size 256 (effective context 512), trained for 60K steps over segments of length 2048, observing the same total number of tokens as the landmark method (Section 4.1).
+- **Reproducibility:** Code released at https://github.com/epfml/landmark-attention/. No variance estimates reported; single run per configuration (limited evidence for individual perplexity comparisons). Seeds not reported.
 
 **Fine-tuning LLaMA 7B.**
 
@@ -169,7 +189,7 @@ Attention weights sum to one under this scheme. The key property is that **atten
 
 ### Key Results
 
-**Language modeling perplexity (PG-19, Table 1):**
+**Language modeling perplexity (Table 1):**
 
 | Eval. Length | Method | l_local | Blocks | k | Attention Size | PG19 PPL | arXiv PPL |
 |---|---|---|---|---|---|---|---|
@@ -187,20 +207,28 @@ Attention weights sum to one under this scheme. The key property is that **atten
 | 4096 | Landmark | 250 | 80 | 2 | 370 | 15.00 | 3.29 |
 | 4096 | Landmark | 250 | 80 | 4 | 470 | 14.72 | 3.18 |
 
-- At eval length 512, landmark attention with l_local = 250 and k = 2 (attending to 360 tokens: 250 local + 10 landmarks + 100 retrieved) achieves 16.23 perplexity, close to the full-attention baseline at 512 (16.12) and substantially better than the baseline truncated to 360 tokens (16.76).
-- At eval length 4096, landmark attention (14.72 with 80 blocks, k = 4) closes the gap with Transformer-XL (14.55) despite being trained only on 512-token windows.
-- On arXiv Math, landmark attention achieves 3.18 perplexity at eval length 4096 vs. 4.01 at eval length 512 -- a 20.7% reduction demonstrating effective utilization of longer contexts not seen during training.
+- At eval length 512, landmark attention with l_local = 250 and k = 2 (attending to 360 tokens: 250 local + 10 landmarks + 100 retrieved) achieves **16.23 perplexity**, close to the full-attention baseline at 512 (16.12) and substantially better than the baseline truncated to 360 tokens (16.76) (Table 1, single run per configuration, limited evidence).
+- At eval length 4096, landmark attention (14.72 with 80 blocks, k = 4) **closes the gap with Transformer-XL** (14.55) despite being trained only on 512-token windows (Table 1, two datasets tested -- moderate evidence).
+- On arXiv Math, landmark attention achieves **3.18 perplexity** at eval length 4096 vs. 4.01 at eval length 512 -- a 20.7% reduction demonstrating effective utilization of longer contexts not seen during training. Transformer-XL results not reported for arXiv Math due to computation limitations (Table 1).
+- The model still improves over the baseline even with only k = 2 retrieved blocks at context lengths of 2048 and 4096, and keeping only 40 blocks in memory at eval length 4096 outperforms eval length 2048 with the same configuration, suggesting the model also learns recurrent-like mechanisms (Table 1, Section 4.1).
 
-**Retrieval granularity (PG-19, eval length 2048, k = 4, Table 2):**
+**Retrieval granularity (PG-19, Table 2):**
 
-| Per Head | Per Token | Perplexity |
-|---|---|---|
-| Yes | Yes | 14.92 |
-| Yes | No | 15.10 |
-| No | Yes | 15.04 |
+| Per Head | Per Token | Eval. Length | k | Blocks (theoretical) | Perplexity |
+|---|---|---|---|---|---|
+| Yes | Yes | 2048 | 2 | 250 * 8 * 2 | 15.14 |
+| Yes | Yes | 2048 | 4 | 250 * 8 * 4 | 14.92 |
+| Yes | Yes | 4096 | 4 | 250 * 8 * 4 | 14.72 |
+| Yes | No | 2048 | 2 | 8 * 2 | 15.48 |
+| Yes | No | 2048 | 4 | 8 * 4 | 15.10 |
+| Yes | No | 4096 | 4 | 8 * 4 | 14.95 |
+| No | Yes | 2048 | 2 | 250 * 2 | 15.44 |
+| No | Yes | 2048 | 4 | 250 * 4 | 15.04 |
+| No | Yes | 4096 | 4 | 250 * 4 | 14.89 |
 
-- Restricting retrieval to vary only across heads (not tokens) costs 0.18 perplexity but substantially reduces unique blocks loaded from cache (typically below 10 out of 32 theoretically possible, Figure 5).
-- Restricting to vary only across tokens (not heads) costs 0.12 perplexity.
+- Restricting retrieval to vary only across heads (not tokens) at k = 4, eval 2048 costs **0.18 perplexity** (15.10 vs 14.92) but substantially reduces unique blocks loaded from cache -- typically below 10 out of 32 theoretically possible (Table 2, Figure 5, single dataset, limited evidence).
+- Restricting to vary only across tokens (not heads) at k = 4, eval 2048 costs **0.12 perplexity** (15.04 vs 14.92) (Table 2).
+- The most restricted setting (same blocks across heads, per-token only) at k = 2, eval 2048 costs **0.30 perplexity** (15.44 vs 15.14) (Table 2).
 
 **Fine-tuning LLaMA 7B -- passkey retrieval accuracy (Figure 3b):**
 
@@ -212,7 +240,7 @@ Attention weights sum to one under this scheme. The key property is that **atten
 | ~32K | OOM | 98% |
 
 - Base LLaMA 7B retrieves the passkey within and slightly beyond its 2048-token training context but completely fails beyond ~3K tokens.
-- Landmark fine-tuned LLaMA 7B maintains near-perfect accuracy up to 32K tokens (using CPU offloading for the KV cache), demonstrating context length extension by a factor of ~16x from the 512-token fine-tuning length.
+- Landmark fine-tuned LLaMA 7B maintains near-perfect accuracy up to **32K tokens** (using CPU offloading for the KV cache), demonstrating context length extension by a factor of ~16x from the 512-token fine-tuning length (Figure 3b, averaged over 50 random prompts per context length -- moderate evidence for the specific task, but only tested on passkey retrieval).
 
 **Context Miss Token (PG-19, eval length 2048, k = 4, Table 3, 60K training steps):**
 
@@ -225,15 +253,16 @@ Attention weights sum to one under this scheme. The key property is that **atten
 | 0.5 | 16.86 | 84% |
 | 1.0 | 19.49 | 100% |
 
-- With cutoff 0.3, 57% of retrieval calls are dropped with only 0.05 perplexity degradation (16.43 vs. 16.38 without cutoff).
-- The 0.10 perplexity gap between training without CMT (16.28) and with CMT (16.38, no cutoff) reflects the harder training task; the authors conjecture longer training would close this gap.
+- With cutoff 0.3, **57% of retrieval calls are dropped** with only 0.05 perplexity degradation (16.43 vs. 16.38 without cutoff) (Table 3).
+- The 0.10 perplexity gap between training without CMT (16.28) and with CMT (16.38, no cutoff) reflects the harder training task; the authors conjecture longer training would close this gap (Table 3, single dataset at 60K steps -- limited evidence, not validated at full 240K steps).
 
 ### Computation and Memory
 
 - **Training overhead:** Negligible -- only the Grouped Softmax computation is added. No cache is maintained during training. Training cost is O(1) relative to inference context length, compared to O(n^2) for standard attention (Section 3.3).
 - **Inference reduction:** The number of attention operations is reduced by a factor of l_block (50 in experiments) since only landmark tokens are scanned to identify relevant blocks. The cost of attending to retrieved blocks is constant regardless of total context length (Section 3.3).
 - **Memory reduction:** Only landmark key vectors need to reside in fast memory. All other tokens' KV vectors can be offloaded to CPU or disk and loaded on demand when their block is retrieved (Section 3.3, Appendix G).
-- **FlashAttention compatibility:** Landmark Attention integrates naturally with FlashAttention by matching the landmark frequency to the FlashAttention block size. A Triton implementation is provided. This combination allows fine-tuning LLaMA 7B with 2048 context length instead of the maximum 512 without FlashAttention (Appendix F).
+- **Additional overhead:** The two matrix multiplications (block selection + retrieved-block attention) instead of one become relatively negligible for larger inputs (Section 3.3).
+- **Data structure compatibility:** The method can be combined with FAISS or similar nearest-neighbor data structures on top of landmark tokens for further retrieval speedup (Section 3.3).
 
 ---
 
@@ -245,11 +274,18 @@ Attention weights sum to one under this scheme. The key property is that **atten
 
 3. **No cache during training.** The model never sees the cache-based retrieval during training, relying on the Grouped Softmax mechanism to approximate it. Training with a cache might improve results but is left for future work (Section 5).
 
-4. **Evaluation limited to perplexity and passkey retrieval.** No evaluation on downstream tasks such as question answering, summarization, or multi-document reasoning over long contexts. The passkey retrieval task tests exact-match retrieval but does not assess reasoning over retrieved content (Sections 4.1-4.2).
+4. **[Inferred]** **Evaluation limited to perplexity and passkey retrieval.** No evaluation on downstream tasks such as question answering, summarization, or multi-document reasoning over long contexts. The passkey retrieval task tests exact-match retrieval but does not assess reasoning over retrieved content (Sections 4.1-4.2).
 
-5. **Perplexity gap with Transformer-XL.** At eval length 4096 on PG-19, landmark attention (14.72) still trails Transformer-XL (14.55), though at eval length 2048 the gap is larger (14.92 vs. 14.72), suggesting Transformer-XL's recurrence may capture some information the landmark mechanism misses (Table 1).
+5. **[Inferred]** **Perplexity gap with Transformer-XL.** At eval length 2048 on PG-19, landmark attention (14.92) trails Transformer-XL (14.72) by 0.20 PPL. At eval length 4096, the gap narrows to 0.17 PPL (14.72 vs 14.55), suggesting Transformer-XL's recurrence may capture some information the landmark mechanism misses at shorter evaluation windows (Table 1).
 
 6. **CMT increases training difficulty.** Training with Context Miss Token yields 0.10 higher perplexity than training without it (16.38 vs. 16.28 at 60K steps), indicating the additional hierarchical retrieval mechanism makes optimization harder (Table 3).
+
+7. **[Inferred]** **Single model scale tested.** From-scratch experiments use a single GPT-2-like architecture; fine-tuning experiments use only LLaMA 7B. Behavior at larger scales is unknown.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models larger than 7B parameters. No evaluation on downstream tasks (QA, summarization, multi-document reasoning). No comparison with other context extension methods (Position Interpolation, NTK-aware scaling, YaRN). No evaluation on non-English data. The CMT extension was only evaluated at 60K training steps (25% of full training), not at the full 240K steps used for the main experiments.
+- **Comparability notes:** The Transformer-XL baseline was trained over segments of length 2048 (using recurrence over 256-token windows) while landmark attention was trained on 512-token windows, meaning Transformer-XL sees longer contiguous contexts during training. Both methods observed the same total number of tokens. The Transformer-XL baseline was only evaluated on PG-19 due to computation constraints, so cross-method comparison on arXiv Math is not possible. The passkey retrieval task is a synthetic exact-match test that may not reflect performance on naturalistic long-context tasks.
 
 ---
 
@@ -271,39 +307,39 @@ Attention weights sum to one under this scheme. The key property is that **atten
 
 ### Implications
 
-1. **Landmark attention as a building block for infinite-context architectures.** The method's compatibility with FlashAttention and KV cache offloading suggests it could serve as a practical building block for production systems requiring very long contexts, though this has not been validated at scale beyond LLaMA 7B (inference).
+1. **Landmark attention as a building block for infinite-context architectures.** The method's compatibility with FlashAttention and KV cache offloading suggests it could serve as a practical building block for production systems requiring very long contexts, though this has not been validated at scale beyond LLaMA 7B (speculative).
 
-2. **Potential complementarity with positional encoding methods.** The paper explicitly notes that landmark attention is orthogonal to positional encoding methods (PI, NTK-aware scaling, YaRN), suggesting the two approaches could be combined. This remains speculative and untested (Section 5).
+2. **Potential complementarity with positional encoding methods.** The paper explicitly notes that landmark attention is orthogonal to positional encoding methods (PI, NTK-aware scaling, YaRN), suggesting the two approaches could be combined. This remains untested (Section 5).
 
-3. **Attention sinks and landmark tokens.** The Grouped Softmax mechanism distributes attention differently from standard softmax. Whether landmark tokens interact with or mitigate the attention sink phenomenon is an open question (inference).
+3. **Attention sinks and landmark tokens.** The Grouped Softmax mechanism distributes attention differently from standard softmax. Whether landmark tokens interact with or mitigate the attention sink phenomenon is an open question (speculative).
 
 ---
 
 ## Key Claims
 
-1. **C1: Attention-based block retrieval without separate retriever.** Landmark tokens trained with Grouped Softmax produce key vectors that serve as block representatives, enabling block selection directly through the attention mechanism (Section 3.1, Equations 1-4, Figure 1). **Status: supported.**
+1. **C1: Attention-based block retrieval without separate retriever.** Landmark tokens trained with Grouped Softmax produce key vectors that serve as block representatives, enabling block selection directly through the attention mechanism (Section 3.1, Equations 1-4, Figure 1). The mechanism is validated on two datasets (PG-19, arXiv Math) with a single architecture (12-layer GPT-2-like) and one fine-tuned model (LLaMA 7B) -- moderate evidence for the mechanism, though limited to two tasks. **Status: supported.** **Scope:** causal language modeling, GPT-2-like 12-layer architecture and LLaMA 7B. **Magnitude:** qualitative mechanism; achieves 16.23 vs 16.12 full-attention PPL at 512 tokens.
 
-2. **C2: Comparable perplexity to Transformer-XL at reduced computation.** At eval length 4096 on PG-19, landmark attention achieves 14.72 perplexity vs. Transformer-XL's 14.55, while attending to 470 tokens per step compared to Transformer-XL's effective 512 (Table 1, Section 4.1). **Status: supported.**
+2. **C2: Comparable perplexity to Transformer-XL at reduced computation.** At eval length 4096 on PG-19, landmark attention achieves **14.72 perplexity** vs. Transformer-XL's 14.55, while attending to 470 tokens per step compared to Transformer-XL's effective 512 (Table 1, Section 4.1). Single run per configuration, no variance reported (limited evidence for the exact gap). **Status: supported.** **Scope:** PG-19 English books, GPT-2-like architecture, l_block=50, k=4, 80 cached blocks. **Magnitude:** 14.72 vs 14.55 PPL (0.17 gap); 3.18 vs 4.01 PPL improvement on arXiv Math from 512 to 4096 eval length.
 
-3. **C3: Context extension to 32K tokens via fine-tuning.** Fine-tuning LLaMA 7B with landmarks for 15K steps at context length 512 yields 98% passkey retrieval accuracy at 32K tokens, averaged over 50 random prompts (Figure 3b, Section 4.2, Appendix G). **Status: supported.**
+3. **C3: Context extension to 32K tokens via fine-tuning.** Fine-tuning LLaMA 7B with landmarks for 15K steps at context length 512 yields **98% passkey retrieval accuracy** at 32K tokens, averaged over 50 random prompts (Figure 3b, Section 4.2, Appendix G). The passkey retrieval task is synthetic exact-match; downstream task performance is unknown (limited task diversity). **Status: supported.** **Scope:** LLaMA 7B, passkey retrieval only, per-head retrieval with k=5, CPU offloading. **Magnitude:** 98% at 32K vs 0% for base LLaMA beyond ~3K tokens (16x context extension from 512 training length).
 
-4. **C4: 50x computation and memory reduction at inference.** With l_block = 50, landmark scanning reduces attention operations by a factor of 50 for block selection. Retrieved-block attention cost is constant regardless of total context length (Section 3.3). **Status: supported.**
+4. **C4: 50x computation and memory reduction at inference.** With l_block = 50, landmark scanning reduces attention operations by a factor of 50 for block selection. Retrieved-block attention cost is constant regardless of total context length (Section 3.3). This is a theoretical analysis, not an empirical throughput measurement (no wall-clock timing reported). **Status: supported.** **Scope:** autoregressive generation, l_block=50, excluding retrieved-block attention cost. **Magnitude:** 50x reduction in block-selection attention operations.
 
-5. **C5: CMT eliminates 57% of retrieval calls at minimal perplexity cost.** With cutoff threshold 0.3, the CMT score drops below threshold for 57% of retrieval operations, and perplexity increases by only 0.05 (16.43 vs. 16.38, Table 3, Appendix D). **Status: supported.**
+5. **C5: CMT eliminates 57% of retrieval calls at minimal perplexity cost.** With cutoff threshold 0.3, the CMT score drops below threshold for 57% of retrieval operations, and perplexity increases by only 0.05 (16.43 vs. 16.38, Table 3, Appendix D). Only tested at 60K training steps on PG-19 at eval length 2048 (limited evidence -- not validated at full training or on other datasets). **Status: supported.** **Scope:** PG-19, eval length 2048, k=4, 60K steps, cutoff 0.3. **Magnitude:** 57% drop rate at 0.05 PPL cost.
 
-6. **C6: Retrieval flexibility reduction trades perplexity for efficiency.** Constraining retrieval to vary across heads but not tokens costs 0.18 perplexity (15.10 vs. 14.92 at eval length 2048, k = 4) while reducing unique retrieved blocks to typically below 10 out of 32 possible (Table 2, Figure 5). **Status: supported.**
+6. **C6: Retrieval flexibility reduction trades perplexity for efficiency.** Constraining retrieval to vary across heads but not tokens costs **0.18 perplexity** (15.10 vs. 14.92 at eval length 2048, k = 4) while reducing unique retrieved blocks to typically below 10 out of 32 possible (Table 2, Figure 5). Single dataset (PG-19), single architecture (limited evidence). **Status: supported.** **Scope:** PG-19, eval length 2048, k=4, GPT-2-like 12-layer architecture. **Magnitude:** 0.18 PPL increase; unique blocks typically <10 out of 32.
 
 ---
 
 ## Open Questions
 
-1. **Can positional encoding extrapolation be fully solved for landmark attention?** The stingy position mapping loses exact positional information for distant blocks. The positional augmentation approach (Appendix E) partially addresses this but a general solution is needed. Not addressed by subsequent work in this repository.
+1. **Can positional encoding extrapolation be fully solved for landmark attention?** The stingy position mapping loses exact positional information for distant blocks. The positional augmentation approach (Appendix E) partially addresses this but a general solution is needed for exact position-aware retrieval. Not addressed by subsequent work in this repository.
 
-2. **Can hierarchical landmark tokens create multi-level memory?** The CMT extension (Appendix D) demonstrates a two-level hierarchy. The authors suggest extending this to multiple levels analogous to hardware cache hierarchies, with higher-level landmarks controlling lower-level ones. Not addressed by subsequent work in this repository.
+2. **Can hierarchical landmark tokens create multi-level memory?** The CMT extension (Appendix D) demonstrates a two-level hierarchy. The authors suggest extending this to multiple levels analogous to hardware cache hierarchies, with higher-level landmarks controlling lower-level ones (Section 5). Not addressed by subsequent work in this repository.
 
-3. **Would training with cache improve results?** The model never sees the cache-based retrieval mechanism during training. The authors hypothesize that incorporating the cache during training could improve performance. Not addressed by subsequent work in this repository.
+3. **Would training with cache improve results?** The model never sees the cache-based retrieval mechanism during training. The authors hypothesize that incorporating the cache during training could improve performance, especially given the stingy position mapping (Section 5). Not addressed by subsequent work in this repository.
 
-4. **How does landmark attention perform on downstream tasks?** Evaluation is limited to perplexity and passkey retrieval. Performance on question answering, summarization, multi-document reasoning, and other tasks requiring long-context understanding is unknown. Not addressed by subsequent work in this repository.
+4. **How does landmark attention perform on downstream tasks?** Evaluation is limited to perplexity and passkey retrieval. Performance on question answering, summarization, multi-document reasoning, and other tasks requiring long-context understanding is unknown (Sections 4.1-4.2). Not addressed by subsequent work in this repository.
 
 ---
 

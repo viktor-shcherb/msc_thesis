@@ -6,42 +6,58 @@ venue: "Neurocomputing 2024"
 paper_type: journal-paper
 categories: ["position-encoding", "architecture"]
 scope: ["rotary positional encoding", "relative position information", "linear attention compatibility"]
-benchmarks_used: ["wmt-translation", "glue", "enwik8"]
-models_introduced: []
-models_evaluated: ["transformer-base", "bert-base"]
+benchmarks_used: ["wmt-translation", "glue", "enwik8", "cail2019-scm"]
+models_introduced: ["roformer"]
+models_evaluated: ["transformer-base", "bert-base", "wobert", "nezha", "performer"]
 key_claims:
   - id: C1
     claim: "RoPE encodes absolute position with a rotation matrix and incorporates explicit relative position dependency in the self-attention inner product"
     evidence: "Section 3.1--3.2, Equations 11--16"
     status: supported
+    scope: "even-dimensional query/key vectors, standard and linear self-attention"
+    magnitude: "qualitative"
   - id: C2
     claim: "RoPE has a long-term decay property: the inner-product upper bound decays as relative distance increases when using theta_i = 10000^{-2i/d}"
     evidence: "Section 3.3, Section 3.4.3, Figure 2, Equations 35--37"
     status: supported
+    scope: "frequency schedule theta_i = 10000^{-2i/d}, d-dimensional query/key vectors"
+    magnitude: "upper bound on average |S_i| decays from ~20 to ~6-8 over 0-275 relative distance (Figure 2)"
   - id: C3
     claim: "RoPE is compatible with linear self-attention because rotation preserves vector norms"
-    evidence: "Section 3.3, Equation 19"
+    evidence: "Section 3.3, Equation 19, Performer experiment (Figure 3, right)"
     status: supported
+    scope: "linear attention with non-negative kernel feature maps (e.g., elu+1)"
+    magnitude: "qualitative -- denominator kept unchanged, weights not strictly probabilistically normalized"
   - id: C4
     claim: "RoFormer achieves 27.5 BLEU on WMT 2014 EN-DE, outperforming Transformer-base at 27.3 BLEU"
     evidence: "Table 1, Section 4.1.3"
     status: supported
+    scope: "WMT 2014 EN-DE, Transformer-base architecture, beam search (size 4, penalty 0.6), single model averaged over last 5 checkpoints"
+    magnitude: "+0.2 BLEU (27.5 vs 27.3)"
   - id: C5
     claim: "RoFormer converges faster than BERT during MLM pre-training"
     evidence: "Figure 3 (left), Section 4.2.3"
     status: supported
+    scope: "bert-base-uncased architecture, BookCorpus + Wikipedia, batch size 64, max length 512, 100k steps, AdamW lr 1e-5"
+    magnitude: "visual convergence advantage in MLM loss curve (Figure 3 left); no numerical gap reported"
   - id: C6
     claim: "RoFormer outperforms BERT on MRPC (+0.6 F1), STS-B (+1.2 Spearman), and QQP (+15.2 F1) but underperforms on SST-2, QNLI, and MNLI"
     evidence: "Table 2, Section 4.3.3"
     status: supported
+    scope: "bert-base-uncased, 100k pre-training steps, 6 GLUE tasks, best-averaged validation results across lr {2,3,4,5}e-5"
+    magnitude: "wins: MRPC +0.6 F1, STS-B +1.2 Spearman, QQP +15.2 F1; losses: SST-2 -2.8 Acc, QNLI -2.5 Acc, MNLI -4.4/-3.6 Acc"
   - id: C7
     claim: "RoFormer-1024 outperforms WoBERT-512 by +1.69% absolute accuracy on CAIL2019-SCM test set, demonstrating RoPE's sequence length flexibility"
     evidence: "Table 5, Section 4.5.4"
     status: supported
+    scope: "CAIL2019-SCM Chinese legal case matching, documents >512 characters, RoFormer pre-trained on ~34GB Chinese data"
+    magnitude: "+1.69% absolute test accuracy (69.79% vs 68.10%)"
   - id: C8
     claim: "Performer with RoPE achieves lower LM loss than Performer without RoPE under identical training conditions"
     evidence: "Figure 3 (right), Section 4.4.2"
     status: supported
+    scope: "12-layer char-based Performer, 768 dims, 12 heads, Enwik8, lr 1e-4, batch 128, max length 1024"
+    magnitude: "visual convergence advantage in LM loss curve (Figure 3 right); no numerical gap reported"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -78,10 +94,10 @@ cross_references:
     detail: "Gu et al. evaluate RoPE alongside five other PE types and show that PE type does not affect attention sink emergence; proves (Proposition 4) that RoPE attention scores with repeated tokens are bounded by e^{2xi}/(e^{2xi} + (t-1))"
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
+    detail: "Llama 3 uses RoPE with increased base frequency theta=500,000 for 128K context support"
   - target: 2025-04-kimi-vl-technical-report
     type: extended-by
     detail: "Kimi-VL uses 2D RoPE in MoonViT vision encoder for spatial position encoding and extends RoPE base frequency from 50K to 800K for 128K context in the MoE language model"
-    detail: "Llama 3 uses RoPE with increased base frequency theta=500,000 for 128K context support"
   - target: 2025-04-pine-eliminating-position-bias
     type: extended-by
     detail: "PINE identifies RoPE's recency bias as one of two causes of position bias and designs importance-based position re-assignment that aligns with RoPE's inherent distance decay"
@@ -112,7 +128,7 @@ open_questions:
 ---
 # RoFormer: Enhanced Transformer with Rotary Position Embedding
 
-**Authors:** Jianlin Su, Yu Lu, Shengfeng Pan, Ahmed Murtadha, Bo Wen, Yunfeng Liu (Zhuiyi Technology Co., Ltd.)
+**Authors:** Jianlin Su, Yu Lu, Shengfeng Pan, Ahmed Murtadha, Bo Wen, Yunfeng Liu (Zhuiyi Technology Co., Ltd., Shenzhen, China)
 **Date:** April 2021, arXiv:2104.09864; published in Neurocomputing 568, 127063, January 2024
 
 ---
@@ -222,6 +238,8 @@ where h_i = q_{[2i:2i+1]} k*_{[2i:2i+1]} and S_j = sum_{i=0}^{j-1} e^{i(m-n)*the
 
 **Chinese long text (Section 4.5):** RoFormer pre-trained on ~34GB Chinese data (Wikipedia, news, forums) in multiple stages with varying max sequence lengths (128--1536) and batch sizes (256--512) over 6 stages totaling ~452.5k steps (Table 4). Evaluated on CAIL2019-SCM (8964 case triplets, similar case matching in legal domain). Hardware: two cloud servers with 4x V100 GPUs each.
 
+**Reproducibility:** Code released on GitHub (MIT License for fairseq and Performer), pre-trained models available. Seeds not explicitly reported. No variance estimates or confidence intervals provided for any experiment.
+
 ### Key Results
 
 **Machine translation (Table 1):**
@@ -231,12 +249,12 @@ where h_i = q_{[2i:2i+1]} k*_{[2i:2i+1]} and S_j = sum_{i=0}^{j-1} e^{i(m-n)*the
 | Transformer-base (Vaswani et al., 2017) | 27.3 |
 | RoFormer | **27.5** |
 
-- RoFormer gives a modest +0.2 BLEU improvement over the Transformer baseline on WMT 2014 EN-DE (Table 1, Section 4.1.3).
+- RoFormer gives a modest +0.2 BLEU improvement over the Transformer baseline on WMT 2014 EN-DE (Table 1, Section 4.1.3). Single dataset, single model configuration, no variance reported (limited evidence).
 
 **Pre-training convergence (Figure 3):**
 
-- RoFormer achieves faster MLM loss convergence than BERT under identical training conditions (Figure 3, left).
-- Performer with RoPE achieves lower LM loss than Performer without RoPE (Figure 3, right).
+- RoFormer achieves faster MLM loss convergence than BERT under identical training conditions (Figure 3, left). Only visual comparison from loss curves; no numerical convergence speed metric reported (limited evidence -- single configuration, single training run).
+- Performer with RoPE achieves lower LM loss than Performer without RoPE (Figure 3, right). Single dataset (Enwik8), single configuration, no numerical values reported (limited evidence).
 
 **GLUE fine-tuning (Table 2):**
 
@@ -245,7 +263,7 @@ where h_i = q_{[2i:2i+1]} k*_{[2i:2i+1]} and S_j = sum_{i=0}^{j-1} e^{i(m-n)*the
 | BERT | 88.9 | **93.5** | **90.5** | 85.8 | 71.2 | **84.6/83.4** |
 | RoFormer | **89.5** | 90.7 | 88.0 | **87.0** | **86.4** | 80.2/79.8 |
 
-- RoFormer outperforms BERT on MRPC (+0.6 F1), STS-B (+1.2 Spearman), and QQP (+15.2 F1). BERT outperforms RoFormer on SST-2 (-2.8), QNLI (-2.5), and MNLI (-4.4/-3.6) (Table 2, Section 4.3.3).
+- RoFormer outperforms BERT on MRPC (+0.6 F1), STS-B (+1.2 Spearman), and QQP (+15.2 F1). BERT outperforms RoFormer on SST-2 (-2.8), QNLI (-2.5), and MNLI (-4.4/-3.6) (Table 2, Section 4.3.3). Best-averaged validation results across 4 learning rates; no variance across runs reported (moderate evidence -- 6 tasks but no statistical significance testing).
 
 **Chinese long text -- CAIL2019-SCM (Table 5):**
 
@@ -256,7 +274,7 @@ where h_i = q_{[2i:2i+1]} k*_{[2i:2i+1]} and S_j = sum_{i=0}^{j-1} e^{i(m-n)*the
 | RoFormer-512 | 64.13% | 68.29% |
 | RoFormer-1024 | **66.07%** | **69.79%** |
 
-- At 512 tokens, RoFormer is comparable to baselines. At 1024 tokens, RoFormer-1024 outperforms WoBERT-512 by +1.69% absolute on the test set, demonstrating RoPE's sequence length flexibility (Table 5, Section 4.5.4).
+- At 512 tokens, RoFormer is comparable to baselines. At 1024 tokens, RoFormer-1024 outperforms WoBERT-512 by +1.69% absolute on the test set, demonstrating RoPE's sequence length flexibility (Table 5, Section 4.5.4). Single dataset in a specialized domain (Chinese legal), no variance reported (limited evidence for generalizability of length flexibility).
 
 **Chinese pre-training progression (Table 4):**
 
@@ -269,13 +287,22 @@ where h_i = q_{[2i:2i+1]} k*_{[2i:2i+1]} and S_j = sum_{i=0}^{j-1} e^{i(m-n)*the
 | 5 | 1536 | 256 | 10k | 1.58 | 67.4% |
 | 6 | 512 | 512 | 30k | 1.66 | 66.2% |
 
-- Accuracy improves when the maximum sequence length is increased to 1536, confirming RoPE's ability to adapt to longer sequences without architectural changes (Table 4, Section 4.5.2).
+- Accuracy improves when the maximum sequence length is increased to 1536 (stages 2 and 5), confirming RoPE's ability to adapt to longer sequences without architectural changes (Table 4, Section 4.5.2). Single pre-training run, no comparison with alternative position encodings at varying lengths (limited evidence).
+
+**Cross-comparison of Chinese models (Table 3):**
+
+| Model | BERT | WoBERT | NEZHA | RoFormer |
+|---|---|---|---|---|
+| Tokenization level | char | word | char | word |
+| Position embedding | abs. | abs. | rel. | RoPE |
+
+- Table 3 provides a qualitative comparison of tokenization and position encoding choices across Chinese pre-trained models (Section 4.5.1).
 
 ---
 
 ## Limitations and Failure Modes
 
-The paper explicitly acknowledges two limitations (Section 4.5.5):
+The paper explicitly acknowledges the following limitations (Section 4.5.5):
 
 1. **No explanation for faster convergence.** Despite demonstrating that RoFormer converges faster than BERT during pre-training, the paper states: "there lacks of thorough explanations on why it converges faster than baseline models that incorporates other position encoding strategies."
 
@@ -283,11 +310,16 @@ The paper explicitly acknowledges two limitations (Section 4.5.5):
 
 3. **Hardware requirements.** The paper notes: "Our proposed RoFormer is built upon the Transformer-based infrastructure, which requires hardware resources for pre-training purpose" (Section 4.5.5).
 
-4. **Mixed GLUE results.** RoFormer underperforms BERT on 3 of 6 GLUE tasks (SST-2, QNLI, MNLI), with MNLI showing a -4.4/-3.6 point gap. The paper describes RoFormer as outperforming "in three out of six datasets" (Section 4.3.3) but does not analyze why RoPE hurts performance on the remaining tasks.
+4. **[Inferred] Mixed GLUE results.** RoFormer underperforms BERT on 3 of 6 GLUE tasks (SST-2, QNLI, MNLI), with MNLI showing a -4.4/-3.6 point gap. The paper describes RoFormer as outperforming "in three out of six datasets" (Section 4.3.3) but does not analyze why RoPE hurts performance on the remaining tasks.
 
-5. **Modest machine translation improvement.** The +0.2 BLEU improvement over Transformer-base on WMT 2014 EN-DE is small and may not be statistically significant. The paper does not report confidence intervals or significance tests (Table 1).
+5. **[Inferred] Modest machine translation improvement.** The +0.2 BLEU improvement over Transformer-base on WMT 2014 EN-DE is small and may not be statistically significant. The paper does not report confidence intervals or significance tests (Table 1).
 
-6. **Linear attention integration is approximate.** The weights in the linear attention formulation (Eq. 19) are "not strictly probabilistic normalized" because the numerator may contain negative terms after rotation. The paper does not analyze the practical impact of this approximation beyond showing lower loss for Performer with RoPE (Section 3.3).
+6. **[Inferred] Linear attention integration is approximate.** The weights in the linear attention formulation (Eq. 19) are "not strictly probabilistic normalized" because the numerator may contain negative terms after rotation. The paper does not analyze the practical impact of this approximation beyond showing lower loss for Performer with RoPE (Section 3.3).
+
+#### Scope and Comparability
+
+- **What was not tested:** RoPE is not evaluated on autoregressive language modeling with standard Transformer (only with Performer's linear attention). No evaluation on sequence lengths beyond 1536 tokens. No evaluation on non-English, non-Chinese languages. No evaluation on models larger than BERT-base scale. No evaluation on decoder-only architectures. No ablation of the frequency schedule theta_i -- the paper uses only the inherited Vaswani et al. (2017) schedule.
+- **Comparability notes:** The GLUE fine-tuning comparison is between models pre-trained for only 100k steps (vs. BERT's original 1M steps), which may not reflect performance at full pre-training convergence. The Chinese experiments use different pre-training data and stages from the English experiments, making cross-language comparison indirect. The WMT 2014 EN-DE result uses Transformer-base (not Transformer-big), so the absolute BLEU scores are not directly comparable to papers using the larger configuration.
 
 ---
 
@@ -311,27 +343,27 @@ The paper explicitly acknowledges two limitations (Section 4.5.5):
 
 2. **Foundation for context extension research.** (Inference) RoPE's frequency-based structure enabled a family of context extension methods -- Position Interpolation (Chen et al., 2023), NTK-Aware Scaled RoPE (bloc97, 2023), YaRN (Peng et al., 2023) -- all operating by modifying RoPE's frequency parameters or position indices.
 
-3. **Multiplicative encoding may have broader advantages.** The faster convergence observed for RoFormer suggests that multiplicative position injection may interact differently with the optimization landscape than additive injection, though this remains unexplained (Section 4.5.5).
+3. **Multiplicative encoding may have broader advantages.** (Inference) The faster convergence observed for RoFormer suggests that multiplicative position injection may interact differently with the optimization landscape than additive injection, though this remains unexplained (Section 4.5.5).
 
 ---
 
 ## Key Claims
 
-1. **C1: RoPE encodes absolute position with a rotation matrix and incorporates explicit relative position dependency.** The derivation shows f_{q,k}(x_m, m) = R^d_{Theta,m} W_{q,k} x_m encodes absolute position m, while the inner product q^T_m k_n = x^T_m W_q R^d_{Theta,n-m} W_k x_n depends only on relative position n-m. Evidence: Section 3.1--3.2, Equations 11--16. Status: **supported**.
+1. **C1: RoPE encodes absolute position with a rotation matrix and incorporates explicit relative position dependency.** The derivation shows f_{q,k}(x_m, m) = R^d_{Theta,m} W_{q,k} x_m encodes absolute position m, while the inner product q^T_m k_n = x^T_m W_q R^d_{Theta,n-m} W_k x_n depends only on relative position n-m. Scope: even-dimensional query/key vectors, standard and linear self-attention. Evidence: Section 3.1--3.2, Equations 11--16. Status: **supported** (mathematical proof, not dependent on empirical evidence).
 
-2. **C2: RoPE has a long-term decay property.** Using Abel transformation, the paper bounds the inner product and shows the average of |S_i| decays with increasing relative distance under theta_i = 10000^{-2i/d}. Evidence: Section 3.3, Section 3.4.3, Figure 2, Equations 35--37. Status: **supported**.
+2. **C2: RoPE has a long-term decay property.** Using Abel transformation, the paper bounds the inner product and shows the average of |S_i| decays with increasing relative distance under theta_i = 10000^{-2i/d}. Scope: specific to the frequency schedule theta_i = 10000^{-2i/d}. Magnitude: upper bound on average |S_i| decays from ~20 to ~6-8 over relative distance 0-275 (Figure 2). Evidence: Section 3.3, Section 3.4.3, Figure 2, Equations 35--37. Status: **supported** (mathematical proof with numerical illustration).
 
-3. **C3: RoPE is compatible with linear self-attention.** Rotation preserves vector norms, so RoPE can be applied after non-negative kernel feature maps without breaking their properties. Evidence: Section 3.3, Equation 19, Performer experiment (Figure 3, right). Status: **supported**.
+3. **C3: RoPE is compatible with linear self-attention.** Rotation preserves vector norms, so RoPE can be applied after non-negative kernel feature maps without breaking their properties. Scope: linear attention with non-negative feature maps (e.g., elu+1). Magnitude: qualitative compatibility; the denominator normalization is approximate. Evidence: Section 3.3, Equation 19, Performer experiment (Figure 3, right). Status: **supported** (theoretical argument confirmed by one empirical experiment -- limited evidence breadth).
 
-4. **C4: RoFormer achieves 27.5 BLEU on WMT 2014 EN-DE vs 27.3 for Transformer-base.** A +0.2 BLEU improvement. Evidence: Table 1, Section 4.1.3. Status: **supported**.
+4. **C4: RoFormer achieves 27.5 BLEU on WMT 2014 EN-DE vs 27.3 for Transformer-base.** A +0.2 BLEU improvement. Scope: WMT 2014 EN-DE, Transformer-base, beam search size 4. Magnitude: +0.2 BLEU. Evidence: Table 1, Section 4.1.3. Status: **supported** (single dataset, single model, no variance reported -- limited evidence).
 
-5. **C5: RoFormer converges faster than BERT during pre-training.** The MLM loss curve shows faster convergence for RoFormer under identical settings (batch size 64, max length 512, 100k steps, AdamW lr 1e-5). Evidence: Figure 3 (left), Section 4.2.3. Status: **supported**.
+5. **C5: RoFormer converges faster than BERT during pre-training.** The MLM loss curve shows faster convergence for RoFormer under identical settings (batch size 64, max length 512, 100k steps, AdamW lr 1e-5). Scope: bert-base-uncased, BookCorpus + Wikipedia, specific hyperparameters. Magnitude: visual only -- no numerical convergence speed metric. Evidence: Figure 3 (left), Section 4.2.3. Status: **supported** (single configuration, single run, visual evidence only -- limited evidence).
 
-6. **C6: RoFormer outperforms BERT on 3 of 6 GLUE tasks.** MRPC: 89.5 vs 88.9 F1. STS-B: 87.0 vs 85.8 Spearman. QQP: 86.4 vs 71.2 F1. BERT outperforms on SST-2 (93.5 vs 90.7), QNLI (90.5 vs 88.0), MNLI (84.6/83.4 vs 80.2/79.8). Evidence: Table 2, Section 4.3.3. Status: **supported**.
+6. **C6: RoFormer outperforms BERT on 3 of 6 GLUE tasks.** MRPC: 89.5 vs 88.9 F1. STS-B: 87.0 vs 85.8 Spearman. QQP: 86.4 vs 71.2 F1. BERT outperforms on SST-2 (93.5 vs 90.7), QNLI (90.5 vs 88.0), MNLI (84.6/83.4 vs 80.2/79.8). Scope: bert-base-uncased, 100k pre-training steps, best-averaged results across 4 learning rates. Magnitude: wins up to +15.2 F1 (QQP), losses up to -4.4 Acc (MNLI). Evidence: Table 2, Section 4.3.3. Status: **supported** (6 tasks, but only 100k pre-training steps and no variance estimates -- moderate evidence).
 
-7. **C7: RoFormer-1024 outperforms WoBERT-512 on CAIL2019-SCM.** RoFormer-1024: 69.79% test accuracy. WoBERT-512: 68.10%. Delta: +1.69% absolute. Evidence: Table 5, Section 4.5.4. Status: **supported**.
+7. **C7: RoFormer-1024 outperforms WoBERT-512 on CAIL2019-SCM.** RoFormer-1024: 69.79% test accuracy. WoBERT-512: 68.10%. Delta: +1.69% absolute. Scope: CAIL2019-SCM Chinese legal case matching, documents >512 characters. Magnitude: +1.69% absolute test accuracy. Evidence: Table 5, Section 4.5.4. Status: **supported** (single dataset in specialized domain, no variance reported -- limited evidence for generalizability).
 
-8. **C8: Performer with RoPE achieves lower loss than Performer without RoPE.** Under identical training conditions on Enwik8 (12 layers, 768 dims, 12 heads, lr 1e-4, batch 128, max length 1024), adding RoPE leads to faster convergence and lower final LM loss. Evidence: Figure 3 (right), Section 4.4.2. Status: **supported**.
+8. **C8: Performer with RoPE achieves lower loss than Performer without RoPE.** Under identical training conditions on Enwik8 (12 layers, 768 dims, 12 heads, lr 1e-4, batch 128, max length 1024), adding RoPE leads to faster convergence and lower final LM loss. Scope: char-based Performer on Enwik8 only. Magnitude: visual from loss curves; no numerical values reported. Evidence: Figure 3 (right), Section 4.4.2. Status: **supported** (single dataset, single configuration, visual evidence only -- limited evidence).
 
 ---
 

@@ -14,26 +14,38 @@ key_claims:
     claim: "SCROLLS tasks require synthesizing information spread across hundreds to thousands of words, unlike short-text benchmarks where answer bigrams cluster within 5 words"
     evidence: "Section 4, Figure 4"
     status: supported
+    scope: "7 English-language datasets, bigram-based spread metric, comparison against SQuAD/Natural Questions/CNN-DM/arXiv"
+    magnitude: "output bigram spread of hundreds to thousands of words (std dev) vs under 5 words for SQuAD/NQ; 1.5x-2x greater spread than arXiv for summarization"
   - id: C2
     claim: "More context improves performance: BART gains +2.66 avg points (256->1024 tokens) and LED gains +2.1 avg points (1024->16384 tokens)"
     evidence: "Table 2, Section 5.2"
     status: supported
+    scope: "BART-base and LED-base, 7 SCROLLS tasks, fine-tuning evaluation, greedy decoding"
+    magnitude: "BART: +2.66 avg points (26.35->29.01); LED: +2.1 avg points (27.06->29.16)"
   - id: C3
     claim: "BART (1024 tokens) nearly matches LED (16384 tokens) despite 16x shorter input, scoring 29.01 vs 29.16 average"
     evidence: "Table 2, Section 5.2"
     status: supported
+    scope: "BART-base vs LED-base, 7 SCROLLS tasks, fine-tuning evaluation, greedy decoding"
+    magnitude: "0.15 avg point difference (29.01 vs 29.16)"
   - id: C4
     claim: "LED is under-optimized without long-text pretraining; at matched input length (1024 tokens), BART outperforms LED by almost 2 points"
     evidence: "Table 2, Section 5.2: BART 1024 avg 29.01 vs LED 1024 avg 27.06"
     status: supported
+    scope: "BART-base vs LED-base at 1024 tokens, 7 SCROLLS tasks, LED initialized from BART without long-text pretraining"
+    magnitude: "~2 avg point gap (29.01 vs 27.06); LED significantly outperforms BART only on 2 largest datasets (GovReport, NarrativeQA)"
   - id: C5
     claim: "Large gap between baseline performance (~29 avg) and estimated human performance: Qasper inter-annotator 60.9% F1 vs best 26.6%, QuALITY human agreement 93.5% EM vs best 26.8%, NarrativeQA inter-annotator 58.7% F1 vs best 18.5%"
     evidence: "Section 5.2"
     status: supported
+    scope: "3 QA datasets with available human performance estimates (Qasper, QuALITY, NarrativeQA); no human ceiling for summarization tasks"
+    magnitude: "Qasper: 60.9% vs 26.6% F1; QuALITY: 93.5% vs 26.8% EM; NarrativeQA: ~58.7% vs 18.5% F1"
   - id: C6
     claim: "Language modeling perplexity is an inadequate metric for evaluating long-range modeling ability because next-token prediction mostly captures local short-range patterns"
     evidence: "Section 2, citing Khandelwal et al. (2018) and Sun et al. (2021)"
     status: supported
+    scope: "general argument based on prior empirical findings, not directly tested in this paper"
+    magnitude: "qualitative"
 cross_references:
   - target: 2021-05-long-range-arena
     type: complementary
@@ -66,6 +78,8 @@ open_questions:
     addressed_by: null
   - question: "Does LED's underperformance relative to BART at matched input length stem from lack of long-text pretraining or fundamental architectural limitations?"
     addressed_by: null
+  - question: "Do zero-shot and few-shot models perform better on SCROLLS tasks than fine-tuned baselines?"
+    addressed_by: 2023-12-zeroscrolls-zero-shot-long-text
 ---
 # SCROLLS: Standardized CompaRison Over Long Language Sequences
 
@@ -181,6 +195,11 @@ The paper includes a dedicated limitations section (Section 7):
 5. **No established human performance ceiling.** While inter-annotator agreement provides estimates for some datasets (Qasper, QuALITY, NarrativeQA), "it is difficult to establish an accurate human performance ceiling on SCROLLS, especially when considering the summarization datasets" (Section 5.2).
 
 6. **Spread analysis limitations.** The bigram-based spread metric (Section 4) measures positional dispersion of output n-grams in the input, but cannot capture semantic dependencies that do not manifest as shared surface forms, particularly for abstractive outputs.
+
+#### Scope and Comparability
+
+- **What was not tested:** No decoder-only models (e.g., GPT-style) were evaluated. No retrieval-augmented baselines were tested. No models with long-text pretraining (e.g., LongT5, BigBird with pretraining) were included. Only base-sized models were evaluated; no large-sized variants. No zero-shot or few-shot evaluation was conducted. No non-English languages were included.
+- **Comparability notes:** LED-base is initialized from BART parameters without long-text pretraining, making it a weaker baseline than LED variants that underwent continued pretraining on long documents. The SCROLLS preprocessing (data cleansing, format unification) means results are **not directly comparable** to results reported on the original datasets (Appendix C, Table 4 explicitly notes this). The aggregate SCROLLS score averages across datasets of very different sizes, domains, and difficulty levels, which may mask per-task variation. Greedy decoding is used throughout, which may understate model capabilities relative to beam search or sampling.
 
 ---
 

@@ -101,9 +101,8 @@ init_reference → read_paper OR read_sources → write_analysis → cross-refer
 1. **init_reference** creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
 2. **read_paper** reads the PDF in overlapping 6-page windows, writing structured notes to `sections/`. For non-standard contributions (blogs, repos, Reddit), **read_sources** fetches web content into `sources/` instead
 3. **write_analysis** synthesizes the notes into `analysis.md` with YAML front matter, all 9 required sections, and 13 style rules
-4. The main agent then updates cross-references in existing analyses
 
-Every subagent has a **verification mode**: if its output files already exist, it verifies them against ground truth (the PDF or live sources) and rewrites anything that falls short. Errors caught during verification are logged to `prompts/add_reference/.errors/` (gitignored) for prompt improvement.
+Every subagent has a **verification mode**: if its output files already exist, it verifies them against ground truth (the PDF or live sources) and rewrites anything that falls short. Errors caught during verification are logged to `prompts/add_reference/.errors/` for prompt improvement.
 
 ### Where to find what
 

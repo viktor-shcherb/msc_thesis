@@ -37,39 +37,39 @@ Legend: `S` = standard (has PDF), `N` = non-standard (blog/repo/Reddit)
 | 26 | `2022-04-alibi-train-short-test-long` | S | [x] | [x] | [x] |
 | 27 | `2022-04-s4-structured-state-spaces` | S | [x] | [x] | [x] |
 | 28 | `2022-06-switch-transformers-moe` | S | [x] | [x] | [x] |
-| 29 | `2022-12-chain-of-thought-prompting` | S | [x] | [ ] | [ ] |
-| 30 | `2022-12-chinchilla-scaling-laws` | S | [ ] | [ ] | [ ] |
-| 31 | `2022-12-flashattention` | S | [ ] | [ ] | [ ] |
-| 32 | `2022-12-nope-transformers-learn-positions` | S | [ ] | [ ] | [ ] |
-| 33 | `2022-12-scrolls-long-language-sequences` | S | [ ] | [ ] | [ ] |
-| 34 | `2023-02-llama-open-efficient-foundation` | S | [ ] | [ ] | [ ] |
-| 35 | `2023-03-gpt-4-technical-report` | S | [ ] | [ ] | [ ] |
-| 36 | `2023-06-pi-positional-interpolation` | S | [ ] | [ ] | [ ] |
+| 29 | `2022-12-chain-of-thought-prompting` | S | [x] | [x] | [x] |
+| 30 | `2022-12-chinchilla-scaling-laws` | S | [x] | [x] | [x] |
+| 31 | `2022-12-flashattention` | S | [x] | [x] | [x] |
+| 32 | `2022-12-nope-transformers-learn-positions` | S | [x] | [x] | [x] |
+| 33 | `2022-12-scrolls-long-language-sequences` | S | [x] | [x] | [x] |
+| 34 | `2023-02-llama-open-efficient-foundation` | S | [x] | [x] | [x] |
+| 35 | `2023-03-gpt-4-technical-report` | S | [x] | [x] | [x] |
+| 36 | `2023-06-pi-positional-interpolation` | S | [x] | [x] | [x] |
 | 37 | `2023-06-rope-ntk` | N | [ ] | [ ] | [ ] |
-| 38 | `2023-07-gsm-ic-irrelevant-context` | S | [ ] | [ ] | [ ] |
-| 39 | `2023-07-hyena-hierarchy-long-convolutions` | S | [ ] | [ ] | [ ] |
-| 40 | `2023-07-llama-2-open-foundation-chat` | S | [ ] | [ ] | [ ] |
-| 41 | `2023-07-retnet-retentive-network` | S | [ ] | [ ] | [ ] |
-| 42 | `2023-09-qwen-technical-report` | S | [ ] | [ ] | [ ] |
-| 43 | `2023-10-mistral-7b` | S | [ ] | [ ] | [ ] |
-| 44 | `2023-11-needle-in-a-haystack` | N | [ ] | [ ] | [ ] |
-| 45 | `2023-12-gqa-grouped-query-attention` | S | [ ] | [ ] | [ ] |
-| 46 | `2023-12-landmark-attention-infinite-context` | S | [ ] | [ ] | [ ] |
-| 47 | `2023-12-positional-encoding-length-generalization` | S | [ ] | [ ] | [ ] |
-| 48 | `2023-12-quantizable-transformers-attention-do-nothing` | S | [ ] | [ ] | [ ] |
-| 49 | `2023-12-rwkv-reinventing-rnns-transformer` | S | [ ] | [ ] | [ ] |
-| 50 | `2023-12-zeroscrolls-zero-shot-long-text` | S | [ ] | [ ] | [ ] |
-| 51 | `2024-01-roformer-rope` | S | [ ] | [ ] | [ ] |
-| 52 | `2024-02-lost-in-the-middle` | S | [ ] | [ ] | [ ] |
-| 53 | `2024-03-gemini-1.5-long-context` | S | [ ] | [ ] | [ ] |
-| 54 | `2024-03-gemma-open-models` | S | [ ] | [ ] | [ ] |
-| 55 | `2024-03-yi-open-foundation-models` | S | [ ] | [ ] | [ ] |
-| 56 | `2024-05-attention-sinks-streaming` | S | [ ] | [ ] | [ ] |
-| 57 | `2024-05-deepseek-v2-moe` | S | [ ] | [ ] | [ ] |
-| 58 | `2024-05-flashattention-2` | S | [ ] | [ ] | [ ] |
-| 59 | `2024-05-mamba-selective-state-spaces` | S | [ ] | [ ] | [ ] |
-| 60 | `2024-05-ring-attention-near-infinite-context` | S | [ ] | [ ] | [ ] |
-| 61 | `2024-05-yarn-context-extension` | S | [ ] | [ ] | [ ] |
+| 38 | `2023-07-gsm-ic-irrelevant-context` | S | [x] | [x] | [x] |
+| 39 | `2023-07-hyena-hierarchy-long-convolutions` | S | [x] | [x] | [x] |
+| 40 | `2023-07-llama-2-open-foundation-chat` | S | [x] | [x] | [x] |
+| 41 | `2023-07-retnet-retentive-network` | S | [x] | [x] | [x] |
+| 42 | `2023-09-qwen-technical-report` | S | [x] | [x] | [x] |
+| 43 | `2023-10-mistral-7b` | S | [x] | [x] | [x] |
+| 44 | `2023-11-needle-in-a-haystack` | N | [x] | [x] | [x] |
+| 45 | `2023-12-gqa-grouped-query-attention` | S | [x] | [x] | [x] |
+| 46 | `2023-12-landmark-attention-infinite-context` | S | [x] | [x] | [x] |
+| 47 | `2023-12-positional-encoding-length-generalization` | S | [x] | [x] | [x] |
+| 48 | `2023-12-quantizable-transformers-attention-do-nothing` | S | [x] | [x] | [x] |
+| 49 | `2023-12-rwkv-reinventing-rnns-transformer` | S | [x] | [x] | [x] |
+| 50 | `2023-12-zeroscrolls-zero-shot-long-text` | S | [x] | [x] | [x] |
+| 51 | `2024-01-roformer-rope` | S | [x] | [x] | [x] |
+| 52 | `2024-02-lost-in-the-middle` | S | [x] | [x] | [x] |
+| 53 | `2024-03-gemini-1.5-long-context` | S | [x] | [x] | [x] |
+| 54 | `2024-03-gemma-open-models` | S | [x] | [x] | [x] |
+| 55 | `2024-03-yi-open-foundation-models` | S | [x] | [x] | [x] |
+| 56 | `2024-05-attention-sinks-streaming` | S | [x] | [x] | [x] |
+| 57 | `2024-05-deepseek-v2-moe` | S | [x] | [x] | [x] |
+| 58 | `2024-05-flashattention-2` | S | [x] | [x] | [x] |
+| 59 | `2024-05-mamba-selective-state-spaces` | S | [x] | [~] | [ ] |
+| 60 | `2024-05-ring-attention-near-infinite-context` | S | [x] | [x] | [x] |
+| 61 | `2024-05-yarn-context-extension` | S | [x] | [~] | [ ] |
 | 62 | `2024-06-ada-leval-length-adaptable-benchmark` | S | [ ] | [ ] | [ ] |
 | 63 | `2024-06-effective-long-context-scaling` | S | [ ] | [ ] | [ ] |
 | 64 | `2024-07-llama-3-herd-of-models` | S | [ ] | [ ] | [ ] |
@@ -124,4 +124,4 @@ Legend: `S` = standard (has PDF), `N` = non-standard (blog/repo/Reddit)
 | 113 | `2026-01-longbench-pro` | S | [ ] | [ ] | [ ] |
 | 114 | `2026-01-ministral-3-cascade-distillation` | S | [ ] | [ ] | [ ] |
 
-**Progress: 30 / 114 complete**
+**Progress: 56 / 114 complete**

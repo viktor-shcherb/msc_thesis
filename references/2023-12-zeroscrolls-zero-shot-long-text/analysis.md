@@ -8,28 +8,44 @@ categories: ["benchmarking", "long-context-evaluation"]
 scope: ["zero-shot long-text evaluation", "benchmark design", "information aggregation"]
 benchmarks_used: ["zeroscrolls", "scrolls"]
 models_introduced: []
-models_evaluated: ["gpt-4"]
+models_evaluated: ["gpt-4", "gpt-3.5-turbo"]
 key_claims:
   - id: C1
     claim: "GPT-4 achieves the highest average ZeroSCROLLS score (41.7), followed by Claude (39.1), both significantly outperforming open-source models"
     evidence: "Table 3, Section 4.2"
     status: supported
+    scope: "7 LLMs evaluated zero-shot with greedy decoding, max 8,192 tokens, English only"
+    magnitude: "41.7 avg (GPT-4) vs 30.6 (Flan-UL2, best open-source), 11.1-point gap"
   - id: C2
-    claim: "Zero-shot LLMs bridge the gap with fine-tuned models on QA tasks but not summarization: GPT-4 scores 89.2 on QuALITY (vs CoLT5 47.0) but only 26.3 on GovReport (vs CoLT5 41.0)"
+    claim: "Zero-shot LLMs bridge the gap with fine-tuned models on QA but not summarization: GPT-4 scores 89.2 on QuALITY (vs CoLT5 47.0) but only 26.3 on GovReport (vs CoLT5 41.0)"
     evidence: "Table 3, Section 4.2"
     status: supported
+    scope: "GPT-4 vs CoLT5-xl (fine-tuned, 16K tokens), 6 overlapping SCROLLS tasks"
+    magnitude: "QuALITY: +42.2 points for GPT-4 over CoLT5; GovReport: -14.7 points for GPT-4 vs CoLT5"
   - id: C3
     claim: "Information aggregation tasks (SpaceDigest, BookSumSort) are exceptionally difficult: only GPT-4 surpasses naive baselines on both tasks"
     evidence: "Table 3, Section 4.2"
     status: supported
+    scope: "7 LLMs, SpaceDigest (50-review sentiment) and BookSumSort (chapter ordering), zero-shot"
+    magnitude: "SpaceDigest: GPT-4 62.8 vs naive 45.0; BookSumSort: GPT-4 60.5 vs naive 50.0; T0pp scores 0.0 on BookSumSort"
   - id: C4
     claim: "Format discrepancy significantly impacts automatic evaluation: GPT-4 is correct more often than Claude on NarrativeQA (53% vs 39% human-judged accuracy) despite scoring 5 F1 points lower"
     evidence: "Section 5, Figure 4"
     status: supported
+    scope: "100 sampled NarrativeQA instances, human annotation of correctness"
+    magnitude: "GPT-4 format compliance 71/200 vs Claude 191/200; GPT-4 human accuracy 53% vs F1-implied ranking below Claude"
   - id: C5
-    claim: "Performance scales with both model size and input length: Flan-T5 improves from avg 11.0 (60M params) to 29.9 (11B params), and from avg 17.1 (512 tokens) to 29.9 (8192 tokens)"
+    claim: "Performance scales with both model size and input length on ZeroSCROLLS"
     evidence: "Table 4, Section 4.3"
     status: supported
+    scope: "Flan-T5 sizes 60M--11B at 8,192 tokens; Flan-T5-xxl at 512--8,192 tokens; Claude at 4K--8K tokens"
+    magnitude: "Flan-T5 avg 11.0 (60M) to 29.9 (11B); Flan-T5-xxl avg 17.1 (512 tokens) to 29.9 (8,192 tokens); Claude avg 36.3 (4K) to 39.1 (8K)"
+  - id: C6
+    claim: "Format discrepancy is not unique to GPT-4 or NarrativeQA: different models struggle with format compliance on different tasks"
+    evidence: "Section 5, Figure 5"
+    status: supported
+    scope: "Output length distribution analysis across 7 tasks and 4 models"
+    magnitude: "Claude generates overly long QMSum answers; Flan-UL2 generates overly long SummScreenFD summaries; all models generate overly short GovReport summaries"
 cross_references:
   - target: 2022-12-scrolls-long-language-sequences
     type: extends
@@ -51,7 +67,7 @@ cross_references:
     detail: "L-Eval is a concurrent long-context benchmark that addresses dataset quality and evaluation metric standardization"
   - target: 2024-07-llama-3-herd-of-models
     type: extended-by
-    detail: "Llama 3 achieves 95.2% on QuALITY, matching GPT-4"
+    detail: "Llama 3 evaluates on ZeroSCROLLS tasks"
   - target: 2025-07-lv-eval-long-context-benchmark
     type: concurrent
     detail: "LV-Eval addresses ZeroSCROLLS' insufficient average context length (~14k words) by providing five controlled length levels up to 256k with knowledge-leakage mitigation"
@@ -64,18 +80,20 @@ open_questions:
     addressed_by: null
   - question: "Why does GPT-4 refuse to answer questions about trimmed context far more often than Claude (30/200 vs 5/200)?"
     addressed_by: null
+  - question: "What is the relative contribution of sentiment classification errors vs. aggregation errors in SpaceDigest failures?"
+    addressed_by: null
 ---
 
 # ZeroSCROLLS: A Zero-Shot Benchmark for Long Text Understanding
 
-**Authors:** Uri Shaham, Maor Ivgi, Avia Efrat, Jonathan Berant, Omer Levy (Tel Aviv University, Meta AI)
-**Date:** December 2023, Findings of EMNLP 2023 (arXiv:2305.14196)
+**Authors:** Uri Shaham, Maor Ivgi, Avia Efrat, Jonathan Berant, Omer Levy (The Blavatnik School of Computer Science, Tel Aviv University; Omer Levy also at Meta AI)
+**Date:** December 2023, Findings of EMNLP 2023, arXiv:2305.14196
 
 ---
 
 ## Core Research Problem
 
-SCROLLS (Shaham et al., 2022) established a multi-task benchmark for long-text understanding, but it requires task-specific fine-tuning. In the era of general-purpose zero-shot LLMs (Wei et al., 2022a; Ouyang et al., 2022; OpenAI, 2023), a new evaluation setup is needed that removes this dependence on training data (Section 1, Section 2). Existing zero-shot LLM benchmarks evaluate primarily on short sequences: HELM (Liang et al., 2022) and BigBench (Srivastava et al., 2022) focus on short inputs, with BigBench averaging only 77 words per input (Section 1).
+SCROLLS (Shaham et al., 2022) -- *Standardized CompaRison Over Long Language Sequences* -- established a multi-task benchmark for long-text understanding, but it requires task-specific fine-tuning. In the era of general-purpose zero-shot LLMs (Wei et al., 2022a; Ouyang et al., 2022; OpenAI, 2023), a new evaluation setup is needed that removes this dependence on training data (Section 1, Section 2). Existing zero-shot LLM benchmarks evaluate primarily on short sequences: HELM (Liang et al., 2022) and BigBench (Srivastava et al., 2022) focus on short inputs, with BigBench averaging **only 77 words per input** (Section 1).
 
 Furthermore, SCROLLS lacks tasks that explicitly test **information aggregation** across long sequences -- tasks requiring a model to contextualize and combine information from many distinct parts of the input, such as computing sentiment statistics over dozens of reviews or establishing temporal ordering across chapter summaries (Section 3.1.3).
 
@@ -98,7 +116,7 @@ ZeroSCROLLS extends SCROLLS to the zero-shot setting by removing training data, 
 
 ### Method
 
-ZeroSCROLLS provides each instance with a zero-shot prompt composed of four components (Section 3.2, Figure 3): (1) an **instruction** describing the task and desired output format, (2) a **context** header and the long document, (3) a **query** (for tasks with questions), and (4) a **response** header (e.g., "Answer:" or "Summary:"). When input exceeds the model's context window, the context is trimmed and an explicit note informs the model that the rest of the context has been removed.
+ZeroSCROLLS provides each instance with a zero-shot prompt composed of four components (Section 3.2, Figure 3): (1) an **instruction** describing the task and desired output format, (2) a **context** header and the long document, (3) a **query** (for tasks with questions), and (4) a **response** header (e.g., "Answer:" or "Summary:"). When input exceeds the model's context window, the context is trimmed and an explicit note informs the model that the rest of the context has been removed (Section 3.2).
 
 **Chat model accommodations.** For chat LLMs (ChatGPT, Claude, GPT-4), response headers are omitted and an additional instruction "Do not provide any explanation." is appended for QA and aggregation tasks. For Claude specifically, prompts are wrapped with "Human:" and "Assistant:" dialogue indicators, with instructions to highlight the final answer using XML tags (Section 3.2).
 
@@ -121,25 +139,25 @@ ZeroSCROLLS provides each instance with a zero-shot prompt composed of four comp
 
 **New task construction:**
 
-- **SpaceDigest** (Section 3.1.3): 50 hotel reviews per example from the Space dataset (Angelidis et al., 2021), drawn from the 500 most-rated hotels. Only strictly positive (rating 4--5) or negative (rating 1--2) reviews are kept; ambivalent 3-star reviews are discarded. The task is to determine the percentage of positive reviews. Human annotators achieved ~98.4% accuracy at classifying individual reviews (8 errors out of 500 reviews across 5 annotators), with perfect aggregation.
-- **BookSumSort** (Section 3.1.3): 125 manually selected books from BookSum (Kryscinski et al., 2022). Summaries are manually edited to remove positional indicators (e.g., "Chapter 8 begins with..." replaced by "This Chapter begins with..."). Each list contains 3--86 chapter summaries (median 15, mean 18.8). Four random permutations per book yield 500 instances.
+- **SpaceDigest** (Section 3.1.3): 50 hotel reviews per example from the Space dataset (Angelidis et al., 2021), drawn from the 500 most-rated hotels. Only strictly positive (rating 4--5) or negative (rating 1--2) reviews are kept; ambivalent 3-star reviews are discarded. The task is to determine the percentage of positive reviews. Human annotators achieved ~98.4% accuracy at classifying individual reviews (8 errors out of 500 reviews across 5 annotators), with perfect aggregation (Section 3.1.3).
+- **BookSumSort** (Section 3.1.3): 125 manually selected books from BookSum (Kryscinski et al., 2022). Summaries are manually edited to remove positional indicators (e.g., "Chapter 8 begins with..." replaced by "This Chapter begins with..."). Each list contains 3--86 chapter summaries (median 15, mean 18.8). Four random permutations per book yield 500 instances (Section 3.1.3).
 - **MuSiQue** (Section 3.1.2): Multi-hop QA over 20 Wikipedia paragraphs. 400 answerable and 100 unanswerable questions randomly sampled from the original dataset (Trivedi et al., 2022).
-- **SQuALITY** (Section 3.1.1): Question-focused summarization over Project Gutenberg stories (Wang et al., 2022), where experienced writers designed questions requiring reading significant parts of the story.
+- **SQuALITY** (Section 3.1.1): Question-focused summarization over Project Gutenberg stories (Wang et al., 2022), where experienced writers designed questions requiring reading significant parts of the story (Section 3.1.1).
 
 **Evaluation metrics (Section 3.3):**
 
-- **ROUGE** (GovReport, SummScreenFD, QMSum, SQuALITY): Geometric mean of ROUGE-1, ROUGE-2, and ROUGE-L. For SQuALITY (multiple references), the max of each ROUGE type is taken before computing the geometric mean.
-- **F1** (Qasper, NarrativeQA, MuSiQue): Unigram overlap after lowercasing, stopword/punctuation removal, and Unicode-to-ASCII transliteration. Max F1 across multiple references per instance.
-- **Accuracy** (QuALITY): First valid option letter (A, B, C, D) surrounded by word boundaries.
+- **ROUGE** (GovReport, SummScreenFD, QMSum, SQuALITY): Geometric mean of ROUGE-1, ROUGE-2, and ROUGE-L. For SQuALITY (multiple references), the max of each ROUGE type is taken before computing the geometric mean (Section 3.3).
+- **F1** (Qasper, NarrativeQA, MuSiQue): Unigram overlap after lowercasing, stopword/punctuation removal, and Unicode-to-ASCII transliteration. Max F1 across multiple references per instance (Section 3.3).
+- **Accuracy** (QuALITY): First valid option letter (A, B, C, D) surrounded by word boundaries (Section 3.3).
 - **Exponential Similarity** (SpaceDigest):
 
 > `ES(p, p_hat) = d^(-c * |p - p_hat|)` with `d = 2, c = 10`
 
-The score halves for every 10 percentage point deviation. Outputs that are not a valid percentage score 0%.
+The score halves for every 10 percentage point deviation. Outputs that are not a valid percentage score 0%. The first appearance of a percentage is parsed (Section 3.3).
 
-- **Concordance Index** (BookSumSort): Fraction of chapter summary pairs in the correct relative order, out of all `n choose 2` pairs. Random permutations average 50%. Outputs that are not a valid permutation score 0%.
+- **Concordance Index** (BookSumSort): Fraction of chapter summary pairs in the correct relative order, out of all `C(n, 2)` pairs. Random permutations average 50%. Outputs that are not a valid permutation score 0%. All characters except digits, commas, and white-spaces are discarded from the output string to eliminate prefixes (Section 3.3).
 
-**Naive baselines (Section 4.1):** Random spans of task-specific lengths for summarization and NarrativeQA (500, 200, 50, 120, and 4 words respectively). Random fixed choices for Qasper ("Yes"/"No"/"Unanswerable" or 15-word span). "Unanswerable" for all MuSiQue instances. Random A/B/C/D for QuALITY. Always 50% for SpaceDigest. Trivial permutation "1, 2, 3, ..., n" for BookSumSort.
+**Naive baselines (Section 4.1):** Random spans of task-specific lengths for summarization and NarrativeQA (500, 200, 50, 120, and 4 words respectively). Random fixed choices for Qasper ("Yes"/"No"/"Unanswerable" or 15-word span). "Unanswerable" for all MuSiQue instances. Random A/B/C/D for QuALITY. Always 50% for SpaceDigest. Trivial permutation "1, 2, 3, ..., n" for BookSumSort (Section 4.1).
 
 ### Experimental Setup
 
@@ -152,14 +170,16 @@ The score halves for every 10 percentage point deviation. Outputs that are not a
 | Flan-UL2 | 20B | 8,192 | Open |
 | DaVinci003 | -- | 4,096 | Closed |
 | ChatGPT (v0301) | -- | 4,096 | Closed |
-| Claude (v1.3) | -- | 8,192 | Closed |
+| Claude (v1.3) | -- | 8,000 | Closed |
 | GPT-4 (v0314) | -- | 8,192 | Closed |
 
-Greedy decoding is applied to all models (Section 4.1). For Flan-T5, additional scaling experiments use sizes from Small (60M) to XXL (11B), and input lengths from 512 to 8,192 tokens (Table 4). Claude is also evaluated at 4,096 tokens.
+Greedy decoding is applied to all models (Section 4.1). For Flan-T5, additional scaling experiments use sizes from Small (60M) to XXL (11B), and input lengths from 512 to 8,192 tokens (Table 4). Claude is also evaluated at 4,096 tokens (Table 4). For all open-source models, a maximum input length of 8,192 tokens is used as larger contexts were unstable (Section 4.1).
 
 **Fine-tuned comparison:** CoLT5-xl (Ainslie et al., 2023), a conditionally-computing transformer with 16,384 max tokens, the state of the art on SCROLLS at the time (Section 4.1).
 
-**Human performance (Table 3):** SQuALITY 23.6 ROUGE (inter-reference comparison, Wang et al., 2022), Qasper 67.7 F1 (inter-annotator), NarrativeQA 58.2 F1 (inter-annotator), QuALITY 93.5 accuracy (Pang et al., 2022), MuSiQue 74.8 F1 (combined from Trivedi et al., 2022), SpaceDigest 93.3 ES (own human annotations, Section 3.1.3).
+**Human performance (Table 3):** SQuALITY 23.6 ROUGE (inter-reference comparison, Wang et al., 2022), Qasper 67.7 F1 (inter-annotator), NarrativeQA 58.2 F1 (inter-annotator), QuALITY 93.5 accuracy (Pang et al., 2022), MuSiQue 74.8 F1 (combined from Trivedi et al., 2022), SpaceDigest 93.3 ES (own human annotations, Section 3.1.3). Human scores are not available for GovReport, SummScreenFD, QMSum, or BookSumSort (Table 3).
+
+**Reproducibility:** Code is available at https://github.com/tau-nlp/zero_scrolls. Live leaderboard at https://www.zero.scrolls-benchmark.com/. Test labels are private. No variance estimates or multiple runs are reported -- all results are single-run with greedy decoding. Closed model API versions are specified (Claude v1.3, ChatGPT v0301, GPT-4 v0314).
 
 ### Key Results
 
@@ -177,22 +197,22 @@ Greedy decoding is applied to all models (Section 4.1). For Flan-T5, additional 
 | GPT-4 (8k) | 26.3 | 17.3 | 18.5 | 22.6 | 50.7 | 27.6 | 89.2 | 41.1 | 62.8 | 60.5 | 41.7 |
 | CoLT5 (16k, fine-tuned) | 41.0 | 20.0 | 22.5 | -- | 53.1 | 31.0 | 47.0 | -- | -- | -- | -- |
 
-- **GPT-4 achieves the highest average score (41.7)**, followed by Claude (39.1). Both significantly outperform open-source models and the remaining closed models (Section 4.2).
-- **Summarization: zero-shot LLMs lag behind fine-tuning.** CoLT5 scores 41.0 on GovReport vs. GPT-4's 26.3 -- a 14.7-point gap. Gaps are smaller on SummScreenFD (20.0 vs 17.3) and QMSum (22.5 vs 18.5). On SQuALITY, GPT-4 (22.6) approaches the lower bound of human performance (23.6) (Section 4.2).
-- **QA: zero-shot LLMs bridge the gap with fine-tuned models.** GPT-4 scores 89.2% on QuALITY, close to human performance (93.5%) and far above CoLT5 (47.0%). On Qasper, Flan-UL2 (56.9) exceeds CoLT5 (53.1). Claude leads on NarrativeQA (32.6 vs GPT-4's 27.6), and Flan-UL2 leads on MuSiQue (51.3 vs GPT-4's 41.1) (Section 4.2).
-- **Aggregation tasks are exceptionally difficult.** On SpaceDigest, only Claude (61.6) and GPT-4 (62.8) surpass the naive 45.0 baseline (which always predicts 50%). On BookSumSort, only GPT-4 (60.5) exceeds the trivial permutation baseline (50.0) (Section 4.2).
+- **GPT-4 achieves the highest average score (41.7)**, followed by Claude (39.1). Both significantly outperform open-source models and the remaining closed models (Section 4.2). Single evaluation run, no variance reported (limited evidence for individual task scores, but consistent pattern across 10 tasks strengthens the ranking claim).
+- **Summarization: zero-shot LLMs lag behind fine-tuning.** CoLT5 scores 41.0 on GovReport vs. GPT-4's 26.3 -- a 14.7-point gap. Gaps are smaller on SummScreenFD (20.0 vs 17.3) and QMSum (22.5 vs 18.5). On SQuALITY, GPT-4 (22.6) approaches the lower bound of human performance (23.6) (Section 4.2). Comparison is limited to one fine-tuned model (CoLT5).
+- **QA: zero-shot LLMs bridge the gap with fine-tuned models.** GPT-4 scores 89.2% on QuALITY, close to human performance (93.5%) and far above CoLT5 (47.0%). On Qasper, Flan-UL2 (56.9) exceeds CoLT5 (53.1). Claude leads on NarrativeQA (32.6 vs GPT-4's 27.6), and Flan-UL2 leads on MuSiQue (51.3 vs GPT-4's 41.1) (Section 4.2). Tested across 4 QA tasks with different domains (strong evidence for the general trend).
+- **Aggregation tasks are exceptionally difficult.** On SpaceDigest, only Claude (61.6) and GPT-4 (62.8) surpass the naive 45.0 baseline (which always predicts 50%). On BookSumSort, only GPT-4 (60.5) exceeds the trivial permutation baseline (50.0). T0pp scores 0.0 on BookSumSort (Section 4.2). Tested on 7 LLMs (moderate evidence).
 
 ### Impact of Model Size and Input Length
 
-**Model size (Table 4, upper section):** Flan-T5 performance increases consistently from Small (60M parameters, avg 11.0) through Base (avg 13.2), Large (avg 22.7), XL (avg 25.5) to XXL (11B parameters, avg 29.9). SpaceDigest shows a non-monotonic pattern: 0.0 for Small and Base, 48.0 for Large, 32.8 for XL, then 48.7 for XXL (Table 4).
+**Model size (Table 4, upper section):** Flan-T5 performance increases consistently from Small (60M parameters, avg 11.0) through Base (avg 13.2), Large (avg 22.7), XL (avg 25.5) to XXL (11B parameters, avg 29.9). SpaceDigest shows a non-monotonic pattern: 0.0 for Small and Base, 48.0 for Large, 32.8 for XL, then 48.7 for XXL (Table 4). Tested on a single model family with 5 sizes (moderate evidence for the scaling trend, limited to one architecture).
 
-**Input length -- Flan-T5-xxl (Table 4, middle section):** Average improves from 17.1 (512 tokens) to 20.8 (1024), 24.9 (2048), 29.1 (4096), and 29.9 (8192). Flan-T5 achieves higher scores on longer inputs despite being trained on much shorter sequences (Section 4.3).
+**Input length -- Flan-T5-xxl (Table 4, middle section):** Average improves from 17.1 (512 tokens) to 20.8 (1024), 24.9 (2048), 29.1 (4096), and 29.9 (8192). Flan-T5 achieves higher scores on longer inputs despite being trained on much shorter sequences (Section 4.3). Tested at 5 context lengths (moderate evidence).
 
-**Input length -- Claude (Table 4, lower section):** Average improves from 36.3 (4,096 tokens) to 39.1 (8,000 tokens) -- a gain of ~2.8 points. The largest gains come from QuALITY (76.8 to 84.8) and BookSumSort (37.6 to 47.4) (Table 4).
+**Input length -- Claude (Table 4, lower section):** Average improves from 36.3 (4,096 tokens) to 39.1 (8,000 tokens) -- a gain of ~2.8 points. The largest gains come from QuALITY (76.8 to 84.8) and BookSumSort (37.6 to 47.4) (Table 4). Only two length settings tested for Claude (limited evidence).
 
 ### Format Discrepancy Analysis
 
-Human evaluation on 100 sampled instances per dataset reveals that automatic metrics understate GPT-4's true performance (Section 5, Figure 4):
+Human evaluation on 100 sampled instances per dataset reveals that automatic metrics understate GPT-4's true performance on NarrativeQA and Qasper (Section 5, Figure 4):
 
 | Task | Compared Model | Compared Model Human Accuracy | GPT-4 Human Accuracy |
 |---|---|---|---|
@@ -200,9 +220,9 @@ Human evaluation on 100 sampled instances per dataset reveals that automatic met
 | Qasper | Flan-UL2 | 69% | 80% |
 | MuSiQue | Flan-UL2 | 51% | 47% |
 
-- On NarrativeQA, Claude scores 5 F1 points higher than GPT-4 on automatic metrics, but human evaluation shows GPT-4 is correct more often (53% vs 39%). Analysis of 200 random instances shows Claude answers in the requested format ("using a single phrase if possible") 191/200 times vs. GPT-4's 71/200 (Section 5).
+- On NarrativeQA, Claude scores 5 F1 points higher than GPT-4 on automatic metrics, but human evaluation shows GPT-4 is correct more often (53% vs 39%). Analysis of 200 random instances shows Claude answers in the requested format ("using a single phrase if possible") 191/200 times vs. GPT-4's 71/200 (Section 5). Sample size of 100 for accuracy evaluation and 200 for format analysis (moderate evidence).
 - GPT-4 refuses to answer 30/200 NarrativeQA questions because the trimmed context does not contain the answer, compared to Claude's 5/200 refusals, despite both having similar context lengths (~8k) (Section 5, footnote 9).
-- Output length distributions (Figure 5) confirm format discrepancy is not unique to GPT-4 or NarrativeQA: Claude generates overly long answers for QMSum, Flan-UL2 generates overly long summaries for SummScreenFD, and all models generate overly short summaries for GovReport (Section 5).
+- Output length distributions (Figure 5) confirm format discrepancy is not unique to GPT-4 or NarrativeQA: Claude generates overly long answers for QMSum, Flan-UL2 generates overly long summaries for SummScreenFD, and all models generate overly short summaries for GovReport (Section 5). Assessed across 7 tasks and 4 models (strong evidence for the generality of format discrepancy).
 
 ---
 
@@ -210,7 +230,7 @@ Human evaluation on 100 sampled instances per dataset reveals that automatic met
 
 The paper discusses limitations in Section 7:
 
-1. **Automatic metrics penalize valid outputs.** In the zero-shot setting, where models must infer output format from the prompt, ROUGE and F1 assign low scores to semantically equivalent generations with different word choices or answer lengths. This is confirmed by the format discrepancy analysis in Section 5, where GPT-4's human-judged accuracy exceeds its automatic F1 scores.
+1. **Automatic metrics penalize valid outputs.** In the zero-shot setting, where models must infer output format from the prompt, ROUGE and F1 assign low scores to semantically equivalent generations with different word choices or answer lengths. This is confirmed by the format discrepancy analysis in Section 5, where GPT-4's human-judged accuracy exceeds its automatic F1 scores (Section 7).
 
 2. **Common prompts across models.** For fair evaluation, the same prompt templates are used across all models. Model-specific prompts or chain-of-thought prompting (Wei et al., 2022b) could improve performance but were not explored (Section 7).
 
@@ -218,7 +238,14 @@ The paper discusses limitations in Section 7:
 
 4. **Moving target.** New models, alignment methods, decoding algorithms, and prompting techniques continuously emerge. The paper's results reflect a snapshot in time; the live leaderboard addresses this (Section 7).
 
-5. **Aggregation task difficulty may conflate multiple skills.** SpaceDigest combines sentiment classification, counting, and division -- individually "easy" tasks whose combination proves challenging. It is unclear whether failures stem from difficulty in aggregating across long contexts or from the compositional nature of the task (inference from Section 4.2).
+5. **[Inferred]** Aggregation task difficulty may conflate multiple skills. SpaceDigest combines sentiment classification, counting, and division -- individually "easy" tasks whose combination proves challenging. It is unclear whether failures stem from difficulty in aggregating across long contexts or from the compositional nature of the task.
+
+6. **[Inferred]** No evaluation on non-English languages, limiting generalizability of claims about LLM long-text understanding to English only.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models with context windows beyond 8,192 tokens are not evaluated, despite NarrativeQA inputs averaging 49,384 words. No retrieval-augmented generation (RAG) approaches are tested. No non-English tasks are included. Decoding strategies beyond greedy decoding are not explored. No models newer than GPT-4 v0314 (March 2023) are included in the paper's own evaluation. No variance estimates or multiple runs are reported.
+- **Comparability notes:** ZeroSCROLLS uses a maximum of 8,192 tokens across models, which is substantially shorter than later benchmarks like LongBench (avg 6,711 words with some tasks up to 15K+), BABILong (up to 10M tokens), or RULER (4K--128K configurable lengths). The use of greedy decoding makes results comparable across models within this study but may not reflect performance with sampling or beam search. CoLT5 has access to 16,384 tokens (2x the zero-shot models), creating an uneven comparison. The benchmark's average input length (~14K words across tasks, as noted by LV-Eval) is moderate by current standards. ROUGE-based summarization scores are not directly comparable to later benchmarks that use LLM-based evaluation.
 
 ---
 
@@ -234,11 +261,11 @@ The paper discusses limitations in Section 7:
 
 4. **Quantified format discrepancy as a significant evaluation issue.** Human evaluation demonstrates that GPT-4 is correct more often than its F1 scores suggest (e.g., 53% vs 39% accuracy on NarrativeQA vs Claude), with format non-compliance (71/200 vs 191/200) explaining the automatic metric gap (Section 5).
 
-5. **Confirmed that both model size and input length matter.** Performance scales with model size (Flan-T5: avg 11.0 at 60M to 29.9 at 11B) and context length (Flan-T5-xxl: avg 17.1 at 512 tokens to 29.9 at 8192 tokens; Claude: avg 36.3 at 4k to 39.1 at 8k), confirming ZeroSCROLLS captures genuine long-text understanding (Table 4, Section 4.3).
+5. **Confirmed that both model size and input length matter.** Performance scales with model size (Flan-T5: avg 11.0 at 60M to 29.9 at 11B) and context length (Flan-T5-xxl: avg 17.1 at 512 tokens to 29.9 at 8,192 tokens; Claude: avg 36.3 at 4K to 39.1 at 8K), confirming ZeroSCROLLS captures genuine long-text understanding (Table 4, Section 4.3).
 
 ### Implications
 
-1. **Zero-shot evaluation requires new metrics.** The demonstrated gap between automatic metrics and human judgments -- particularly for models that generate correct but differently formatted answers -- suggests that standard n-gram metrics (ROUGE, F1) are insufficient for zero-shot long-text evaluation. This echoes SCROLLS's own acknowledgment of ROUGE limitations.
+1. **Zero-shot evaluation requires new metrics.** The demonstrated gap between automatic metrics and human judgments -- particularly for models that generate correct but differently formatted answers -- suggests that standard n-gram metrics (ROUGE, F1) are insufficient for zero-shot long-text evaluation. This echoes SCROLLS's own acknowledgment of ROUGE limitations (inference from Section 5 and Section 7).
 
 2. **Aggregation tasks probe a distinct capability.** The finding that sentiment classification, counting, and division are individually easy but their composition over long contexts is hard suggests that **information aggregation** across sequences represents a capability distinct from retrieval or synthesis, warranting dedicated evaluation (inference from Section 4.2).
 
@@ -248,15 +275,17 @@ The paper discusses limitations in Section 7:
 
 ## Key Claims
 
-1. **C1: GPT-4 achieves the highest average ZeroSCROLLS score (41.7).** Claude follows at 39.1, both significantly above open-source models (Flan-UL2 30.6, Flan-T5 29.9) and other closed models (ChatGPT 34.0, DaVinci003 33.7). Evidence: Table 3, Section 4.2. Status: **supported**.
+1. **C1: GPT-4 achieves the highest average ZeroSCROLLS score (41.7).** Claude follows at 39.1, both significantly above open-source models (Flan-UL2 30.6, Flan-T5 29.9) and other closed models (ChatGPT 34.0, DaVinci003 33.7). Evidence: Table 3, Section 4.2. Status: **supported**. Scope: 7 LLMs evaluated zero-shot with greedy decoding, max 8,192 tokens, English only. Magnitude: 41.7 avg (GPT-4) vs 30.6 (best open-source), an 11.1-point gap. Single run per model, no variance reported (limited per-task evidence, but consistent pattern across 10 tasks).
 
-2. **C2: Zero-shot LLMs bridge the gap with fine-tuned models on QA but not summarization.** GPT-4 scores 89.2 on QuALITY vs. CoLT5's 47.0, and Flan-UL2 scores 56.9 on Qasper vs. CoLT5's 53.1. But on GovReport summarization, CoLT5 scores 41.0 vs. GPT-4's 26.3 -- a 14.7-point gap. Evidence: Table 3, Section 4.2. Status: **supported**.
+2. **C2: Zero-shot LLMs bridge the gap with fine-tuned models on QA but not summarization.** GPT-4 scores 89.2 on QuALITY vs. CoLT5's 47.0, and Flan-UL2 scores 56.9 on Qasper vs. CoLT5's 53.1. But on GovReport summarization, CoLT5 scores 41.0 vs. GPT-4's 26.3 -- a 14.7-point gap. Evidence: Table 3, Section 4.2. Status: **supported**. Scope: GPT-4 vs CoLT5-xl (fine-tuned, 16K tokens), 6 overlapping SCROLLS tasks. Magnitude: +42.2 points for GPT-4 over CoLT5 on QuALITY; -14.7 points on GovReport. Comparison limited to one fine-tuned baseline (CoLT5).
 
-3. **C3: Information aggregation tasks are exceptionally difficult for all models.** On SpaceDigest, only Claude (61.6) and GPT-4 (62.8) surpass the naive baseline (45.0). On BookSumSort, only GPT-4 (60.5) exceeds the trivial permutation baseline (50.0). T0pp scores 0.0 on BookSumSort and 15.2 on SpaceDigest. Evidence: Table 3, Section 4.2. Status: **supported**.
+3. **C3: Information aggregation tasks are exceptionally difficult for all models.** On SpaceDigest, only Claude (61.6) and GPT-4 (62.8) surpass the naive baseline (45.0). On BookSumSort, only GPT-4 (60.5) exceeds the trivial permutation baseline (50.0). T0pp scores 0.0 on BookSumSort and 15.2 on SpaceDigest. Evidence: Table 3, Section 4.2. Status: **supported**. Scope: 7 LLMs, zero-shot with greedy decoding. Magnitude: SpaceDigest best 62.8 vs naive 45.0; BookSumSort best 60.5 vs naive 50.0. Tested across 7 models (moderate evidence).
 
-4. **C4: Format discrepancy significantly impacts automatic evaluation scores.** On NarrativeQA, Claude outperforms GPT-4 by 5 F1 points (32.6 vs 27.6), but human evaluation shows GPT-4 is correct more often (53% vs 39% accuracy). GPT-4 conforms to the requested format in only 71/200 cases vs. Claude's 191/200. Evidence: Section 5, Figure 4. Status: **supported**.
+4. **C4: Format discrepancy significantly impacts automatic evaluation scores.** On NarrativeQA, Claude outperforms GPT-4 by 5 F1 points (32.6 vs 27.6), but human evaluation shows GPT-4 is correct more often (53% vs 39% accuracy). GPT-4 conforms to the requested format in only 71/200 cases vs. Claude's 191/200. Evidence: Section 5, Figure 4. Status: **supported**. Scope: 100 sampled NarrativeQA instances for accuracy, 200 for format analysis. Magnitude: 14 percentage point gap between human-judged accuracy (53% vs 39%), despite -5 F1 point automatic metric gap. Moderate sample size (100--200 instances).
 
-5. **C5: Performance scales with both model size and input length.** Flan-T5 averages increase from 11.0 (60M) to 29.9 (11B). Flan-T5-xxl averages increase from 17.1 (512 tokens) to 29.9 (8192 tokens). Claude gains ~2.8 points from 4k to 8k tokens (36.3 to 39.1). Evidence: Table 4, Section 4.3. Status: **supported**.
+5. **C5: Performance scales with both model size and input length.** Flan-T5 averages increase from 11.0 (60M) to 29.9 (11B). Flan-T5-xxl averages increase from 17.1 (512 tokens) to 29.9 (8,192 tokens). Claude gains ~2.8 points from 4K to 8K tokens (36.3 to 39.1). Evidence: Table 4, Section 4.3. Status: **supported**. Scope: Flan-T5 sizes 60M--11B; Flan-T5-xxl at 512--8,192 tokens; Claude at 4K--8K. Magnitude: +18.9 avg points across Flan-T5 size range; +12.8 avg points across Flan-T5-xxl length range; +2.8 points for Claude. Single model family for size scaling (limited evidence for generalization beyond Flan-T5).
+
+6. **C6: Format discrepancy is a general phenomenon across models and tasks.** Output length distributions (Figure 5) show Claude generates overly long QMSum answers, Flan-UL2 generates overly long SummScreenFD summaries, and all models generate overly short GovReport summaries. Evidence: Section 5, Figure 5. Status: **supported**. Scope: Output length analysis across 7 tasks and 4 models. Magnitude: qualitative -- direction of discrepancy varies by task-model pair. Assessed across 7 tasks (strong evidence for generality).
 
 ---
 
@@ -266,9 +295,11 @@ The paper discusses limitations in Section 7:
 
 2. **Can chain-of-thought prompting or model-specific prompts significantly improve performance on aggregation tasks?** The paper uses common prompts across all models for fairness and explicitly notes that chain-of-thought prompting was not explored (Section 3.2, Section 7). **Unresolved**.
 
-3. **How do models with context windows beyond 8,192 tokens perform on ZeroSCROLLS tasks?** All evaluated models have at most 8,192 tokens of context. Tasks like NarrativeQA (avg 49,384 words) require substantial truncation, and Claude's improvement from 4k to 8k tokens suggests further gains may be possible (Table 4, Section 4.3, Section 7). **Unresolved**.
+3. **How do models with context windows beyond 8,192 tokens perform on ZeroSCROLLS tasks?** All evaluated models have at most 8,192 tokens of context. Tasks like NarrativeQA (avg 49,384 words) require substantial truncation, and Claude's improvement from 4K to 8K tokens suggests further gains may be possible (Table 4, Section 4.3, Section 7). **Unresolved**.
 
 4. **Why does GPT-4 refuse to answer questions about trimmed context far more often than Claude?** GPT-4 responds "unable to answer" for 30/200 NarrativeQA instances vs. Claude's 5/200, despite similar context lengths (Section 5, footnote 9). **Unresolved**.
+
+5. **What is the relative contribution of sentiment classification errors vs. aggregation errors in SpaceDigest failures?** Human annotators achieve ~98.4% single-review accuracy but models struggle at the aggregate task. It is unclear whether model errors are in classifying individual reviews or in counting/computing percentages (Section 3.1.3, Section 4.2). **Unresolved**.
 
 ---
 

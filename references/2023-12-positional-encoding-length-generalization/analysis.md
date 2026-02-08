@@ -6,7 +6,7 @@ venue: "NeurIPS 2023"
 paper_type: conference-paper
 categories: ["position-encoding", "attention-analysis", "probing-and-analysis"]
 scope: ["length generalization", "decoder-only transformers", "NoPE", "scratchpad / chain-of-thought", "downstream task evaluation"]
-benchmarks_used: []
+benchmarks_used: ["scan", "pcfg"]
 models_introduced: []
 models_evaluated: []
 key_claims:
@@ -14,31 +14,45 @@ key_claims:
     claim: "NoPE outperforms all explicit positional encodings on length generalization across downstream tasks, achieving a mean reciprocal rank of 0.69 vs 0.55 for the next-best T5 Relative PE"
     evidence: "Figure 1, Figure 2, Section 4"
     status: supported
+    scope: "~107M decoder-only Transformers trained from scratch on 10 synthetic algorithmic/reasoning tasks, L=20, greedy decoding, 3 seeds"
+    magnitude: "MRR 0.69 (NoPE) vs 0.55 (T5 RPE) vs 0.50 (ALiBi) vs 0.33 (Rotary) vs 0.22 (APE)"
   - id: C2
     claim: "Commonly used positional encodings in LLMs (ALiBi, Rotary, APE) are ill-suited for length generalization on downstream tasks, with Rotary performing more similarly to APE than to other relative schemes"
     evidence: "Figure 1, Figure 2, Figure 3, Section 4"
     status: supported
+    scope: "~107M decoder-only Transformers trained from scratch, 10 synthetic tasks, greedy decoding"
+    magnitude: "Rotary MRR 0.33 vs APE MRR 0.22 — both far below T5 RPE (0.55) and NoPE (0.69)"
   - id: C3
     claim: "NoPE can theoretically represent both absolute and relative positional encodings via the causal attention mask and feedforward layers"
     evidence: "Theorem 1, Theorem 2, Appendix C"
     status: supported
     contested_by: 2025-04-round-and-round-rope
+    scope: "existence proof for decoder-only Transformers with causal mask and <bos> token; requires sufficient model dimension"
+    magnitude: "qualitative — constructive existence proof, not a guarantee SGD will find this parameterization"
   - id: C4
     claim: "NoPE empirically learns attention patterns most similar to T5's Relative PE, as measured by Jensen-Shannon divergence between attention distributions across layers"
     evidence: "Figure 4, Section 5.2"
     status: supported
+    scope: "SCAN dataset, ~107M models, all 12 layers, lengths up to 50"
+    magnitude: "NoPE-T5 RPE distance ~0.25 average across layers vs NoPE-ALiBi ~0.5-1.0, NoPE-Rotary ~1.0-1.5, NoPE-APE ~1.0-1.5"
   - id: C5
     claim: "Scratchpad/chain-of-thought is not always helpful for length generalization and its format highly impacts performance; it is beneficial only for the addition task across all PEs"
     evidence: "Figure 6, Section 6"
     status: supported
+    scope: "6 mathematical/reasoning tasks, 5 PE methods, L=8 for scratchpad, ~107M models"
+    magnitude: "scratchpad improves all PEs only for addition; no consistent benefit on LEGO, Parity, Polynomial Eval., Sorting, Summation"
   - id: C6
     claim: "NoPE and T5 Relative PE exhibit bimodal attention distributions (both short-range and long-range), while ALiBi strongly favors short-range and Rotary/APE show uniform distributions"
     evidence: "Figure 7, Section 6.1"
     status: supported
+    scope: "addition task with full scratchpad, ~107M models, normalized attention distances"
+    magnitude: "NoPE and T5 RPE show peaks near normalized distance 0 and 1; ALiBi peak near 0 only; Rotary/APE approximately uniform"
   - id: C7
     claim: "At 1.3B scale pretraining, Rotary fails to generalize beyond training context (perplexity explodes), while NoPE and ALiBi generalize up to approximately twice the training context length"
     evidence: "Tables 3-4, Figure F.2, Appendix F"
     status: supported
+    scope: "1.3B parameter models pretrained on 30B tokens of StarCoder code data, context length 1024, perplexity evaluation only"
+    magnitude: "Rotary PPL 251.684 at context 1400 for [1500,1750] bucket vs NoPE 2.121 and ALiBi 2.307; NoPE and ALiBi stable to ~1800 tokens"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: evaluates
@@ -77,7 +91,7 @@ open_questions:
 
 # The Impact of Positional Encoding on Length Generalization in Transformers
 
-**Authors:** Amirhossein Kazemnejad, Inkit Padhi, Karthikeyan Natesan Ramamurthy, Payel Das, Siva Reddy (Mila / McGill University, IBM Research)
+**Authors:** Amirhossein Kazemnejad, Inkit Padhi, Karthikeyan Natesan Ramamurthy, Payel Das, Siva Reddy (Mila / McGill University, IBM Research, Facebook CIFAR AI Chair, ServiceNow Research)
 **Date:** December 2023, NeurIPS 2023, arXiv:2305.19466
 
 ---
@@ -96,10 +110,10 @@ The core challenge is: **how different positional encoding schemes impact length
 
 The paper provides a systematic empirical comparison of five PE schemes on length generalization across 10 downstream tasks, complemented by theoretical and empirical analysis of NoPE's mechanisms. The key findings are:
 
-1. **NoPE outperforms all explicit PEs** on length generalization across downstream tasks, achieving a mean reciprocal rank (MRR) of 0.69, followed by T5's Relative PE (0.55), ALiBi (0.50), Rotary (0.33), and APE (0.22).
+1. **NoPE outperforms all explicit PEs** on length generalization across downstream tasks, achieving a mean reciprocal rank (MRR) of 0.69, followed by T5's Relative PE (0.55), ALiBi (0.50), Rotary (0.33), and APE (0.22) (Figure 1).
 2. **NoPE can theoretically represent both absolute and relative PEs** via the causal attention mask and feedforward layers (Theorems 1 and 2).
-3. **NoPE empirically resembles T5's Relative PE** in attention patterns, as measured by Jensen-Shannon divergence between attention head distributions.
-4. **Scratchpad/CoT does not render PE choice irrelevant** -- it is beneficial only for addition across all PEs, and its format has non-trivial impact on performance.
+3. **NoPE empirically resembles T5's Relative PE** in attention patterns, as measured by Jensen-Shannon divergence between attention head distributions (Figure 4, Section 5.2).
+4. **Scratchpad/CoT does not render PE choice irrelevant** -- it is beneficial only for addition across all PEs, and its format has non-trivial impact on performance (Figure 6, Section 6).
 
 ---
 
@@ -109,49 +123,75 @@ The paper provides a systematic empirical comparison of five PE schemes on lengt
 
 The study compares five positional encoding approaches, all applied to a conventional decoder-only Transformer trained from scratch:
 
-- **APE (Absolute Position Embedding):** Sinusoidal variant (Vaswani et al., 2017), since the learned variant cannot produce embeddings for unseen positions.
-- **T5's Relative PE:** Learned scalar bias `b = f(i - j)` added to attention dot products, with a bucket function mapping large distances to shared parameters (Raffel et al., 2020). Original T5 uses B = 32 buckets, D = 128 max distance.
-- **ALiBi:** Linear bias subtracted from attention scores proportional to query-key distance, creating a recency bias (Press et al., 2022).
-- **Rotary (RoPE):** Rotates query and key representations by angle proportional to absolute position before dot product, making attention depend on relative distance (Su et al., 2021).
-- **NoPE:** No positional encoding of any kind. The dot product is simply `q_t^T k_i`.
+- **APE (Absolute Position Embedding):** Sinusoidal variant (Vaswani et al., 2017), since the learned variant cannot produce embeddings for unseen positions. Position vector `p_j` is computed as interleaved sine and cosine functions:
 
-All models use the "base" configuration from HuggingFace: ~107M parameters, 12 layers, 768 model dimension, 12 attention heads.
+> `p_j = [sin(w_1 * j), cos(w_1 * j), sin(w_2 * j), cos(w_2 * j), ..., sin(w_{d/2} * j), cos(w_{d/2} * j)]`
+
+where `w_i = 1 / 10000^(2i/d)` (Equation 11, Appendix B.2).
+
+- **T5's Relative PE:** Learned scalar bias `b = f(i - j)` added to attention dot products, with a bucket function mapping large distances to shared parameters (Raffel et al., 2020). The dot product becomes:
+
+> `<q_t, k_i> = q_t^T k_i + b_{bucket(t-i)}`
+
+The bucket function maps the first B/2 distances linearly and the remaining distances logarithmically, with all distances >= D sharing a single parameter. Original T5 uses B = 32 buckets, D = 128 max distance (Equation 12, Appendix B.2).
+
+- **ALiBi:** Linear bias subtracted from attention scores proportional to query-key distance, creating a recency bias (Press et al., 2022):
+
+> `<q_t, k_i> = q_t^T k_i - (t - i) * C^(m+1)`
+
+where `m` is the head index and `C = 2^{-2^{-log2(num_heads + 3)}}` (Equation 13, Appendix B.2).
+
+- **Rotary (RoPE):** Rotates query and key representations by angle proportional to absolute position before dot product, making attention depend on relative distance (Su et al., 2021):
+
+> `<q_t, k_i> = q_t^T R^{(i-t)*theta} k_i`
+
+where `R^{n*theta}` is a 2D rotation matrix by `n*theta` radians, applied to consecutive pairs of dimensions with different theta angles (Equations 14-15, Appendix B.2).
+
+- **NoPE:** No positional encoding of any kind. The dot product is simply `q_t^T k_i` (Equation 16, Appendix B.2).
+
+All models use the "base" configuration from HuggingFace: **~107M parameters, 12 layers, 768 model dimension, 12 attention heads** (Section 3).
 
 ### Key Technical Components
 
-**Length generalization setup.** Following Anil et al. (2022), each task defines a function `lambda: D -> N` returning the length/depth of an instance. Training uses instances where `lambda <= L` (default L = 20), evaluation uses `lambda in [1, 2L]` to include both seen and unseen lengths. Performance is measured as exact-match accuracy.
+**Length generalization setup.** Following Anil et al. (2022), each task defines a function `lambda: D -> N` returning the length/depth of an instance. Training uses instances where `lambda <= L` (default L = 20), evaluation uses `lambda in [1, 2L]` to include both seen and unseen lengths. Performance is measured as **exact-match accuracy** (Section 3).
 
-**Aggregate ranking.** Following Liang et al. (2022), the paper reports mean reciprocal rank (MRR) of PE methods when compared against each other across all tasks and scenarios, providing a holistic ranking.
+**Aggregate ranking.** Following Liang et al. (2022), the paper reports **mean reciprocal rank (MRR)** of PE methods when compared against each other across all tasks and scenarios, providing a holistic ranking (Section 4).
 
 **Attention pattern similarity.** To compare NoPE's learned mechanism to explicit PEs, the paper measures the minimum Jensen-Shannon divergence between attention head distributions across models:
 
 > `D^(l)(A, B) = min_{(P,Q) in A_l x B_l} D_AT(P, Q)`
 
-where `D_AT(P, Q) = (1/T) sum_{t=1}^{T} D_JSD(P_t || Q_t)` averages JSD over all positions.
+where `D_AT(P, Q) = (1/T) sum_{t=1}^{T} D_JSD(P_t || Q_t)` averages JSD over all positions (Equation 2, Section 5.2).
 
-**Scratchpad format analysis.** The paper decomposes each scratchpad step into five components: Step Input (I), Step Computation (C), Step Output (O), Intermediate Variable Updates (V), and Remaining Input (R). Different combinations of these components are systematically evaluated.
+**Scratchpad format analysis.** The paper decomposes each scratchpad step into five components: **Step Input (I), Step Computation (C), Step Output (O), Intermediate Variable Updates (V), and Remaining Input (R)** (Figure 5). Different combinations of these components are systematically evaluated across all PE methods and tasks (Section 6).
+
+**Normalized attention distance.** For scratchpad analysis, the distance `d = t - n + 1` between query `q_t` and attended key `k_n` is normalized by sequence length to produce `d_bar`, revealing whether models attend to recent (d_bar near 0) or distant (d_bar near 1) tokens (Section 6.1).
 
 ### Theoretical Analysis
 
-**Theorem 1 (Absolute Encoding).** The first layer of a NoPE Transformer can recover absolute positions `[1, ..., T+1]` in the hidden state `H^(1)`. The proof constructs weights such that (a) all key vectors are identical (by reading the constant first dimension of embeddings), (b) the value vectors are non-zero only for the `<bos>` token, and (c) the uniform attention distribution produces `1/t` at position `t`, which the feedforward layer can invert to recover absolute positions (Appendix C.1).
+**Theorem 1 (Absolute Encoding).** The first layer of a NoPE Transformer can recover absolute positions `[1, ..., T+1]` in the hidden state `H^(1)`. The proof constructs weights such that (a) `W_K` reads the first dimension of embeddings (set to 1 for all tokens), making all key vectors identical, (b) `W_V` reads the second dimension (set to 1 only for `<bos>`), so value vectors are non-zero only for `<bos>`, (c) the causal mask restricts attention to positions `<= t`, producing uniform attention weights `1/t` at position `t`, (d) `W_O` writes `1/t` to the third dimension of the hidden state, and (e) the feedforward layer (a universal approximator via ReLU MLP) can invert `1/t` to recover absolute position `t` (Appendix C.1, Equations 17-27).
 
 **Theorem 2 (Relative Encoding).** Given absolute positions in `H^(1)`, subsequent layers can implement relative positional encoding. The proof constructs `W_Q` and `W_K` such that:
 
 > `<q_t, k_i> = f_cnt(q_t, k_i) + f_rel(t - i)`
 
-where `f_cnt` depends on content and `f_rel` depends on relative distance. The construction places position `t` in the query with a negative sign and position `i` in the key, producing an `(i - t)` term in the dot product (Appendix C.2).
+where `f_cnt` depends on content and `f_rel` depends on relative distance. Specifically, `W_Q` places position `t` in the query with a negative sign (second component = `-t`), and `W_K` places position `i` in the key (first component = `i`), producing an `(i - t)` term in the dot product (Appendix C.2, Equations 28-37).
 
 ### Experimental Setup
 
 **Tasks (10 total in 3 categories):**
 
-- *Primitive tasks:* Copy (5 variants), Reverse (3 variants)
-- *Mathematical and reasoning tasks:* Addition, Polynomial Evaluation, Sorting (Single Token, Multi Digit), Summation, Parity, LEGO
+- *Primitive tasks (8 variants):* Copy (5 variants: same tokens, replacement tokens, random vocab, 2x versions), Reverse (3 variants: random vocab, double reverse)
+- *Mathematical and reasoning tasks (7 tasks):* Addition (Nye et al., 2021), Polynomial Evaluation, Sorting (Single Token and Multi Digit), Summation, Parity (Anil et al., 2022), LEGO (Zhang et al., 2023)
 - *Classical length generalization datasets:* SCAN (Lake and Baroni, 2018), PCFG (Hupkes et al., 2020)
 
-**Training:** 100K training examples, 10K test examples per task. Length threshold L = 20 (L = 8 for scratchpad tasks). 3 seeds per dataset-PE pair. AdamW optimizer, lr = 3e-5, weight decay 0.05, batch size 64, 40K training steps, polynomial LR scheduler, 6% warmup.
+**Training:** 100K training examples (15% for validation), 10K test examples per task. Length threshold L = 20 (L = 8 for scratchpad tasks due to longer sequences). **3 seeds per dataset-PE pair.** AdamW optimizer, lr = 3e-5, weight decay 0.05, batch size 64, 40K training steps, polynomial LR scheduler, 6% warmup, dropout 0.1. **Greedy decoding** (no sampling). ~870 individual training runs total (Table 2, Appendix D.2-D.3).
 
-**1.3B scale experiment (Appendix F):** 24 layers, d_model = 1024, d_kv = 128, d_ff = 16384, 32 attention heads. Trained on 30B tokens from a StarCoder subset (40% Python, 25% Java, 25% JavaScript, 5% GitHub issues, 5% GitHub commits). Context length 1024. Only ALiBi, Rotary, and NoPE compared.
+**Hardware:** Single-GPU training on NVIDIA V100 32G, RTX8000 48G, A100 40G, and A100 80G. Each run took 6-15 hours (Appendix D.3).
+
+**1.3B scale experiment (Appendix F):** 24 layers, d_model = 1024, d_kv = 128, d_ff = 16384, 32 attention heads. Trained on **30B tokens** from a StarCoder subset (40% Python, 25% Java, 25% JavaScript, 5% GitHub issues, 5% GitHub commits). Context length 1024. Global batch size 256, AdamW (beta1=0.9, beta2=0.95), lr = 2e-4 with cosine decay, 2% warmup, weight decay 0.1. Only ALiBi, Rotary, and NoPE compared. Evaluated on **perplexity** over 1500 validation documents at context sizes 512-2560 (Appendix F.1-F.3).
+
+**Reproducibility:** Code available at https://github.com/McGill-NLP/length-generalization. Open-source HuggingFace implementation. Singularity binary provided for reproducibility (Appendix D.4).
 
 ### Key Results
 
@@ -165,25 +205,25 @@ where `f_cnt` depends on content and `f_rel` depends on relative distance. The c
 | Rotary | 0.33 |
 | APE | 0.22 |
 
-- NoPE outperforms all explicit PEs on aggregate ranking across all 10 tasks (Figure 1).
+- NoPE outperforms all explicit PEs on aggregate ranking across all 10 tasks (Figure 1). NoPE and T5 RPE consistently rank highest across all three task categories (Figure 2).
 - T5's Relative PE is the best explicit PE. ALiBi is in the middle. Rotary and APE show poor length generalization (Figure 2).
-- All models achieve perfect or near-perfect accuracy on I.I.D. lengths; differences emerge only at extrapolation lengths (Figure 3).
+- **All models achieve perfect or near-perfect accuracy on I.I.D. lengths; differences emerge only at extrapolation lengths** (Figure 3). This is consistent across Copy, Addition, SCAN, Reverse, Summation, and PCFG (tested across 10 tasks and 3 seeds; moderate evidence given synthetic-only evaluation).
 
 **Attention pattern similarity (Figure 4, Section 5.2):**
 
-- NoPE's attention patterns are most similar to T5's Relative PE across all layers and length buckets (D_AT approximately 0.25 average).
-- NoPE is least similar to APE and Rotary (D_AT approximately 1.0--1.5 average).
-- The distance between two NoPE seeds is comparable to the NoPE--T5 distance, serving as a baseline.
+- NoPE's attention patterns are most similar to T5's Relative PE across all 12 layers and length buckets, with `D_AT` approximately 0.25 average (evaluated on SCAN, single dataset — limited evidence for generality).
+- NoPE is least similar to APE and Rotary (`D_AT` approximately 1.0-1.5 average).
+- The distance between two NoPE seeds is comparable to the NoPE-T5 distance, serving as a baseline.
 
 **Scratchpad results (Figure 6, Section 6):**
 
-- Scratchpad is beneficial only for the addition task across all PEs.
-- For all other tasks (LEGO, Parity, Polynomial Evaluation, Sorting, Summation), scratchpad does not consistently improve length generalization.
+- Scratchpad is beneficial **only for the addition task** across all PEs.
+- For all other tasks (LEGO, Parity, Polynomial Evaluation, Sorting, Summation), scratchpad does not consistently improve length generalization (tested across 6 tasks, 5 PEs, multiple scratchpad formats; strong evidence for task-dependency).
 - The scratchpad format significantly impacts performance; the optimal format differs across PEs (Figure F.8).
 
 **Attention distance distributions (Figure 7, Section 6.1):**
 
-| PE Method | Attention Distribution |
+| PE Method | Attention Distribution Pattern |
 |---|---|
 | NoPE | Bimodal (short-range + long-range) |
 | T5's Relative PE | Bimodal (short-range + long-range) |
@@ -191,35 +231,44 @@ where `f_cnt` depends on content and `f_rel` depends on relative distance. The c
 | Rotary | Uniform (similar to APE) |
 | APE | Uniform |
 
-- NoPE and T5 RPE, the top-performing methods, both show bimodal attention. ALiBi's recency bias restricts it to short-range attention (Figure 7).
+- NoPE and T5 RPE, the top-performing methods, both show bimodal attention. ALiBi's recency bias restricts it to short-range attention (Figure 7). Evaluated on addition task with full scratchpad only (single task — limited evidence for generality of the bimodal pattern).
 
-**1.3B scale pretraining (Appendix F):**
+**1.3B scale pretraining (Tables 3-4, Figure F.2, Appendix F):**
 
-| PE | I.I.D. PPL (1024 ctx) | OOD PPL (1800 ctx) | OOD PPL (2560 ctx) |
+| PE | I.I.D. PPL (bucket [750,1000], ctx 512) | OOD PPL (bucket [1500,1750], ctx 1400) | OOD PPL (bucket [2750,3000], ctx 2560) |
 |---|---|---|---|
-| NoPE | ~2.5 | ~30 | ~500 |
-| ALiBi | ~2.5 | ~14 | ~150 |
-| Rotary | ~2.5 | ~250+ (explodes) | ~800+ |
+| NoPE | 2.456 | 2.121 | 536.225 |
+| ALiBi | 2.427 | 2.307 | 150.322 |
+| Rotary | 2.401 | 251.684 | 760.104 |
 
-- At I.I.D. context (<=1024), all variants have similar perplexity.
-- Rotary's perplexity explodes beyond the training context.
-- NoPE and ALiBi generalize up to ~1800 tokens (~1.8x training context). Beyond that, ALiBi is more stable than NoPE.
+- At I.I.D. context (<=1024), all variants have similar perplexity (single 1.3B model per PE, no seeds reported — limited evidence).
+- **Rotary's perplexity explodes beyond the training context** (251.684 at context 1400 for [1500,1750] bucket, Table 3).
+- NoPE and ALiBi generalize up to ~1800 tokens (~1.8x training context). Beyond that, ALiBi is more stable than NoPE (e.g., at bucket [2750,3000] ctx 2560: ALiBi PPL 150.322 vs NoPE PPL 536.225, Table 3).
 
 ---
 
 ## Limitations and Failure Modes
 
-1. **Models trained from scratch on synthetic tasks.** All primary experiments use ~107M parameter models trained from scratch on algorithmic tasks. The authors acknowledge that no publicly available LLMs are trained with various PEs under identical conditions, preventing direct comparison of PE effects in large-scale pretraining (Limitations section).
+1. **Models trained from scratch on synthetic tasks.** All primary experiments use ~107M parameter models trained from scratch on algorithmic tasks. The authors acknowledge that no publicly available LLMs are trained with various PEs under identical conditions, preventing direct comparison of PE effects in large-scale pretraining (Limitations section, Section 9).
 
 2. **NoPE's advantage may not transfer to natural language pretraining.** The 1.3B scale experiment (Appendix F) evaluates only perplexity, not downstream length generalization. Preliminary fine-tuning yielded identical performance across PE variants because the 1.3B models' training context was much larger than the task instances (Section 7).
 
-3. **ALiBi more stable than NoPE at larger scales.** At 1.3B scale, ALiBi maintains lower perplexity than NoPE beyond ~1800 tokens (Tables 3--4), suggesting NoPE's advantage observed on small-scale synthetic tasks may not persist at scale.
+3. **ALiBi more stable than NoPE at larger scales.** At 1.3B scale, ALiBi maintains lower perplexity than NoPE beyond ~1800 tokens (Tables 3-4), suggesting NoPE's advantage observed on small-scale synthetic tasks may not persist at scale.
 
-4. **Perplexity vs. downstream performance disconnect.** The paper argues that perplexity-based evaluation of length generalization can be misleading due to naturally occurring short-range dependencies in language data, which favor ALiBi's recency bias (Section 7). However, the paper's own downstream evaluation uses only synthetic tasks, not natural language downstream tasks.
+4. **Perplexity vs. downstream performance disconnect.** The paper argues that perplexity-based evaluation of length generalization can be misleading due to naturally occurring short-range dependencies in language data, which favor ALiBi's recency bias (Section 7). The authors note that Chi et al. (2023) showed ALiBi's length generalization could be replicated with a window attention mask.
 
-5. **No evaluation of learned APE.** The paper uses sinusoidal APE rather than learned positional embeddings (used in GPT-3, OPT) because learned APE cannot produce embeddings for unseen positions. This means the APE baseline does not represent the most common variant in modern LLMs.
+5. **Scratchpad tasks limited by compute.** Scratchpad experiments use L = 8 (vs L = 20 for non-scratchpad) due to the longer sequences causing out-of-memory errors (Section 6, footnote 1).
 
-6. **Scratchpad tasks limited by compute.** Scratchpad experiments use L = 8 (vs L = 20 for non-scratchpad) due to the longer sequences causing out-of-memory errors (Section 6, footnote 1).
+6. **[Inferred]** No evaluation of learned APE. The paper uses sinusoidal APE rather than learned positional embeddings (used in GPT-3, OPT) because learned APE cannot produce embeddings for unseen positions. This means the APE baseline does not represent the most common variant in modern LLMs.
+
+7. **[Inferred]** No evaluation on natural language downstream tasks. While the paper criticizes perplexity-based evaluation, its own downstream evaluation uses only synthetic algorithmic tasks, not natural language tasks such as QA, summarization, or reasoning.
+
+8. **[Inferred]** Single dataset for attention similarity analysis. The NoPE-T5 RPE similarity claim (Section 5.2) is based solely on SCAN examples, limiting generality of the "NoPE resembles T5 RPE" conclusion.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models larger than 1.3B parameters; pretrained models fine-tuned on downstream tasks; natural language downstream tasks; encoder-only or encoder-decoder architectures; learned APE variant; any form of position interpolation or extrapolation technique (e.g., PI, NTK-aware scaling); non-English data.
+- **Comparability notes:** The paper's "length generalization" definition (train on lambda <= L, test on lambda > L) uses a task-specific lambda function, not raw sequence length. This differs from how "context extension" is typically defined in the long-context literature (extending pretrained context windows). The 1.3B scale experiment evaluates perplexity on code data (StarCoder), which is not directly comparable to natural language perplexity evaluations in other PE papers. The paper uses greedy decoding throughout, while some prior work uses sampling-based evaluation. The MRR aggregation scheme weights all 10 tasks equally regardless of difficulty or relevance, which may not reflect practical importance.
 
 ---
 
@@ -227,43 +276,43 @@ where `f_cnt` depends on content and `f_rel` depends on relative distance. The c
 
 ### Contributions
 
-1. **Systematic comparison of PE schemes on length generalization.** Provided the first comprehensive comparison of five positional encoding methods (APE, T5 Relative PE, ALiBi, Rotary, NoPE) on length generalization across 10 downstream tasks, showing clear distinctions among methods that are not visible in I.I.D. evaluation (Figures 1--3).
+1. **Systematic comparison of PE schemes on length generalization.** Provided the first comprehensive comparison of five positional encoding methods (APE, T5 Relative PE, ALiBi, Rotary, NoPE) on length generalization across 10 downstream tasks, showing clear distinctions among methods that are not visible in I.I.D. evaluation (Figures 1-3, Section 4).
 
 2. **NoPE as the best method for length generalization.** Demonstrated that decoder-only Transformers without any positional encoding outperform all explicit PE methods on downstream length generalization (MRR 0.69), while also requiring no additional computation in the attention mechanism (Figure 1, Section 4).
 
-3. **Theoretical expressivity of NoPE.** Proved that NoPE can represent both absolute (Theorem 1) and relative (Theorem 2) positional encodings, establishing that the causal attention mask provides sufficient structural information for position recovery.
+3. **Theoretical expressivity of NoPE.** Proved that NoPE can represent both absolute (Theorem 1) and relative (Theorem 2) positional encodings, establishing that the causal attention mask provides sufficient structural information for position recovery (Appendix C).
 
 4. **Empirical characterization of NoPE's learned mechanism.** Showed through attention pattern analysis that NoPE trained with SGD learns patterns most similar to T5's Relative PE, a relative encoding scheme (Figure 4, Section 5.2).
 
 5. **Scratchpad is not a universal solution.** Demonstrated that scratchpad/CoT is task-dependent (beneficial only for addition) and does not render PE choice irrelevant (Figure 6, Section 6).
 
-6. **Characterization of attention distributions.** Identified that the top-performing PE methods (NoPE, T5 RPE) share a bimodal attention distribution (short-range + long-range), while poorly performing methods show either recency bias (ALiBi) or uniform attention (Rotary, APE) (Figure 7).
+6. **Characterization of attention distributions.** Identified that the top-performing PE methods (NoPE, T5 RPE) share a bimodal attention distribution (short-range + long-range), while poorly performing methods show either recency bias (ALiBi) or uniform attention (Rotary, APE) (Figure 7, Section 6.1).
 
 ### Implications
 
-1. **Explicit PEs may hinder length generalization.** The consistent underperformance of APE and Rotary -- the two most commonly used PEs in modern LLMs (GPT-3, PaLM, LLaMA) -- suggests that the inductive biases introduced by explicit PEs can actively harm generalization to unseen lengths.
+1. **Explicit PEs may hinder length generalization.** The consistent underperformance of APE and Rotary -- the two most commonly used PEs in modern LLMs (GPT-3, PaLM, LLaMA) -- suggests that the inductive biases introduced by explicit PEs can actively harm generalization to unseen lengths. This is speculative beyond the scope of the synthetic evaluation.
 
-2. **Rotary behaves like APE, not like a relative PE.** Despite being classified as a relative PE, Rotary shows attention patterns and length generalization behavior more similar to APE than to T5's Relative PE (Figures 4, 7). This is speculative beyond the scope of this paper but may explain Rotary's widespread adoption based on perplexity gains rather than length generalization.
+2. **Rotary behaves like APE, not like a relative PE.** Despite being classified as a relative PE, Rotary shows attention patterns and length generalization behavior more similar to APE than to T5's Relative PE (Figures 4, 7). This may explain why Rotary was adopted based on perplexity improvements rather than length generalization, though this is speculative.
 
-3. **Perplexity is an unreliable proxy for length generalization.** ALiBi's strong perplexity-based extrapolation reported by Press et al. (2022) does not translate to downstream length generalization, underscoring the need for task-based evaluation.
+3. **Perplexity is an unreliable proxy for length generalization.** ALiBi's strong perplexity-based extrapolation reported by Press et al. (2022) does not translate to downstream length generalization, underscoring the need for task-based evaluation (Section 7).
 
 ---
 
 ## Key Claims
 
-1. **C1: NoPE outperforms all explicit PEs on downstream length generalization (supported).** NoPE achieves MRR 0.69 across all tasks, followed by T5 RPE (0.55), ALiBi (0.50), Rotary (0.33), APE (0.22) (Figure 1). NoPE ranks first or second across all three task categories: primitive, mathematical/reasoning, and classical length generalization datasets (Figure 2). All models achieve near-perfect I.I.D. accuracy, confirming differences are specific to extrapolation (Figure 3).
+1. **C1: NoPE outperforms all explicit PEs on downstream length generalization (supported).** NoPE achieves MRR 0.69 across all tasks, followed by T5 RPE (0.55), ALiBi (0.50), Rotary (0.33), APE (0.22) (Figure 1). NoPE ranks first or second across all three task categories: primitive, mathematical/reasoning, and classical length generalization datasets (Figure 2). All models achieve near-perfect I.I.D. accuracy, confirming differences are specific to extrapolation (Figure 3). *Scope:* ~107M decoder-only Transformers trained from scratch, 10 synthetic tasks, greedy decoding. *Magnitude:* MRR gap of 0.14 between NoPE and the next-best method (T5 RPE). Tested across 10 tasks and 3 seeds per configuration (moderate evidence; synthetic tasks only).
 
-2. **C2: Common LLM positional encodings (ALiBi, Rotary, APE) are ill-suited for length generalization (supported).** Rotary performs more similarly to APE than to relative PE schemes, both in task accuracy (Figures 1--2) and attention patterns (Figure 4). ALiBi's recency bias limits its attention to short-range dependencies (Figure 7), and it underperforms T5 RPE despite being a simplification of it (Section 4). This aligns with Taylor et al. (2022) who found no significant improvement from ALiBi.
+2. **C2: Common LLM positional encodings (ALiBi, Rotary, APE) are ill-suited for length generalization (supported).** Rotary performs more similarly to APE than to relative PE schemes, both in task accuracy (Figures 1-2) and attention patterns (Figure 4). ALiBi's recency bias limits its attention to short-range dependencies (Figure 7), and it underperforms T5 RPE despite being a simplification of it (Section 4). This aligns with Taylor et al. (2022) who found no significant improvement from ALiBi. *Scope:* ~107M models, synthetic tasks, greedy decoding. *Magnitude:* Rotary MRR 0.33 vs APE MRR 0.22, both far below T5 RPE (0.55). Tested across 10 tasks and 3 seeds (moderate evidence).
 
-3. **C3: NoPE can theoretically represent both absolute and relative PEs (supported, contested).** Theorem 1 proves the first layer can recover absolute positions `[1, ..., T+1]` via uniform attention over the `<bos>` token (Appendix C.1). Theorem 2 proves subsequent layers can implement relative PE (Appendix C.2). However, Sun et al. (2025) show that NoPE cannot learn periodic positional patterns in a single attention head, refining the expressivity argument.
+3. **C3: NoPE can theoretically represent both absolute and relative PEs (supported, contested).** Theorem 1 proves the first layer can recover absolute positions `[1, ..., T+1]` via uniform attention over the `<bos>` token (Appendix C.1). Theorem 2 proves subsequent layers can implement relative PE by placing positions in query and key with opposite signs (Appendix C.2). However, Sun et al. (2025) show that NoPE cannot learn periodic positional patterns in a single attention head, refining the expressivity argument. *Scope:* existence proof assuming sufficient model dimension, causal masking, and `<bos>` token. *Magnitude:* qualitative -- proves existence, not that SGD will find this solution.
 
-4. **C4: NoPE empirically resembles T5's Relative PE (supported).** Attention pattern distance between NoPE and T5 RPE is approximately 0.25 (averaged across layers), comparable to the distance between different NoPE seeds. Distance to ALiBi, Rotary, and APE is 2--6x larger (~0.5--1.5) (Figure 4, right panel).
+4. **C4: NoPE empirically resembles T5's Relative PE (supported).** Attention pattern distance between NoPE and T5 RPE is approximately 0.25 (averaged across layers), comparable to the distance between different NoPE seeds. Distance to ALiBi, Rotary, and APE is 2-6x larger (~0.5-1.5) (Figure 4, right panel). *Scope:* SCAN dataset, first 4 layers shown in detail (later layers show similar trends, Figure F.7). *Magnitude:* NoPE-T5 distance ~0.25 vs NoPE-Rotary ~1.0-1.5. Evaluated on single dataset (limited evidence for generality).
 
-5. **C5: Scratchpad is not always helpful and format matters (supported).** Scratchpad improves all PEs only on the addition task. For the remaining 5 mathematical/reasoning tasks, no consistent benefit is observed regardless of format (Figure 6). The optimal scratchpad format varies by PE method (Figure F.8).
+5. **C5: Scratchpad is not always helpful and format matters (supported).** Scratchpad improves all PEs only on the addition task. For the remaining 5 mathematical/reasoning tasks, no consistent benefit is observed regardless of format (Figure 6). The optimal scratchpad format varies by PE method (Figure F.8). *Scope:* 6 mathematical/reasoning tasks, L=8, ~107M models, 8 scratchpad formats. *Magnitude:* addition is the only task with consistent scratchpad benefit across all PEs. Tested across 5 PEs and multiple formats (strong evidence for task-dependency).
 
-6. **C6: NoPE and T5 RPE show bimodal attention; ALiBi shows recency bias (supported).** Distribution of normalized attention distance shows clear bimodality for NoPE and T5 RPE (peaks near 0 and 1), strong peak near 0 for ALiBi, and approximately uniform distributions for Rotary and APE (Figure 7).
+6. **C6: NoPE and T5 RPE show bimodal attention; ALiBi shows recency bias (supported).** Distribution of normalized attention distance shows clear bimodality for NoPE and T5 RPE (peaks near 0 and 1), strong peak near 0 for ALiBi, and approximately uniform distributions for Rotary and APE (Figure 7). *Scope:* addition task with full scratchpad, ~107M models, averaged across all layers and heads. *Magnitude:* qualitative pattern (bimodal vs unimodal vs uniform). Evaluated on single task (limited evidence for generality).
 
-7. **C7: Rotary fails at 1.3B scale extrapolation; NoPE and ALiBi generalize to ~2x context (supported).** At 1.3B parameters pretrained on StarCoder with 1024-token context, Rotary perplexity exceeds 250 at 1200 tokens for length bucket [1500, 1750] while NoPE and ALiBi maintain ~2.1--2.3 (Table 3). NoPE and ALiBi diverge beyond ~1800 tokens, with ALiBi showing relative stability (Tables 3--4, Appendix F).
+7. **C7: Rotary fails at 1.3B scale extrapolation; NoPE and ALiBi generalize to ~2x context (supported).** At 1.3B parameters pretrained on StarCoder with 1024-token context, Rotary perplexity reaches 251.684 at context 1400 for length bucket [1500, 1750] while NoPE is 2.121 and ALiBi is 2.307 (Table 3). NoPE and ALiBi diverge beyond ~1800 tokens, with ALiBi showing relative stability (e.g., at bucket [2750,3000] context 2560: ALiBi 150.322 vs NoPE 536.225, Table 3). *Scope:* 1.3B parameters, code data (StarCoder), perplexity evaluation only, no downstream tasks. *Magnitude:* Rotary PPL explodes ~120x at context 1400 in bucket [1500,1750]; NoPE and ALiBi maintain near-training PPL up to ~1800. Single model per PE, no seeds reported (limited evidence).
 
 ---
 
@@ -292,25 +341,29 @@ where `f_cnt` depends on content and `f_rel` depends on relative distance. The c
 ### NoPE Predecessors
 
 - **Haviv et al. (2022)** -- *Transformer Language Models without Positional Encodings Still Learn Positional Information.* Demonstrates NoPE's competitiveness on perplexity. This paper extends the finding to length generalization on downstream tasks.
-- **Tsai et al. (2019)** -- *Transformer Dissection: An Unified Understanding for Transformer's Attention via the Lens of Kernel.* Explains why decoder-only Transformers are not order-agnostic due to the causal mask.
+- **Tsai et al. (2019)** -- *Transformer Dissection: An Unified Understanding for Transformer's Attention via the Lens of Kernel.* Explains why decoder-only Transformers are not order-agnostic due to the causal mask, providing the theoretical basis for NoPE.
 
 ### Length Generalization
 
-- **Anil et al. (2022)** -- *Exploring Length Generalization in Large Language Models.* Defines the length generalization evaluation framework (train on lambda <= L, test on lambda > L) adopted by this paper.
+- **Anil et al. (2022)** -- *Exploring Length Generalization in Large Language Models.* Defines the length generalization evaluation framework (train on lambda <= L, test on lambda > L) adopted by this paper; also provides the Parity task.
 - **Ontanon et al. (2022)** -- *Making Transformers Solve Compositional Tasks.* Studies PE effects on length generalization, focusing on relative PE outperforming APE. This paper extends with more PE methods and NoPE.
 - **Deletang et al. (2023)** -- *Neural Networks and the Chomsky Hierarchy.* Studies length generalization across neural architectures including Transformers, but does not compare PE methods or focus on autoregressive models.
 
 ### Scratchpad / Chain-of-Thought
 
-- **Nye et al. (2021)** -- *Show Your Work: Scratchpads for Intermediate Computation with Language Models.* Introduces the scratchpad technique for intermediate computation, adopted as the baseline scratchpad format.
+- **Nye et al. (2021)** -- *Show Your Work: Scratchpads for Intermediate Computation with Language Models.* Introduces the scratchpad technique for intermediate computation, adopted as the baseline scratchpad format and the Addition task.
 - **Wei et al. (2022)** -- *Chain of Thought Prompting Elicits Reasoning in Large Language Models.* Introduces chain-of-thought prompting, which this paper evaluates in the context of length generalization.
 
 ### Evaluation Datasets
 
-- **Lake and Baroni (2018)** -- *Generalization without Systematicity.* Introduces SCAN, used as a classical length generalization benchmark.
+- **Lake and Baroni (2018)** -- *Generalization without Systematicity.* Introduces SCAN, used as a classical length generalization benchmark and the dataset for attention similarity analysis.
 - **Hupkes et al. (2020)** -- *Compositionality Decomposed: How Do Neural Networks Generalise?* Introduces PCFG, used as a classical length generalization benchmark.
 
 ### Theoretical Foundations
 
 - **Weiss et al. (2021)** -- *Thinking Like Transformers.* Inspires the constructive proof of Theorem 1 showing NoPE can recover absolute positions.
 - **Lindner et al. (2023)** -- *Tracr: Compiled Transformers as a Laboratory for Interpretability.* Inspires the constructive proof technique for Theorem 1.
+
+### Aggregate Evaluation Methodology
+
+- **Liang et al. (2022)** -- *Holistic Evaluation of Language Models.* Provides the mean reciprocal rank aggregation methodology adopted by this paper for comparing PE methods across tasks.

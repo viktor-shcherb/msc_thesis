@@ -1,0 +1,3 @@
+# 8 Conclusion [p. 6]
+
+[p. 6] The authors show that, contrary to popular belief, transformers language models do learn positional information even when are not provided with any explicit positional encoding. Their experiments systematically demonstrate that this phenomenon is robust across different language modeling settings, and that one can approximate the absolute position of each token from the model's internal representations to a surprising degree. However, this phenomenon does not extend to transformer encoders trained on the MLM objective. They conjecture that the causal attention mechanism, which limits attention in one direction of the sequence, is responsible for implicitly imbuing the transformer with positional information.

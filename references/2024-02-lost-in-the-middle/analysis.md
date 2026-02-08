@@ -8,41 +8,57 @@ categories: ["position-bias", "long-context-evaluation"]
 scope: ["context utilization patterns", "multi-document QA", "key-value retrieval", "positional bias in LLMs"]
 benchmarks_used: ["natural-questions"]
 models_introduced: []
-models_evaluated: ["gpt-3.5-turbo", "gpt-4", "llama-2-7b", "llama-2-13b", "llama-2-70b"]
+models_evaluated: ["gpt-3.5-turbo", "gpt-4", "llama-2-7b", "llama-2-13b", "llama-2-70b", "claude-1.3", "mpt-30b-instruct", "longchat-13b-16k", "flan-t5-xxl", "flan-ul2"]
 key_claims:
   - id: C1
     claim: "Language models exhibit a U-shaped performance curve on multi-document QA: best when relevant information is at the beginning or end of the context, worst when it is in the middle"
     evidence: "Figure 1, Figure 5, Section 2.3, Tables 5-7 (Appendix G)"
     status: contested
     contested_by: 2024-08-found-in-the-middle
+    scope: "decoder-only models (GPT-3.5-Turbo, Claude-1.3, MPT-30B-Instruct, LongChat-13B-16K), multi-document QA and key-value retrieval, greedy decoding, 10-30 documents (~2K-6K tokens)"
+    magnitude: ">20 percentage point drop from best to worst position for GPT-3.5-Turbo with 20 documents"
   - id: C2
     claim: "Extended-context models (GPT-3.5-Turbo 16K, Claude-1.3 100K) perform nearly identically to their non-extended counterparts when input fits within the shorter context window"
     evidence: "Figure 5, Section 2.3"
     status: supported
+    scope: "GPT-3.5-Turbo vs 16K variant, Claude-1.3 vs 100K variant, 10- and 20-document settings fitting within shorter context window, greedy decoding"
+    magnitude: "performance curves nearly superimposed (differences <1% across all positions)"
   - id: C3
     claim: "For GPT-3.5-Turbo with 20 documents, mid-context accuracy (53.8%) drops below closed-book accuracy (56.1%), meaning added context actively hurts performance"
     evidence: "Section 2.3, Table 1, Table 6 (Appendix G)"
     status: supported
+    scope: "GPT-3.5-Turbo (0613), 20 documents (~4K tokens), answer at 10th position, greedy decoding"
+    magnitude: "53.8% mid-context vs 56.1% closed-book (2.3 percentage point deficit)"
   - id: C4
     claim: "Encoder-decoder models (Flan-UL2) are robust to position changes within training-time context length (1.9% best-worst gap) but exhibit U-shaped degradation when extrapolating beyond it"
     evidence: "Figure 8, Section 4.1"
     status: supported
+    scope: "Flan-UL2 and Flan-T5-XXL, multi-document QA, within vs beyond training-time sequence length (2048 and 512 tokens respectively)"
+    magnitude: "1.9% best-worst gap within training length (10 docs, ~2K tokens) vs ~10% gap beyond training length (20 docs, ~4K tokens)"
   - id: C5
     claim: "Query-aware contextualization enables near-perfect key-value retrieval (GPT-3.5-Turbo 16K worst-case improves from 45.6% to 100%) but minimally affects multi-document QA trends"
     evidence: "Section 4.2, Figure 9"
     status: supported
+    scope: "all evaluated models, key-value retrieval (75-300 pairs) and multi-document QA (20 documents), greedy decoding"
+    magnitude: "GPT-3.5-Turbo 16K KV retrieval: 45.6% worst-case to 100%; multi-document QA: minimal change in trends"
   - id: C6
     claim: "The U-shaped curve exists in base pretrained models (MPT-30B), not solely as an artifact of instruction fine-tuning"
     evidence: "Figure 10, Section 4.3"
     status: supported
+    scope: "MPT-30B base vs MPT-30B-Instruct, 20-document multi-document QA, greedy decoding"
+    magnitude: "base model ~10% best-worst disparity vs ~4% for instruction-tuned model; both show U-shape"
   - id: C7
     claim: "Primacy bias only appears in models with 13B+ parameters; 7B Llama-2 models are solely recency-biased"
     evidence: "Figure 16, Appendix E"
     status: supported
+    scope: "Llama-2 7B/13B/70B with and without chat fine-tuning, 20-document multi-document QA, greedy decoding"
+    magnitude: "7B: solely recency-biased (no primacy); 13B base: 20-point best-worst disparity; 13B chat: ~10-point disparity; 70B: similar U-shape with/without fine-tuning"
   - id: C8
     claim: "In open-domain QA, reader performance saturates long before retriever recall: using 50 instead of 20 documents yields only ~1.5% improvement for GPT-3.5-Turbo"
     evidence: "Figure 11, Section 5"
     status: supported
+    scope: "GPT-3.5-Turbo and Claude-1.3 as readers, Contriever retriever, NaturalQuestions-Open, 5-50 documents, greedy decoding"
+    magnitude: "~1.5% improvement for GPT-3.5-Turbo and ~1% for Claude-1.3 when going from 20 to 50 documents, while retriever recall increases substantially"
 cross_references:
   - target: 2024-08-found-in-the-middle
     type: extended-by
@@ -292,6 +308,11 @@ The paper suggests two practical mitigations: (1) effective reranking to push re
 - **Coarse position granularity.** Position is modulated at the document level (e.g., positions 1, 5, 10, 15, 20 for 20 documents), not at the token level, limiting the resolution of the analysis.
 - **Limited instruction fine-tuning analysis.** Only one model pair (MPT-30B base vs. instruct) is used to study the effect of instruction fine-tuning. The interaction between fine-tuning data composition and positional bias is not systematically explored.
 - **Model-specific exceptions.** Claude-1.3 achieves near-perfect key-value retrieval across all positions, and LongChat-13B (16K) sometimes generates code instead of outputting values directly (Section 3.2), indicating that the U-shaped pattern is not universal across all models and tasks.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models from the post-GPT-4 generation (e.g., Llama-3, Mistral, Gemini) were evaluated. No non-English data was tested. No tasks beyond QA and synthetic retrieval were evaluated (no summarization, multi-hop reasoning, code understanding, or dialogue). No decoding strategies beyond greedy decoding were explored. No evaluation at context lengths beyond ~16K tokens for the primary experiments (despite Claude-1.3 supporting 100K tokens). No evaluation of dense retrieval alternatives beyond Contriever.
+- **Comparability notes:** The multi-document QA task uses NaturalQuestions-Open with retrieved distractors ordered by decreasing relevance, which differs from NIAH-style evaluations that embed a single fact in irrelevant filler text. The "position" manipulation is at the document level (not token level), making direct comparison with token-level position analyses (e.g., NIAH) imprecise. The key-value retrieval task uses 128-bit UUIDs, which is more controlled than natural-language retrieval but may not reflect how models handle retrieval in realistic settings. Results on mid-2023 models (GPT-3.5-Turbo 0613, Claude-1.3) may not transfer to later model generations with improved training or architecture.
 
 ---
 
