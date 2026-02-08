@@ -5,35 +5,47 @@ year: 2024
 venue: "NAACL 2024"
 paper_type: conference-paper
 categories: ["benchmarking", "long-context-evaluation", "position-bias"]
-scope: ["length-controllable evaluation", "full-text comprehension tasks", "ultra-long context evaluation"]
+scope: ["length-controllable evaluation", "full-text comprehension tasks", "ultra-long context evaluation up to 128k tokens"]
 benchmarks_used: ["ada-leval"]
 models_introduced: []
-models_evaluated: ["gpt-4"]
+models_evaluated: ["gpt-4", "gpt-3.5-turbo", "claude-2.1", "longchat-v1.5-7b-32k", "chatglm2-6b-32k", "chatglm3-6b-32k", "vicuna-7b-v1.5-16k", "internlm-7b-8k"]
 key_claims:
   - id: C1
     claim: "Only GPT-4-Turbo significantly exceeds random guess on TSort at 2k--8k tokens; at 16k all models deteriorate to random-guess level"
     evidence: "Table 2, Section 4.2"
     status: supported
+    scope: "TSort task, N=4 segments, 2k--16k token range, 10 models evaluated (4 proprietary + 6 open-source)"
+    magnitude: "GPT-4-Turbo peaks at 18.5% (2k) vs 4.2% random; at 16k drops to 3.5--5.5%"
   - id: C2
     claim: "All models achieve 0% accuracy on BestAnswer at 64k and 128k tokens despite claiming context windows of 100k--200k tokens"
     evidence: "Table 6, Section 4.4"
     status: supported
+    scope: "BestAnswer ultra-long settings, 50-sample evaluation subsets, GPT-4-Turbo / Claude-2 / Claude-2.1 / InternLM2-7b"
+    magnitude: "0% accuracy at 64k and 128k for all models; GPT-4-Turbo drops from 30% (32k) to 0% (64k)"
   - id: C3
     claim: "Open-source models can distinguish correct text orderings via perplexity evaluation (up to 89.2% accuracy) but fail to produce them generatively (maximum 5.4%), revealing a gap between comprehension and instruction following"
     evidence: "Table 7, Section 4.5.1"
     status: supported
+    scope: "TSort PPL evaluation on 5 open-source models, 2k--8k settings only"
+    magnitude: "Vicuna-13b-v1.5-16k: 89.2% PPL vs 5.4% generative at 8k (83.8 percentage point gap)"
   - id: C4
     claim: "All models exhibit significant position bias on BestAnswer, with most models achieving higher accuracy when the ground-truth answer is at the beginning; this bias intensifies as input length increases"
     evidence: "Table 8, Section 4.5.2"
     status: supported
+    scope: "BestAnswer, 8 models tested across 1k--16k with 3 answer positions (front/mid/rear)"
+    magnitude: "GPT-4-Turbo-1106 at 8k: 90.0% (front) vs 38.0% (mid) vs 40.5% (rear); gap widens from 19pp at 1k to 55.5pp at 16k"
   - id: C5
     claim: "Ada-LEval requires more full-text comprehension than traditional QA and summarization tasks, as BestAnswer performance drops 33 points when truncated vs. 8.4 for NarrativeQA"
     evidence: "Table 10, Section 4.5.4"
     status: supported
+    scope: "GPT-4-Turbo-1106 only, comparing BestAnswer (16k) vs NarrativeQA (F1) vs GovReport (ROUGE-L)"
+    magnitude: "BestAnswer: 44.0 full to 11.0 at 2k (33pp drop); NarrativeQA: 33.1 to 24.7 (8.4pp drop); GovReport improves when truncated"
   - id: C6
     claim: "Scalable position embeddings (NTK-aware Scaled RoPE, ReRoPE, Leaky ReRoPE) improve long-context capability and achieve performance comparable to models trained on longer contexts"
     evidence: "Table 9, Section 4.5.3"
     status: supported
+    scope: "BestAnswer benchmark, Vicuna-v1.5 7b and 13b only, 1k--8k settings"
+    magnitude: "At 8k, NTK achieves 3.9% vs 0.0% for Original-4k on Vicuna-7b; comparable to Original-16k (2.5%)"
 cross_references:
   - target: 2022-12-scrolls-long-language-sequences
     type: complementary
@@ -79,7 +91,7 @@ open_questions:
 
 # Ada-LEval: Evaluating Long-Context LLMs with Length-Adaptable Benchmarks
 
-**Authors:** Chonghua Wang, Haodong Duan, Songyang Zhang, Dahua Lin, Kai Chen (Shanghai AI Laboratory, Shanghai Jiao Tong University)
+**Authors:** Chonghua Wang (Shanghai Jiao Tong University), Haodong Duan, Songyang Zhang, Dahua Lin, Kai Chen (Shanghai AI Laboratory)
 **Date:** June 2024, NAACL 2024 (arXiv:2404.06480)
 
 ---
@@ -118,7 +130,19 @@ Ada-LEval introduces two tasks -- **TSort** (text segment ordering) and **BestAn
 
 **Length control.** For TSort, the segment count (N=4) and per-segment length upper limit are fixed at each target length; a stride parameter between beginning paragraphs generates diverse test cases. Per Table 11 (Appendix A), segment length upper limits range from 350 tokens (2k setting) to 31,700 tokens (128k setting), with stride 64 (long-context) or 128 (ultra-long). For BestAnswer, the same questions are reused across all long-context length settings, with the number of inter-question distractor answers adjusted to reach the target length. Under ultra-long settings, tag similarity constraints are relaxed: questions need only share at least 1 tag in common (vs. 40% tags in common under long-context settings) (Sections 3.3, Appendix A).
 
-**Data statistics (GPT-4 CL100K tokenizer):**
+**TSort length parameters (Table 11, Appendix A):**
+
+| Setting | Before (upper limit) | Segments (upper limit) | After (upper limit) | Stride |
+|---|---|---|---|---|
+| 2k | 200 | 350 | 200 | 64 |
+| 4k | 300 | 800 | 300 | 64 |
+| 8k | 400 | 1,750 | 400 | 64 |
+| 16k | 500 | 3,700 | 500 | 64 |
+| 32k | 500 | 7,700 | 500 | 128 |
+| 64k | 500 | 15,700 | 500 | 128 |
+| 128k | 500 | 31,700 | 500 | 128 |
+
+**Data statistics (GPT-4 CL100K tokenizer, Table 1):**
 
 | Task | Setting | Total Cases Built | Max Tokens | Avg Tokens |
 |---|---|---|---|---|
@@ -130,18 +154,21 @@ Ada-LEval introduces two tasks -- **TSort** (text segment ordering) and **BestAn
 | TSort | 64k | 1,658 | 64,000 | 62,407 |
 | TSort | 128k | 782 | 127,800 | 121,488 |
 | BestAnswer | 1k | 7,526 | 1,128 | 955 |
+| BestAnswer | 2k | 7,526 | 2,154 | 1,983 |
+| BestAnswer | 4k | 7,526 | 4,215 | 3,994 |
+| BestAnswer | 6k | 7,526 | 6,268 | 6,012 |
+| BestAnswer | 8k | 7,526 | 7,790 | 7,518 |
+| BestAnswer | 12k | 7,526 | 12,389 | 12,091 |
 | BestAnswer | 16k | 7,526 | 15,964 | 15,646 |
 | BestAnswer | 32k | 200 | 32,974 | 32,329 |
 | BestAnswer | 64k | 200 | 64,216 | 63,274 |
 | BestAnswer | 128k | 200 | 127,059 | 126,098 |
 
-(Table 1, Section 3)
-
 **Evaluation protocol.** Zero-shot evaluation for all models. Open-source models use 1,000-testcase subsets; proprietary models use 200-testcase subsets (long-context) and 50-testcase subsets (ultra-long). Instruction following rate and copy instruction rate are measured alongside accuracy. Evaluation conducted via OpenCompass (Contributors, 2023). For proprietary models (GPT-4-Turbo, GPT-3.5-Turbo), temperature is set to 0; open-source models use their default hyperparameters. Open-source experiments run on NVIDIA A100 80GB GPUs, consuming approximately 800 GPU-hours total (Section 4.1, Appendix B).
 
 ### Experimental Setup
 
-**Models evaluated:**
+**Models evaluated (10 total, tested across both tasks under long-context settings):**
 
 | Model | Type | Context Window |
 |---|---|---|
@@ -158,9 +185,11 @@ Ada-LEval introduces two tasks -- **TSort** (text segment ordering) and **BestAn
 
 Ultra-long evaluation (32k--128k) is limited to GPT-4-Turbo, Claude-2, Claude-2.1, and InternLM2-7b (BestAnswer only) due to inferior open-source model performance (Section 4.1).
 
+**Reproducibility.** Code is released at https://github.com/open-compass/Ada-LEval. Evaluation uses OpenCompass platform. No random seeds reported. Proprietary model evaluations use deterministic temperature=0. No variance estimates or confidence intervals reported for any results (limited evidence for statistical significance).
+
 ### Key Results
 
-**TSort (long-context, N=4, random guess ~ 4.2%):**
+**TSort (long-context, N=4, random guess ~ 4.2%, Table 2):**
 
 | Model | 2k | 4k | 8k | 16k |
 |---|---|---|---|---|
@@ -176,15 +205,13 @@ Ultra-long evaluation (32k--128k) is limited to GPT-4-Turbo, Claude-2, Claude-2.
 | InternLM2-7b | 5.1 | 3.9 | 5.1 | 4.3 |
 | Random Guess | 4.2 | 4.2 | 4.2 | 4.2 |
 
-(Table 2)
+- **Only GPT-4-Turbo significantly exceeds random at 2k--8k.** At 16k, GPT-4-Turbo deteriorates to near random-guess level. All other models perform at or near random across all settings, "even under the relative short 2k setting" (Section 4.2). Tested across 10 models but with no variance estimates or repeated runs (limited statistical evidence).
 
-- **Only GPT-4-Turbo significantly exceeds random at 2k--8k.** At 16k, GPT-4-Turbo deteriorates to near random-guess level. All other models perform at or near random across all settings, "even under the relative short 2k setting" (Section 4.2).
-
-**BestAnswer (long-context):**
+**BestAnswer (long-context, Table 3):**
 
 | Model | 1k | 2k | 4k | 6k | 8k | 12k | 16k |
 |---|---|---|---|---|---|---|---|
-| GPT-4-Turbo-0125 | 73.5 | 73.5 | 65.5 | 63.0 | 56.5 | 52.0 | 44.5 |
+| GPT-4-Turbo-0125 | 73.5 | 73.5 | 65.5 | 63.0 | 56.5 | 52.5 | 44.5 |
 | GPT-4-Turbo-1106 | 74.0 | 73.5 | 67.5 | 59.5 | 53.5 | 49.5 | 44.0 |
 | GPT-3.5-Turbo-1106 | 61.5 | 48.5 | 41.5 | 29.5 | 17.0 | 2.5 | 2.5 |
 | Claude-2 | 65.0 | 43.5 | 23.5 | 15.0 | 17.0 | 12.0 | 11.0 |
@@ -196,11 +223,9 @@ Ultra-long evaluation (32k--128k) is limited to GPT-4-Turbo, Claude-2, Claude-2.
 | InternLM2-7b | 58.6 | 49.5 | 33.9 | 12.3 | 13.4 | 2.0 | 0.8 |
 | Random Guess | 26.7 | 10.1 | 4.5 | 3.0 | 2.3 | 1.4 | 1.1 |
 
-(Table 3)
+- **GPT-4-Turbo achieves state-of-the-art on BestAnswer**, maintaining 44.5% at 16k with ~100 distractors per question. Claude-2 is second at 11% under the 16k setting. Open-source models decline to near random by 8k--16k. Proprietary models use 200-testcase subsets; open-source models use 1,000-testcase subsets (Section 4.2).
 
-- **GPT-4-Turbo achieves state-of-the-art on BestAnswer**, maintaining 44.5% at 16k with ~100 distractors per question. Claude-2 is second at 11% under the 16k setting. Open-source models decline to near random by 8k--16k (Section 4.2).
-
-**Ultra-long-context results (32k--128k):**
+**Ultra-long-context results (32k--128k, 50-testcase subsets, Table 6):**
 
 | Task | Model | 32k | 64k | 128k |
 |---|---|---|---|---|
@@ -216,15 +241,39 @@ Ultra-long evaluation (32k--128k) is limited to GPT-4-Turbo, Claude-2, Claude-2.
 | BestAnswer | InternLM2-7b | 0.5 | 0.5 | 0.0 |
 | BestAnswer | Random Guess | 0.6 | 0.3 | 0.1 |
 
-(Table 6)
-
-- **All models collapse at 64k+ tokens on BestAnswer.** No model produces any correct answers at 64k or 128k. On TSort, GPT-4-Turbo achieves only random-level accuracy across all ultra-long settings; Claude produces zero correct answers. These models "suffer from a dramatic decline on their performance under ultra-long-context settings" despite claiming 100k+ token context windows (Section 4.4).
+- **All models collapse at 64k+ tokens on BestAnswer.** No model produces any correct answers at 64k or 128k. On TSort, GPT-4-Turbo achieves only random-level accuracy across all ultra-long settings; Claude produces zero correct answers. "They suffer from a dramatic decline on their performance under ultra-long-context settings" despite claiming 100k+ token context windows (Section 4.4). Evidence is limited to 50-testcase subsets per setting, so individual correct/incorrect answers meaningfully shift accuracy percentages.
 
 ### Error Analysis
 
 Most errors fall into two categories: (1) **failure to follow instructions** (not outputting a valid answer format) and (2) **copying the example answer** provided in the in-context example prompt (Section 4.3).
 
-GPT-4-Turbo maintains near-perfect instruction following and low copy rates on both tasks. Claude-2 and LongChat exhibit elevated copy instruction rates: Claude-2 reaches 95--99.5% copy rate on TSort (Table 4), while its copy rate on BestAnswer increases from 21.5% at 1k to 55.0% at 16k (Table 5). ChatGLM models suffer primarily from low instruction following rates (Figure 2). All models except GPT-4-Turbo find it harder to follow instructions as text length increases (Section 4.3).
+GPT-4-Turbo maintains near-perfect instruction following and low copy rates on both tasks. Claude-2 and LongChat exhibit elevated copy instruction rates: Claude-2 reaches 95--99.5% copy rate on TSort (Table 4), while its copy rate on BestAnswer increases from 21.5% at 1k to 55.0% at 16k (Table 5). ChatGLM models suffer primarily from low instruction following rates (Figure 2). All models except GPT-4-Turbo find it harder to follow instructions as text length increases (Section 4.3). Tested across all 10 models with consistent patterns (moderate evidence).
+
+**TSort copy instruction rates (Table 4):**
+
+| Model | 2k | 4k | 8k | 16k |
+|---|---|---|---|---|
+| GPT-4-Turbo-1106 | 25.0 | 22.0 | 10.5 | 1.0 |
+| GPT-3.5-Turbo-1106 | 30.0 | 25.5 | 64.5 | 73.3 |
+| Claude-2 | 99.5 | 95.0 | 97.4 | 96.9 |
+| LongChat-7b-v1.5-32k | 100.0 | 99.8 | 99.1 | 100.0 |
+| ChatGLM2-6B-32k | 11.3 | 13.8 | 10.5 | 81.3 |
+| ChatGLM3-6B-32k | 21.6 | 54.8 | 88.0 | 88.1 |
+| Vicuna-7b-v1.5-16k | 100.0 | 100.0 | 59.4 | 33.3 |
+| Vicuna-13b-v1.5-16k | 96.6 | 99.0 | 12.2 | 3.1 |
+
+**BestAnswer copy instruction rates (Table 5):**
+
+| Model | 1k | 2k | 4k | 6k | 8k | 12k | 16k |
+|---|---|---|---|---|---|---|---|
+| GPT-4-Turbo-1106 | 12.5 | 8.5 | 5.0 | 5.5 | 6.0 | 2.0 | 2.0 |
+| GPT-3.5-Turbo-1106 | 16.5 | 22.5 | 18.5 | 16.0 | 11.5 | 2.0 | 0.0 |
+| Claude-2 | 21.5 | 25.5 | 40.5 | 41.0 | 42.5 | 49.0 | 55.0 |
+| LongChat-7b-v1.5-32k | 67.4 | 94.7 | 89.5 | 97.8 | 70.6 | 49.4 | 13.0 |
+| ChatGLM2-6B-32k | 36.5 | 43.7 | 35.8 | 27.2 | 24.4 | 35.5 | 44.7 |
+| ChatGLM3-6B-32k | 47.9 | 66.1 | 33.3 | 30.4 | 22.5 | 24.8 | 16.7 |
+| Vicuna-7b-v1.5-16k | 63.1 | 96.2 | 91.8 | 47.9 | 66.6 | 27.8 | 17.9 |
+| Vicuna-13b-v1.5-16k | 27.8 | 45.8 | 55.3 | 19.8 | 3.4 | 5.6 | 11.1 |
 
 ### Perplexity Evaluation on TSort
 
@@ -241,7 +290,7 @@ When open-source models evaluate TSort via perplexity (selecting the lowest-perp
 
 (Table 7)
 
-Vicuna-13b-v1.5-16k achieves 79.3--89.2% via PPL evaluation vs. 2.4--5.4% generative (Table 2). This shows models can distinguish correct ordering internally but fail to produce it when asked. The authors note: "when the sorting task is presented as QAs where LLMs are asked to directly output the correct order, the performance significantly deteriorates, indicating the limited instruction following capabilities of existing LLMs" (Section 4.5.1). One potential cause is that the book chapters have been used for pretraining (footnote 5).
+Vicuna-13b-v1.5-16k achieves 79.3--89.2% via PPL evaluation vs. 2.4--5.4% generative (Table 2). This shows models can distinguish correct ordering internally but fail to produce it when asked. The authors note: "when the sorting task is presented as QAs where LLMs are asked to directly output the correct order, the performance significantly deteriorates, indicating the limited instruction following capabilities of existing LLMs" (Section 4.5.1). One potential cause is that the book chapters have been used for pretraining (footnote 5), which could inflate PPL accuracy through memorization rather than comprehension. Tested across 5 open-source models at 3 length settings (moderate evidence); PPL evaluation limited to 2k--8k due to computational cost of evaluating 24 permutations.
 
 ### Position Bias in BestAnswer
 
@@ -252,16 +301,31 @@ All models demonstrate **significant position bias** in choosing the best answer
 | GPT-4-Turbo-1106 | front | 76.5 | 82.5 | 86.5 | 90.0 | 82.0 |
 | GPT-4-Turbo-1106 | mid | 74.5 | 68.0 | 60.0 | 38.0 | 38.5 |
 | GPT-4-Turbo-1106 | rear | 57.5 | 46.6 | 44.0 | 40.5 | 26.5 |
+| GPT-3.5-Turbo-1106 | front | 77.0 | 80.5 | 77.0 | 46.5 | 2.5 |
+| GPT-3.5-Turbo-1106 | mid | 64.5 | 48.5 | 32.0 | 9.5 | 0.5 |
+| GPT-3.5-Turbo-1106 | rear | 37.5 | 19.0 | 8.5 | 6.0 | 3.5 |
 | Claude-2 | front | 34.0 | 19.0 | 14.5 | 50.0 | 6.0 |
 | Claude-2 | mid | 49.0 | 35.5 | 21.5 | 13.0 | 5.0 |
 | Claude-2 | rear | 59.0 | 36.5 | 26.0 | 11.0 | 9.5 |
+| LongChat-7b-v1.5-32k | front | 24.1 | 5.0 | 12.1 | 33.6 | 29.0 |
+| LongChat-7b-v1.5-32k | mid | 32.7 | 13.6 | 0.2 | 0.2 | 0.0 |
+| LongChat-7b-v1.5-32k | rear | 29.8 | 1.9 | 0.0 | 0.1 | 0.1 |
+| ChatGLM2-6B-32k | front | 30.0 | 31.5 | 46.2 | 10.5 | 0.5 |
+| ChatGLM2-6B-32k | mid | 27.7 | 10.4 | 1.0 | 0.1 | 0.1 |
+| ChatGLM2-6B-32k | rear | 28.5 | 12.4 | 2.6 | 4.1 | 0.0 |
+| ChatGLM3-6B-32k | front | 48.9 | 34.3 | 37.6 | 35.8 | 19.0 |
+| ChatGLM3-6B-32k | mid | 41.9 | 22.3 | 5.3 | 0.9 | 0.1 |
+| ChatGLM3-6B-32k | rear | 28.8 | 5.4 | 3.7 | 8.8 | 2.9 |
 | Vicuna-7b-v1.5-16k | front | 29.3 | 8.9 | 14.0 | 37.6 | 25.4 |
 | Vicuna-7b-v1.5-16k | mid | 32.8 | 13.6 | 0.0 | 0.0 | 0.2 |
 | Vicuna-7b-v1.5-16k | rear | 34.2 | 2.1 | 0.0 | 0.0 | 0.7 |
+| Vicuna-13b-v1.5-16k | front | 52.5 | 51.4 | 58.6 | 81.7 | 11.8 |
+| Vicuna-13b-v1.5-16k | mid | 64.5 | 29.2 | 1.5 | 0.5 | 0.3 |
+| Vicuna-13b-v1.5-16k | rear | 34.2 | 2.4 | 0.0 | 0.0 | 13.4 |
 
-(Table 8, selected rows)
+(Table 8, complete)
 
-Most models achieve higher accuracy when the ground-truth answer is at the beginning. Claude-2 uniquely performs best when the ground truth is at the rear across 4 of 5 settings. Position bias intensifies as input length increases: Vicuna-7b-v1.5-16k shows relatively uniform accuracy at 1k but at 16k performance remains stable only for front-positioned answers (Section 4.5.2).
+Most models achieve higher accuracy when the ground-truth answer is at the beginning. Claude-2 uniquely performs best when the ground truth is at the rear across 4 of 5 settings. Position bias intensifies as input length increases: Vicuna-7b-v1.5-16k shows relatively uniform accuracy at 1k (29.3/32.8/34.2) but at 16k performance remains stable only for front-positioned answers (25.4 vs 0.2 vs 0.7) (Section 4.5.2). Tested across 8 models with 5 length settings and 3 positions (strong evidence for the bias pattern).
 
 ### Scalable Position Embeddings
 
@@ -285,7 +349,7 @@ NTK-aware Scaled RoPE, ReRoPE, and Leaky ReRoPE are evaluated on Vicuna-v1.5 mod
 
 (Table 9)
 
-All methods enhance accuracy beyond the original 4k window (e.g., at 8k, NTK achieves 3.9% vs. 0.0% for Original-4k on Vicuna-7b). NTK-aware Scaled RoPE diminishes 1k performance but outperforms other methods at longer contexts. Performance is comparable to models further trained on 16k contexts with Flash Attention. Advantages are more pronounced on Vicuna-13b-v1.5 (Section 4.5.3).
+All methods enhance accuracy beyond the original 4k window (e.g., at 8k, NTK achieves 3.9% vs. 0.0% for Original-4k on Vicuna-7b). NTK-aware Scaled RoPE diminishes 1k performance but outperforms other methods at longer contexts. Performance is comparable to models further trained on 16k contexts with Flash Attention. Advantages are more pronounced on Vicuna-13b-v1.5 (Section 4.5.3). Tested on only 2 model sizes (7b, 13b) and a single benchmark (BestAnswer), with no variance estimates (limited evidence for generalizability).
 
 ### Comparison with Other Long-Context Benchmarks
 
@@ -299,21 +363,26 @@ GPT-4-Turbo-1106 evaluated on BestAnswer (16k), NarrativeQA (LongBench subset, Q
 
 (Table 10)
 
-BestAnswer shows the steepest performance drop when truncated: from 44.0% (full) to 11.0% (2k), a 33-point drop. NarrativeQA drops only 8.4 points (33.1 to 24.7). GovReport performance actually increases when truncated (30.9 full to 33.6 at 8k). This confirms that Ada-LEval requires more comprehensive text understanding than traditional QA and summarization tasks (Section 4.5.4).
+BestAnswer shows the steepest performance drop when truncated: from 44.0% (full) to 11.0% (2k), a 33-point drop. NarrativeQA drops only 8.4 points (33.1 to 24.7). GovReport performance actually increases when truncated (30.9 full to 33.6 at 8k). This confirms that Ada-LEval requires more comprehensive text understanding than traditional QA and summarization tasks (Section 4.5.4). This comparison uses a single model (GPT-4-Turbo-1106) and only 3 benchmarks (limited evidence for a general claim about benchmark design).
 
 ---
 
 ## Limitations and Failure Modes
 
-1. **Cannot distinguish open-source models.** Due to poor instruction following and high copy instruction rates, Ada-LEval accuracy scores for open-source models cluster near random guess, limiting discriminative power among them (Section 6).
+1. **Cannot distinguish open-source models.** Due to poor instruction following and high copy instruction rates, Ada-LEval accuracy scores for open-source models cluster near random guess, limiting discriminative power among them (Section 5, Limitations).
 
-2. **Difficulty ceiling at ultra-long settings.** "Even state-of-the-art proprietary models are not able to achieve an ideal performance" at ultra-long settings, with all models scoring 0% on BestAnswer at 64k+, which "further constrains its applicability to current LLMs" (Section 6).
+2. **Difficulty ceiling at ultra-long settings.** "Even state-of-the-art proprietary models are not able to achieve an ideal performance" at ultra-long settings, with all models scoring 0% on BestAnswer at 64k+, which "further constrains its applicability to current LLMs" (Section 5, Limitations).
 
-3. **Evaluation subset size.** Proprietary models are evaluated on only 200 test cases (long-context) or 50 test cases (ultra-long) due to API cost constraints. Though Appendix B validates that 200-testcase results are consistent with 1,000-testcase results for open-source models (Tables 12, 13), the ultra-long 50-testcase subset is small enough that individual correct/incorrect answers meaningfully shift accuracy.
+3. **[Inferred]** **Evaluation subset size.** Proprietary models are evaluated on only 200 test cases (long-context) or 50 test cases (ultra-long) due to API cost constraints. Though Appendix B validates that 200-testcase results are consistent with 1,000-testcase results for open-source models (Tables 12, 13), the ultra-long 50-testcase subset is small enough that individual correct/incorrect answers meaningfully shift accuracy (e.g., 1 correct answer out of 50 = 2%).
 
-4. **Domain specificity of BestAnswer.** BestAnswer draws exclusively from Stack Overflow programming questions, limiting the benchmark to the programming domain. The ground truth (asker-accepted answer) may not always be the objectively best answer, as the authors acknowledge (footnote 2).
+4. **[Inferred]** **Domain specificity of BestAnswer.** BestAnswer draws exclusively from Stack Overflow programming questions, limiting the benchmark to the programming domain. The ground truth (asker-accepted answer) may not always be the objectively best answer, as the authors acknowledge (footnote 2), but no non-programming domain is tested.
 
-5. **Potential pretraining contamination on TSort.** The PPL evaluation results may be inflated because "one potential cause is that the chapters have been used for pretraining" (footnote 5), which would allow models to recognize correct text ordering through memorization rather than comprehension.
+5. **Potential pretraining contamination on TSort.** The PPL evaluation results may be inflated because "one potential cause is that the chapters have been used for pretraining" (footnote 5), which would allow models to recognize correct text ordering through memorization rather than comprehension. The authors acknowledge this possibility but do not test for it.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models with context windows under 16k (except Vicuna-7b-v1.5-16k with 4k context) or over 200k. No non-English evaluation. No testing with chain-of-thought prompting or retrieval-augmented approaches. No evaluation of the most recent open-source models with improved instruction-following (e.g., models released after late 2023). Ultra-long evaluation limited to 4 proprietary models on TSort and 5 models on BestAnswer.
+- **Comparability notes:** BestAnswer uses accuracy while LongBench uses F1/ROUGE, making direct cross-benchmark comparison infeasible. The BestAnswer "random guess" baseline varies by length setting (26.7% at 1k to 1.1% at 16k) due to varying numbers of candidates, so raw accuracy numbers are not directly comparable across lengths without normalizing against the random baseline. TSort uses exact-match accuracy with N=4 segments, making results sensitive to partial ordering capability that is not captured. The paper's definition of "ultra-long" (32k+) differs from some other benchmarks that use 100k+ as the ultra-long threshold.
 
 ---
 
@@ -345,17 +414,17 @@ BestAnswer shows the steepest performance drop when truncated: from 44.0% (full)
 
 ## Key Claims
 
-1. **C1: Only GPT-4-Turbo exceeds random on TSort; all models reach random-guess level at 16k.** Under 2k--8k settings, only GPT-4-Turbo outputs correct orderings "with a significant higher probability compared to the random baseline." At 16k, "the quality of GPT-4-Turbo's predictions also deteriorates to the random guess level" (Table 2, Section 4.2). Status: **supported**.
+1. **C1: Only GPT-4-Turbo exceeds random on TSort; all models reach random-guess level at 16k.** Under 2k--8k settings, only GPT-4-Turbo outputs correct orderings "with a significant higher probability compared to the random baseline." At 16k, "the quality of GPT-4-Turbo's predictions also deteriorates to the random guess level" (Table 2, Section 4.2). **Scope:** TSort task with N=4 segments, 10 models evaluated across 2k--16k. **Magnitude:** GPT-4-Turbo peaks at 18.5% at 2k (vs 4.2% random) and drops to 3.5--5.5% at 16k. No variance estimates reported (limited statistical evidence). Status: **supported**.
 
-2. **C2: All models achieve 0% on BestAnswer at 64k and 128k tokens.** No model produces any correct answers at 64k or 128k. On BestAnswer, "the performance of all three models fall sharply from 16k to 32k text length. Meanwhile, they can not give any correct answer when the text length is greater than 32k" (Table 6, Section 4.4). Status: **supported**.
+2. **C2: All models achieve 0% on BestAnswer at 64k and 128k tokens.** No model produces any correct answers at 64k or 128k. "The performance of all three models fall sharply from 16k to 32k text length. Meanwhile, they can not give any correct answer when the text length is greater than 32k" (Table 6, Section 4.4). **Scope:** Ultra-long BestAnswer evaluation, 50-sample subsets, GPT-4-Turbo / Claude-2 / Claude-2.1 / InternLM2-7b. **Magnitude:** 0% accuracy at 64k and 128k for all models; GPT-4-Turbo drops from 30.0% at 32k to 0% at 64k. Small sample size (50) limits precision. Status: **supported**.
 
-3. **C3: Open-source models distinguish correct orderings via PPL (up to 89.2%) but fail generatively (max 5.4%).** "When text segments are arranged in the correct order, a significantly lower perplexity score can usually be observed, resulting in the high TSort accuracy. However, when the sorting task is presented as QAs ... the performance significantly deteriorates" (Table 7, Section 4.5.1). Status: **supported**.
+3. **C3: Open-source models distinguish correct orderings via PPL (up to 89.2%) but fail generatively (max 5.4%).** "When text segments are arranged in the correct order, a significantly lower perplexity score can usually be observed, resulting in the high TSort accuracy. However, when the sorting task is presented as QAs ... the performance significantly deteriorates" (Table 7, Section 4.5.1). **Scope:** TSort PPL evaluation on 5 open-source models, 2k--8k settings. **Magnitude:** Vicuna-13b-v1.5-16k: 89.2% PPL vs 5.4% generative at 8k (83.8 percentage point gap). PPL results may be partially inflated by pretraining contamination (footnote 5). Status: **supported**.
 
-4. **C4: All models show significant position bias, intensifying with length.** "All models demonstrate significant position bias in choosing the most helpful answer. Most models achieve much better accuracy when the most helpful answer presents at the beginning." GPT-4-Turbo-1106 at 8k: 90.0% (front) vs. 38.0% (mid) vs. 40.5% (rear). Bias intensifies as input grows (Table 8, Section 4.5.2). Status: **supported**.
+4. **C4: All models show significant position bias, intensifying with length.** "All models demonstrate significant position bias in choosing the most helpful answer. Most models achieve much better accuracy when the most helpful answer presents at the beginning." GPT-4-Turbo-1106 at 8k: 90.0% (front) vs. 38.0% (mid) vs. 40.5% (rear). Bias intensifies as input grows (Table 8, Section 4.5.2). **Scope:** BestAnswer task, 8 models, 5 length settings, 3 answer positions. **Magnitude:** GPT-4-Turbo-1106 front-rear gap grows from 19pp (1k) to 55.5pp (16k). Tested across 8 models (strong evidence for the pattern). Status: **supported**.
 
-5. **C5: Ada-LEval requires more full-text comprehension than traditional benchmarks.** BestAnswer drops 33 points when truncated to 2k (44.0 to 11.0), while NarrativeQA drops 8.4 points and GovReport actually improves. "Our benchmarks require more full-text comprehension than traditional QA and summarization tasks" (Table 10, Section 4.5.4). Status: **supported**.
+5. **C5: Ada-LEval requires more full-text comprehension than traditional benchmarks.** BestAnswer drops 33 points when truncated to 2k (44.0 to 11.0), while NarrativeQA drops 8.4 points and GovReport actually improves. "Our benchmarks require more full-text comprehension than traditional QA and summarization tasks" (Table 10, Section 4.5.4). **Scope:** Comparison using GPT-4-Turbo-1106 only, on 3 benchmarks (BestAnswer, NarrativeQA, GovReport). **Magnitude:** 33-point drop for BestAnswer vs. 8.4-point drop for NarrativeQA; GovReport improves by 2.7 points when truncated. Single model tested (limited evidence for generalization). Status: **supported**.
 
-6. **C6: Scalable position embeddings achieve performance comparable to models trained on longer contexts.** All three methods (NTK, ReRoPE, Leaky ReRoPE) enhance accuracy at 8k (beyond the 4k training window), with performance "comparable to their counterparts trained on longer contexts" (Table 9, Section 4.5.3). Status: **supported**.
+6. **C6: Scalable position embeddings achieve performance comparable to models trained on longer contexts.** All three methods (NTK, ReRoPE, Leaky ReRoPE) enhance accuracy at 8k (beyond the 4k training window), with performance "comparable to their counterparts trained on longer contexts" (Table 9, Section 4.5.3). **Scope:** BestAnswer benchmark, Vicuna-v1.5 7b and 13b only, 1k--8k settings. **Magnitude:** At 8k, NTK achieves 3.9% vs. 0.0% for Original-4k on Vicuna-7b; comparable to Original-16k at 2.5%. Only 2 model sizes tested (limited evidence for generalization). Status: **supported**.
 
 ---
 
@@ -409,6 +478,8 @@ BestAnswer shows the steepest performance drop when truncated: from 44.0% (full)
 
 - **Touvron et al. (2023)** -- *Llama 2.* The base model for Vicuna-v1.5, which integrates RoPE with a 4k context window. The scalable position embedding ablation extends Vicuna-v1.5 beyond this 4k window (Section 2.2).
 
+- **Cai et al. (2024)** -- *InternLM2.* InternLM2-7b serves as one of the 6 open-source models evaluated across all tasks, and is also the only open-source model tested under ultra-long settings on BestAnswer (Section 4.1).
+
 - **Contributors (2023)** -- *OpenCompass.* The open-source evaluation platform used to conduct all experiments (Section 4.1).
 
 ### Efficient Attention and Long-Context Modeling
@@ -416,3 +487,9 @@ BestAnswer shows the steepest performance drop when truncated: from 44.0% (full)
 - **Dao et al. (2022a)** -- *FlashAttention.* An efficient attention implementation referenced as enabling longer context windows in Vicuna-v1.5-16k models (Section 2.1, Section 4.5.3).
 
 - **Ding et al. (2023)** -- *LongNet / Dilated Attention.* Reduces attention complexity to near-linear and scales to 1 billion tokens. Referenced alongside Liu et al. (2023a)'s finding that such mechanisms struggle with middle portions of long texts (Section 2.1).
+
+### Divide-and-Conquer Methods
+
+- **Nakano et al. (2021)** -- *WebGPT.* Addresses long-form QA by interacting with a text-based web-browsing environment. Referenced as an alternative paradigm for handling long documents (Section 2.1).
+
+- **Sun et al. (2023)** -- *PEARL.* A framework that prompts LLMs to generate and execute plans for long-text reasoning tasks. Referenced alongside WebGPT as a divide-and-conquer approach (Section 2.1).

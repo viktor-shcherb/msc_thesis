@@ -60,8 +60,6 @@ accuracy against the PDF, and rewrite any files that fall short.
 4. **If a section file is correct and complete:** leave it unchanged. Do not
    rewrite files that pass verification. Do not write an error log.
 
-5. **Continue to Step 5** (verify section files) as normal after verification.
-
 ---
 
 ## Step 1: Read context
@@ -258,53 +256,11 @@ This keeps the references file focused on what the notes actually discuss.
 
 ---
 
-## Step 5: Verify section files
-
-Verification scope depends on whether this is the last window.
-
-### All windows (lightweight checks)
-
-Re-read only the files you **created or modified in this window** and check:
-
-- Numbers that appear in both running text and a table should match.
-- If a figure or table is referenced in the text (e.g., "as shown in Table 3"),
-  verify that the figure/table is actually reproduced in the notes.
-- Check for `[unclear: ...]` markers — if you now have enough context to
-  resolve them, fill in the correct value.
-
-### Last window only (full checks)
-
-If this is the **last window** (PAGE_END ≥ TOTAL_PAGES or you can see the
-paper's bibliography/end matter), also perform these cross-file checks.
-Read all files in `references/<SLUG>/sections/` for this purpose.
-
-**Reference consistency:**
-- Scan every section file for in-text citations (e.g., `[23]`, `[12, 14]`,
-  `Author et al. (2017)`).
-- Compare against `_references.md`:
-  - **Missing from `_references.md`:** a citation appears in a section file
-    but has no entry in `_references.md`. Add it.
-  - **Orphaned in `_references.md`:** an entry exists in `_references.md`
-    but is never cited in any section file. Remove it.
-  - **Wrong "cited in" annotation:** the one-line note says the reference is
-    cited in a file where it doesn't actually appear, or misses a file where
-    it does appear. Correct it.
-
-**Section coverage:**
-- Compare the section headings listed in `00_overview.md` against the actual
-  section files that exist. For every section heading in the overview that
-  has no corresponding file, create the missing file now. Re-read the PDF
-  pages where that section appears (you can determine this from the overview
-  or from surrounding section files' page markers) and extract its content.
-  Do not leave gaps — there is no later pass.
-
----
-
 ## Error Logging
 
-When verification (Step 0) or final verification (Step 5) catches errors in
-pre-existing files, log them **before** fixing. This log is used to improve
-the prompts and prevent recurring mistakes.
+When verification (Step 0) catches errors in pre-existing files, log them
+**before** fixing. This log is used to improve the prompts and prevent
+recurring mistakes.
 
 ```bash
 mkdir -p prompts/add_reference/.errors/read_paper
@@ -322,7 +278,7 @@ Write (or append to) `prompts/add_reference/.errors/read_paper/<SLUG>.md`:
 ## Errors
 
 ### 1. [short label]
-- **Check:** which verification check caught this (e.g., "equation coverage", "table coverage", "figure coverage", "claim precision", "experimental details", "citation capture", "fabrication", "reference consistency", "section coverage", "internal consistency")
+- **Check:** which verification check caught this (e.g., "equation coverage", "table coverage", "figure coverage", "claim precision", "experimental details", "citation capture", "fabrication")
 - **File:** which section file contained the error
 - **Expected:** what the PDF says (quote or describe)
 - **Found:** what the section file said

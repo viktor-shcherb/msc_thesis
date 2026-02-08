@@ -364,7 +364,7 @@ Dynamic-YaRN (combining YaRN with Dynamic Scaling) on the original Llama 2 7B (p
 
 **C6. YaRN 7B/13B (s = 32) achieve > 99% passkey retrieval accuracy at 128k context.** Both 7B and 13B models achieve 99.4% average accuracy across all context sizes up to 128k on the passkey retrieval task (Table 5, Section 4.3.2). Tested across 2 model sizes with 10 iterations per context size (limited evidence; passkey retrieval is a simple synthetic task, not indicative of general long-context reasoning). Status: **supported**.
 
-**C7. Dynamic-YaRN outperforms Dynamic-PI for context extension without fine-tuning.** On a GovReport sample evaluated with Llama 2 7B (pretrained at 4k context, no fine-tuning), Dynamic-YaRN maintains lower perplexity than Dynamic-PI across the extended range beyond 4k tokens, while both prevent the catastrophic blow-up seen with standard RoPE (Figure 5, Appendix B.3). Status: **supported**.
+**C7. Dynamic-YaRN outperforms Dynamic-PI for context extension without fine-tuning.** On a GovReport sample evaluated with Llama 2 7B (pretrained at 4k context, no fine-tuning), Dynamic-YaRN maintains lower perplexity than Dynamic-PI across the extended range beyond 4k tokens, while both prevent the catastrophic blow-up seen with standard RoPE (Figure 5, Appendix B.3). Single model size (7B), single document, single dataset (limited evidence). Status: **supported**.
 
 ---
 

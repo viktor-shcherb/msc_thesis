@@ -1,0 +1,9 @@
+# 7.4 Pre-training [p. 58]
+
+## Image
+
+[p. 58] Initialization is from the pre-trained text model and vision encoder weights. The vision encoder is unfrozen, while the text model weights are kept frozen as explained above. First, the model is trained using 6B image-text pairs where each image is resized to fit within four tiles of 336 x 336 pixels. A global batch size of 16,384 and a cosine learning rate schedule with initial learning rate 10 x 10^{-4} and a weight decay of 0.01 are used. The initial learning rate was determined based on small-scale experiments. However, these findings did not generalize well to very long training schedules and the learning rate was dropped a few times during training when the loss values became stagnant. After the base pre-training, the image resolution is increased further and training continues with the same weights on the annealing dataset. The optimizer is re-initialized via warm-up to learning rate 2 x 10^{-5} and again follows a cosine schedule. [p. 58]
+
+## Video
+
+[p. 58] For video pre-training, the starting point is the image pre-trained and annealed weights as described above. The video aggregator and cross-attention layers are added as described in the architecture, initialized randomly. All the parameters in the model are frozen except the video-specific ones (the aggregator and video cross-attention), and they are trained on the video pre-training data. The same training hyperparameters as the image annealing stage are used, with small differences in the learning rate. 16 frames are uniformly sampled from the full video, and each frame is represented using four chunks, each of size 448 x 448 pixels. An aggregation factor of 16 is used in the video aggregator, hence obtaining one effective frame, which the text tokens cross-attend to. A global batch size of 4,096, a sequence length of 190 tokens, and a learning rate of 10^{-4} during training are used. [p. 58]

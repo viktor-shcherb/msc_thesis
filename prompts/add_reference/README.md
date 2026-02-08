@@ -1,12 +1,12 @@
 # add_reference — Add a New Reference
 
 End-to-end workflow for adding one or more references to the `references/`
-directory. This prompt orchestrates four subagents in sequence.
+directory. This prompt orchestrates subagents in sequence.
 
 ## Pipeline
 
 ```
-init_reference  →  read_paper OR read_sources  →  write_analysis  →  cross-reference update
+init_reference  →  read_paper OR read_sources  →  verify_reading  →  write_analysis (incl. cross-reference update)
 ```
 
 1. **init_reference** — Research the paper, create directory, download PDF,
@@ -16,10 +16,13 @@ init_reference  →  read_paper OR read_sources  →  write_analysis  →  cross
    write structured notes to `sections/`.
 3. **read_sources** (non-standard path) — Fetch web content, repos, threads
    into `sources/`.
-4. **write_analysis** — Read `sections/` or `sources/`, write `analysis.md`
-   with YAML front matter and all required sections.
-5. **Cross-reference update** — Update existing analyses to reflect the new
-   paper (see below).
+4. **verify_reading** (standard path only) — Verify completeness and accuracy
+   of `sections/` against the PDF. Fix errors, fill gaps, check reference
+   and section coverage.
+5. **write_analysis** — Read `sections/` or `sources/`, write `analysis.md`
+   with YAML front matter and all required sections, then update reciprocal
+   cross-references, claim interactions, and open question resolutions in
+   existing papers.
 
 ## Decision tree
 
@@ -28,6 +31,7 @@ After init_reference completes, inspect its report:
 ```
 init_reference succeeds + PDF exists
   → read_paper (windowed, writes sections/)
+  → verify_reading (checks sections/ against PDF)
   → write_analysis (reads sections/)
 
 init_reference succeeds + no PDF, non-standard
@@ -37,6 +41,18 @@ init_reference succeeds + no PDF, non-standard
 init_reference fails (paper not found, ambiguous input)
   → report failure to user, do not proceed
 ```
+
+## Model assignments
+
+The main orchestrator runs on **Sonnet**. Subagents use:
+
+| Stage | Model | Rationale |
+|---|---|---|
+| init_reference | sonnet | Metadata lookup, straightforward extraction |
+| read_paper | sonnet | High-volume windowed extraction |
+| read_sources | sonnet | Web fetching and content extraction |
+| verify_reading | **opus** | Requires judgment to catch subtle errors |
+| write_analysis | **opus** | Synthesis, cross-referencing, claim assessment |
 
 ## Subagent usage
 
@@ -48,59 +64,8 @@ See each subdirectory for details:
 - `init_reference/` — initialize reference directory
 - `read_paper/` — read PDF in windowed passes
 - `read_sources/` — fetch non-standard source content
+- `verify_reading/` — verify section notes against PDF
 - `write_analysis/` — create analysis.md
-
-## Cross-reference update procedure
-
-After `write_analysis` completes for a new paper, update the broader
-reference network:
-
-1. **Read the new paper's YAML front matter.** Note its `cross_references`,
-   `categories`, `key_claims`, and `open_questions`.
-
-2. **Add reciprocal cross-references.** For every `cross_references` entry
-   in the new paper:
-   - Open the target paper's `analysis.md`
-   - Add a reciprocal entry in its `cross_references` YAML block
-   - Relationship type mapping:
-     - `extends` ↔ `extended-by`
-     - `contradicts` ↔ `contradicts`
-     - `uses-benchmark` — no reciprocal needed
-     - `evaluates` — no reciprocal needed
-     - `concurrent` ↔ `concurrent`
-     - `complementary` ↔ `complementary`
-     - `formalizes` — add `formalized-by` note in target (use `complementary` type)
-
-3. **Check for claim interactions.** If the new paper contests or validates
-   claims from existing papers:
-   - Update the `status` and `contested_by` fields on the relevant
-     `key_claims` entries in the existing paper's YAML
-   - Update the existing paper's "Key Claims" prose section if needed
-
-4. **Check for open question resolution.** If the new paper addresses an
-   `open_question` from an existing paper:
-   - Update the `addressed_by` field in the existing paper's YAML
-   - Add a note in the existing paper's "Open Questions" prose section
-
-5. **Update meta-analyses.** Check whether the new paper falls within the
-   corpus of any existing meta-analysis in `meta-analysis/` (match on
-   categories, cross-references, or keyword overlap). If it does, follow the
-   maintenance procedure in `meta-analysis/GUIDELINES.md`.
-
-## Metadata validation
-
-After all updates, validate consistency using `search.py`:
-
-```bash
-# Check the new paper's relationships
-python3 references/search.py related <SLUG>
-
-# Verify no broken references
-python3 references/search.py info <SLUG>
-
-# List all contradictions (should include any new ones)
-python3 references/search.py contradictions
-```
 
 ## Ontology maintenance
 
@@ -125,11 +90,14 @@ When processing multiple references at once:
    Windows for different papers can run in parallel. For non-standard
    references, run `read_sources` (one per reference, can be parallel).
 
-3. **Analyze in parallel** — Run `write_analysis` for each paper once its
-   reading step completes.
+3. **Verify in parallel** — For standard papers, run `verify_reading` once
+   all windows for that paper are done. Verification for different papers
+   can run in parallel.
 
-4. **Cross-reference update** — Do this sequentially after all analyses are
-   written to avoid conflicting edits to the same files.
+4. **Analyze sequentially** — Run `write_analysis` for each paper once its
+   reading/verification step completes. Run these **sequentially** (not in
+   parallel) because each `write_analysis` updates cross-references in other
+   papers' `analysis.md` files — parallel runs risk conflicting edits.
 
 ## Citation file maintenance
 

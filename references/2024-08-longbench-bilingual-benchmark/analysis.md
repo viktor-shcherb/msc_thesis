@@ -14,30 +14,44 @@ key_claims:
     claim: "LongBench is the first bilingual, multi-task benchmark for long context understanding, comprising 21 datasets across 6 categories in both English and Chinese"
     evidence: "Table 1, Section 1, Section 3"
     status: supported
+    scope: "English and Chinese, 6 task categories, up to ~40K tokens"
+    magnitude: "21 datasets, 4,750 test instances, avg 6,711 words (EN) / 13,386 chars (ZH)"
   - id: C2
     claim: "GPT-3.5-Turbo-16k outperforms open-source models overall (44.7%) but degrades 17% from 0-4K to 8K+ on LongBench-E"
     evidence: "Tables 2-3, Figure 3, Section 4.1"
     status: supported
+    scope: "8 models at 6B-7B open-source scale plus one commercial model, greedy decoding, zero-shot except few-shot tasks"
+    magnitude: "44.7% overall macro-average; -17% relative drop from 0-4K to 8K+ (51.5 to 42.4)"
   - id: C3
     claim: "Position interpolation and longer fine-tuning yield up to 62% relative improvement (ChatGLM2-6B-32k over ChatGLM2-6B) and 19% (LongChat-v1.5-7B-32k over Llama2-7B-chat-4k)"
     evidence: "Tables 2-3, Section 4.1"
     status: supported
+    scope: "6B-7B parameter models, position interpolation with 32K alignment training"
+    magnitude: "62% relative improvement (25.7 to 41.4) and 19% relative improvement (26.8 to 31.6)"
   - id: C4
     claim: "Retrieval-based compression helps only models with weak long-context ability (+21% for Llama2-7B-chat-4k) but slightly degrades strong models (-2% GPT-3.5-Turbo-16k, -5% ChatGLM2-6B-32k)"
     evidence: "Table 4, Section 4.2"
     status: supported
+    scope: "QA tasks only (single-doc and multi-doc), 3 retrievers, 2 chunk sizes, 3 models tested"
+    magnitude: "+21% (19.9 to 24.0), -2% (40.7 to 39.9), -5% (36.1 to 34.4)"
   - id: C5
     claim: "Models trained on longer contexts (ChatGLM2-6B-32k, LongChat-v1.5-7B-32k) are most robust to length increases on LongBench-E, with relative drops of only 4% and 7% from 0-4K to 8K+"
     evidence: "Figure 3, Table 9, Section 4.1"
     status: supported
+    scope: "13 English datasets in LongBench-E, 3 length bins, macro-average"
+    magnitude: "4% relative drop (44.2 to 43.1) and 7% relative drop (36.9 to 34.5) vs 17% for GPT-3.5-Turbo-16k"
   - id: C6
     claim: "Wikipedia-based multi-doc QA tasks show high memorization scores without context, indicating models partly rely on parametric knowledge rather than context understanding"
     evidence: "Table 6, Section 4.3"
     status: supported
+    scope: "GPT-3.5-Turbo-16k, Llama2-7B-chat-4k, ChatGLM2-6B-32k on single-doc and multi-doc QA"
+    magnitude: "GPT-3.5-Turbo-16k scores 31.7 (HotpotQA) and 28.9 (2WikiMQA) without context vs 4.7 (NarrativeQA)"
   - id: C7
     claim: "Synthetic tasks exhibit near-binary discriminability, making simple averaging across all tasks potentially misleading for ranking models"
-    evidence: "Tables 2-3, Appendix D"
+    evidence: "Tables 2-3, Appendix C-D"
     status: supported
+    scope: "PassageCount and PassageRetrieval tasks across 8 models"
+    magnitude: "PassageRetrieval-en scores range from 3.0% (ChatGLM2-6B) to 77.0% (ChatGLM2-6B-32k); PassageCount all models below 6.5%"
 cross_references:
   - target: 2022-12-scrolls-long-language-sequences
     type: extends
@@ -116,11 +130,11 @@ LongBench addresses this gap by introducing the first bilingual, multitask bench
 
 ### Method
 
-LongBench formalizes long context understanding as: given input `I` and context `C`, the model produces answer `A`. In most tasks, `I` (question/query) and `A` (answer) are short, while `C` (document, code, or few-shot examples) extends to thousands or tens of thousands of tokens. The benchmark contains 4,750 test instances with an average length of 6,711 words (English) and 13,386 characters (Chinese).
+LongBench formalizes long context understanding as: given input `I` and context `C`, the model produces answer `A`. In most tasks, `I` (question/query) and `A` (answer) are short, while `C` (document, code, or few-shot examples) extends to thousands or tens of thousands of tokens. The benchmark contains 4,750 test instances with an average length of 6,711 words (English) and 13,386 characters (Chinese) (Table 1).
 
 ### Key Technical Components
 
-**Task taxonomy.** The 21 datasets are organized into 6 categories:
+**Task taxonomy.** The 21 datasets are organized into 6 categories (Table 1):
 
 | Category | Dataset | Source | Avg Len | Metric | Language | #Data |
 |---|---|---|---|---|---|---|
@@ -132,7 +146,7 @@ LongBench formalizes long context understanding as: given input `I` and context 
 | | 2WikiMultihopQA | Wikipedia | 4,887 | F1 | EN | 200 |
 | | MuSiQue | Wikipedia | 11,214 | F1 | EN | 200 |
 | | DuReader | Baidu Search | 15,768 | ROUGE-L | ZH | 200 |
-| Summarization | GovReport | Government | 8,734 | ROUGE-L | EN | 200 |
+| Summarization | GovReport | Government report | 8,734 | ROUGE-L | EN | 200 |
 | | QMSum | Meeting | 10,614 | ROUGE-L | EN | 200 |
 | | MultiNews | News | 2,113 | ROUGE-L | EN | 200 |
 | | VCSUM | Meeting | 15,380 | ROUGE-L | ZH | 200 |
@@ -142,9 +156,9 @@ LongBench formalizes long context understanding as: given input `I` and context 
 | | LSHT | News | 22,337 | Accuracy (CLS) | ZH | 200 |
 | Synthetic | PassageCount | Wikipedia | 11,141 | Accuracy (EM) | EN | 200 |
 | | PassageRetrieval-en | Wikipedia | 9,289 | Accuracy (EM) | EN | 200 |
-| | PassageRetrieval-zh | C4 | 6,745 | Accuracy (EM) | ZH | 200 |
+| | PassageRetrieval-zh | C4 Dataset | 6,745 | Accuracy (EM) | ZH | 200 |
 | Code | LCC | GitHub | 1,235 | Edit Sim | Py/C#/Java | 500 |
-| | RepoBench-P | GitHub repo | 4,206 | Edit Sim | Py/Java | 500 |
+| | RepoBench-P | GitHub repository | 4,206 | Edit Sim | Py/Java | 500 |
 
 Average length is measured in words for English/code datasets and characters for Chinese datasets (Table 1).
 
@@ -152,17 +166,17 @@ Average length is measured in words for English/code datasets and characters for
 
 - **Multi-doc QA adaptation:** Supporting Wikipedia passages are included first, then distracting passages are added until a maximum length is reached, and all passages are randomly ordered (Section 3.2.1).
 - **Few-shot learning:** For each test instance, a random number of examples from the training set are concatenated as context `C`. Ranges: TREC [100, 600], LSHT [10, 40], SAMSum [10, 100], TriviaQA [2, 24] (Section 3.2.1).
-- **MultiFieldQA annotation:** Documents collected from multiple sources (legal, government, encyclopedias, academic papers). Three PhD students annotated questions and answers, ensuring random placement of evidence paragraphs to avoid positional biases (Section 3.2.1).
+- **MultiFieldQA annotation:** Documents collected from multiple sources (legal, government, encyclopedias, academic papers). Three PhD students annotated questions and answers, with 100% cross-validation accuracy. Evidence paragraphs are randomly placed to avoid positional biases (Section 3.2.1, Appendix A).
 - **PassageRetrieval:** 30 random passages are sampled; one is summarized by GPT-3.5-Turbo. The model must identify which passage the summary corresponds to (Section 3.2.1).
-- **PassageCount:** N unique passages from Wikipedia are sampled, each repeated a random number of times, then shuffled. The model must count the number of unique passages. N is drawn from [2, M] where M is in [17, 50]. M total passages are produced by sampling with replacement from the N unique ones (Section 3.2.1).
+- **PassageCount:** M passages are produced by sampling with replacement from N unique Wikipedia passages (N drawn from [2, M], M drawn from [17, 50]), then shuffled. The model must count the number of unique passages (Section 3.2.1).
 
 **LongBench-E.** A subset of 13 English datasets uniformly sampled by word count into three bins (0--4K, 4K--8K, 8K+), with ~100 samples per bin per dataset (Table 8), enabling per-length-range analysis that disentangles context length from task difficulty.
 
-**Truncation strategy.** When input length `L` exceeds maximum context length `M`, the input is truncated from the middle to preserve both instruction/question (at the front) and potential tail information:
+**Truncation strategy.** When input length `L` exceeds maximum context length `M`, the input is truncated from the middle to preserve both instruction/question (at the front) and potential tail information (Section 4.1):
 
-> S_{1:L} → [S_{1:⌊M/2⌋}; S_{L-⌊M/2⌋-1:L}]
+> S_{1:L} -> [S_{1:floor(M/2)}; S_{L-floor(M/2)-1:L}]
 
-**Evaluation protocol.** Zero-shot setting for all tasks except few-shot learning (where examples form the long context). Greedy decoding for reproducibility. Chat-specific prompts are omitted for few-shot and code tasks to elicit completion-style responses (Section 4.1).
+**Evaluation protocol.** Zero-shot setting for all tasks except few-shot learning (where examples form the long context). Greedy decoding for reproducibility. Chat-specific prompts are omitted for few-shot and code tasks to elicit completion-style responses (Section 4.1). For few-shot learning, the first line of the response is extracted; for code completion, the first non-comment line is extracted (Section 4.1).
 
 ### Experimental Setup
 
@@ -176,7 +190,11 @@ Average length is measured in words for English/code datasets and characters for
 - ChatGLM2-6B-32k (position interpolation + 32K alignment training, based on ChatGLM2-6B)
 - Vicuna-v1.5-7B-16k (fine-tuned from Llama2-7B, linear RoPE scaling, 16K)
 
+All open-source models are in the 6B-7B parameter range. Single commercial model (GPT-3.5-Turbo-16k). No variance estimates reported; single run per configuration (limited evidence for individual scores).
+
 **Context compression experiments:** Three retrievers (text-embedding-ada-002, Contriever, BM25) with two chunk sizes (200 and 500 words), top-7 and top-3 chunks respectively. Also summarization-based compression via model-generated chunk summaries (Section 4.2).
+
+**Reproducibility:** Code and datasets publicly available at https://github.com/THUDM/LongBench and https://huggingface.co/datasets/THUDM/LongBench. Greedy decoding ensures deterministic outputs. No random seeds reported (deterministic via greedy decoding). Evaluation prompts are fully specified in Appendix B.
 
 ### Key Results
 
@@ -193,57 +211,79 @@ Average length is measured in words for English/code datasets and characters for
 | XGen-7B-8k | 28.3 | 15.1 | 25.0 |
 | InternLM-7B-8k | 24.2 | 18.3 | 22.6 |
 
-Overall is computed as the macro-average (mean of per-category averages) over 6 major task categories. Code tasks are included in both EN and ZH scores (Table 3).
+Overall is computed as the macro-average (mean of per-category averages) over 6 major task categories. Code tasks are included in both EN and ZH scores (Table 3). Results are from 8 models at 6B-7B open-source scale plus one commercial model, with single runs per configuration and no variance estimates.
 
-- **GPT-3.5-Turbo-16k leads overall** but still struggles on longer contexts (−17% from 0--4K to 8K+ on LongBench-E, Figure 3).
-- **Scaled positional embedding and longer fine-tuning help substantially.** ChatGLM2-6B-32k (position interpolation + 32K alignment) improves 62% over ChatGLM2-6B; LongChat-v1.5-7B-32k (linear RoPE scaling) improves 19% over Llama2-7B-chat-4k (Section 4.1).
-- **ChatGLM2-6B-32k and LongChat-v1.5-7B-32k are most robust to length increases** on LongBench-E, with relative drops of only 4% and 7% from 0--4K to 8K+ (Figure 3, Section 4.1).
-- **Synthetic tasks are highly discriminating:** models either achieve high scores (e.g., ChatGLM2-6B-32k: 77.0% on PassageRetrieval-en) or near-zero (e.g., Llama2-7B-chat-4k: 9.8%), suggesting that simple averaging may let these tasks dominate rankings (Tables 2-3, Appendix D).
-- **Higher inter-task correlations within same category and language** (Spearman analysis, Appendix D). Chinese tasks (1-4, 2-4, 3-4, 4-4, 5-3) correlate highly with each other. PassageCount (5-1) has low correlation with all other tasks since most models score near zero.
+- **GPT-3.5-Turbo-16k leads overall** but still struggles on longer contexts: -17% relative from 0--4K (51.5) to 8K+ (42.4) on LongBench-E (Figure 3, Table 9).
+- **Scaled positional embedding and longer fine-tuning help substantially.** ChatGLM2-6B-32k (position interpolation + 32K alignment) improves 62% over ChatGLM2-6B (41.4 vs 25.7); LongChat-v1.5-7B-32k (linear RoPE scaling) improves 19% over Llama2-7B-chat-4k (31.6 vs 26.8) (Tables 2-3, Section 4.1; 8 models, single configuration each -- moderate evidence).
+- **ChatGLM2-6B-32k and LongChat-v1.5-7B-32k are most robust to length increases** on LongBench-E, with relative drops of only 4% and 7% from 0--4K to 8K+ (Figure 3, Table 9).
+- **Synthetic tasks are highly discriminating:** models either achieve high scores (e.g., ChatGLM2-6B-32k: 77.0% on PassageRetrieval-en) or near-zero (e.g., Llama2-7B-chat-4k: 9.8%), suggesting that simple averaging may let these tasks dominate rankings (Tables 2-3, Appendix C-D).
+- **Higher inter-task correlations within same category and language** (Spearman analysis, Appendix D). Chinese tasks (1-4, 2-4, 3-4, 4-4, 5-3) correlate highly with each other. PassageCount (5-1) has low correlation with all other tasks since most models score near zero. Qasper (1-2) and RepoBench-P (6-2) also show lower correlations with other tasks, implying different attention patterns.
 
 **Truncation experiment (LongBench, macro-average, Figure 2):**
 
 | Model | Max Length | 8K Trunc. | 4K Trunc. |
 |---|---|---|---|
-| GPT-3.5-Turbo-16k | 44.7 | 44.2 | 39.1 |
-| ChatGLM2-6B-32k | 41.5 | 39.3 | 35.4 |
-| Vicuna-v1.5-7B-16k | 30.5 | 30.5 | 30.2 |
+| GPT-3.5-Turbo-16k | 44.7 | 41.5 | 39.1 |
+| ChatGLM2-6B-32k | 41.4 | 39.3 | 35.4 |
+| Vicuna-v1.5-7B-16k | 30.2 | 30.3 | 30.5 |
 
-GPT-3.5-Turbo-16k and ChatGLM2-6B-32k benefit from longer context, confirming that LongBench tasks genuinely require long-context modeling. Vicuna-v1.5-7B-16k shows no improvement, indicating it does not effectively use context beyond 4K (Section 4.1).
+GPT-3.5-Turbo-16k and ChatGLM2-6B-32k benefit from longer context, confirming that LongBench tasks genuinely require long-context modeling. Vicuna-v1.5-7B-16k shows no improvement with increasing context length (essentially flat from 30.5 at 4K to 30.2 at max), indicating it does not effectively use context beyond 4K (Section 4.1; 3 models tested, limited evidence for generalization).
 
 **Retrieval-based compression (best retriever per model, QA tasks avg, Table 4):**
 
 | Model | w/o Retrieval | Best Retrieval | Delta |
 |---|---|---|---|
-| GPT-3.5-Turbo-16k | 40.7 | 39.9 | −2% |
+| GPT-3.5-Turbo-16k | 40.7 | 39.9 | -2% |
 | Llama2-7B-chat-4k | 19.9 | 24.0 | +21% |
-| ChatGLM2-6B-32k | 36.1 | 34.4 | −5% |
+| ChatGLM2-6B-32k | 36.1 | 34.4 | -5% |
 
 - **text-embedding-ada-002 is the best retriever**, followed by Contriever, then BM25 (Table 4).
-- **Retrieval helps only weak long-context models.** Llama2-7B-chat-4k gains +21%, but even with retrieval its performance lags behind stronger models without retrieval. Models with strong long-context ability (GPT-3.5-Turbo-16k, ChatGLM2-6B-32k) are slightly harmed by retrieval (Section 4.2).
-- **Smaller chunks with more retrieved segments** (200 words × 7 chunks) outperform larger chunks (500 × 3) (Table 4).
+- **Retrieval helps only weak long-context models.** Llama2-7B-chat-4k gains +21%, but even with retrieval its performance (24.0) lags behind ChatGLM2-6B-32k without retrieval (36.1). Models with strong long-context ability (GPT-3.5-Turbo-16k, ChatGLM2-6B-32k) are slightly harmed by retrieval (Section 4.2; 3 models, QA tasks only -- moderate evidence for the specific finding, limited generalizability to other task types).
+- **Smaller chunks with more retrieved segments** (200 words x 7 chunks) outperform larger chunks (500 x 3) (Table 4).
 
 **Summarization-based compression (Table 5):**
 
-| Model | w/o Summ | w/ Summ |
-|---|---|---|
-| GPT-3.5-Turbo-16k | 23.9 | 18.0 |
-| Llama2-7B-chat-4k | 18.5 | 8.6 |
-| ChatGLM2-6B-32k | 24.8 | 16.4 |
+| Model | 3-1 (GovReport) | 3-2 (QMSum) | 3-3 (MultiNews) | 3-4 (VCSUM) | Avg |
+|---|---|---|---|---|---|
+| GPT-3.5-Turbo-16k | 29.5 | 23.4 | 26.7 | 16.0 | 23.9 |
+| GPT-3.5-Turbo-16k+Summ | 17.9 | 16.6 | 17.9 | 19.7 | 18.0 |
+| Llama2-7B-chat-4k | 27.3 | 20.8 | 25.8 | 0.2 | 18.5 |
+| Llama2-7B-chat-4k+Summ | 12.8 | 16.6 | 4.6 | 0.6 | 8.6 |
+| ChatGLM2-6B-32k | 32.4 | 24.0 | 26.5 | 16.2 | 24.8 |
+| ChatGLM2-6B-32k+Summ | 17.6 | 15.9 | 14.9 | 17.2 | 16.4 |
 
-Summarization-based compression degrades performance on 3 of 4 summarization tasks. Only VCSUM (the longest dataset at avg 15,380 characters) sees slight improvement for GPT-3.5-Turbo-16k and ChatGLM2-6B-32k (Section 4.2).
+Summarization-based compression degrades performance on 3 of 4 summarization tasks for all models. Only VCSUM (3-4, the longest dataset at avg 15,380 characters) sees slight improvement for GPT-3.5-Turbo-16k (16.0 to 19.7) and ChatGLM2-6B-32k (16.2 to 17.2) (Section 4.2, Table 5).
 
-**Context understanding vs. memorization (Table 6):** When context is withheld and only the question is presented, performance on Wikipedia-based tasks (HotpotQA, 2WikiMultihopQA, MuSiQue) remains relatively high, indicating models rely partly on parametric knowledge from pretraining. The delta (score with context minus score without) serves as a purer measure of context understanding ability. For GPT-3.5-Turbo-16k, the largest deltas are on MultiFieldQA-zh (+50.3) and MultiFieldQA-en (+36.6), while multi-doc QA deltas are smaller (+8.8 to +19.9), reflecting Wikipedia memorization (Section 4.3).
+**Context understanding vs. memorization (Table 6):** When context is withheld and only the question is presented, performance on Wikipedia-based tasks (HotpotQA, 2WikiMultihopQA, MuSiQue) remains relatively high, indicating models rely partly on parametric knowledge from pretraining. The delta (score with context minus score without) serves as a purer measure of context understanding ability (Yu et al., 2024). Selected results for GPT-3.5-Turbo-16k (Table 6):
+
+| Dataset | w/o Context | w/ Context | Delta |
+|---|---|---|---|
+| NarrativeQA | 4.7 | 23.6 | +18.9 |
+| Qasper | 12.4 | 43.3 | +30.9 |
+| MultiFieldQA-en | 15.7 | 52.3 | +36.6 |
+| MultiFieldQA-zh | 10.9 | 61.2 | +50.3 |
+| HotpotQA | 31.7 | 51.6 | +19.9 |
+| 2WikiMultihopQA | 28.9 | 37.7 | +8.8 |
+| MuSiQue | 15.0 | 26.9 | +11.9 |
+| DuReader | 17.1 | 28.7 | +11.6 |
+
+The largest deltas are on MultiFieldQA-zh (+50.3) and MultiFieldQA-en (+36.6), while multi-doc QA deltas are smaller (+8.8 to +19.9), reflecting Wikipedia memorization. Similar patterns hold for Llama2-7B-chat-4k and ChatGLM2-6B-32k (Table 6; 3 models tested -- moderate evidence, but only QA tasks examined).
 
 ---
 
 ## Limitations and Failure Modes
 
-1. **Automatic metrics (ROUGE-L, F1) may underestimate models that generate longer responses.** Using LLM-as-examiner could reduce this problem but introduces its own biases and costs (Section 6).
-2. **Performance is coupled with instruction-following capability.** The benchmark aims to test long-context modeling, but real-world tasks inevitably require instruction comprehension. Performance on LongBench is confounded with models' instruction-following ability (Section 6).
-3. **Maximum length reaches ~40K tokens.** LongBench does not test contexts beyond tens of thousands of tokens, limiting evaluation of models claiming 100K+ context windows.
-4. **Synthetic tasks have near-binary discriminability.** Models either achieve high scores or near-zero on PassageCount and PassageRetrieval, reducing the granularity of differentiation on these tasks (Appendix D).
-5. **Summarization and code completion are insufficiently discerning.** Similarity-based metrics (ROUGE-L, Edit Sim) on these tasks do not well distinguish between strong and weak models (Appendix C).
+1. **Automatic metrics (ROUGE-L, F1) may underestimate models that generate longer responses.** Using LLM-as-examiner could reduce this problem but introduces its own biases and costs (Section 6, Limitation 1).
+2. **Performance is coupled with instruction-following capability.** The benchmark aims to test long-context modeling, but real-world tasks inevitably require instruction comprehension. Performance on LongBench is confounded with models' instruction-following ability (Section 6, Limitation 2).
+3. **[Inferred] Maximum length reaches only ~40K tokens.** LongBench does not test contexts beyond tens of thousands of tokens, limiting evaluation of models claiming 100K+ context windows. The length distribution (Figure 1) is heavily right-skewed with most instances under 10,000 words.
+4. **[Inferred] Synthetic tasks have near-binary discriminability.** Models either achieve high scores or near-zero on PassageCount and PassageRetrieval, reducing the granularity of differentiation on these tasks (Appendix C-D).
+5. **[Inferred] Summarization and code completion are insufficiently discerning.** Similarity-based metrics (ROUGE-L, Edit Sim) on these tasks do not well distinguish between strong and weak models, as noted in the radar plot analysis (Appendix C).
+6. **[Inferred] No variance estimates or repeated runs.** All results are from single runs with greedy decoding. While greedy decoding is deterministic, different prompt phrasings or evaluation orderings could affect results.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models larger than 16K context (commercial) or 32K (open-source) are evaluated at the time of publication; no models above 7B parameters (open-source). Evaluation is zero-shot only (except few-shot learning tasks). No chain-of-thought or multi-turn evaluation. No evaluation of retrieval-augmented generation on non-QA tasks.
+- **Comparability notes:** LongBench's "overall" macro-average weights all 6 task categories equally regardless of number of tasks per category, which differs from simple averaging across all 21 tasks. The controlled-length variant (LongBench-E) uses word count for binning, which may not correspond to tokenizer-specific token counts. Context compression experiments (Table 4) are restricted to QA tasks, making direct comparison with full-benchmark results difficult. The truncation strategy (middle truncation) differs from the left truncation used by some other benchmarks, potentially affecting comparability of truncation-sensitivity results.
 
 ---
 
@@ -259,27 +299,27 @@ Summarization-based compression degrades performance on 3 of 4 summarization tas
 ### Implications
 
 1. **Position extension is effective but insufficient.** While position interpolation and longer fine-tuning yield large gains (62% for ChatGLM2-6B-32k), even the best models still degrade on longer contexts, suggesting further improvements in long-context modeling are needed.
-2. **Retrieval is not a shortcut.** Retrieval-based compression cannot replace strong native long-context ability; even the best retriever (ada-002) slightly harms models that already handle long contexts well.
-3. **Per-category evaluation is more meaningful than overall averaging.** Synthetic tasks exhibit near-binary discriminability, so averaging across all tasks may let these dominate rankings. LongBench's category-level reporting provides more nuanced benchmarking.
+2. **Retrieval is not a shortcut.** Retrieval-based compression cannot replace strong native long-context ability; even the best retriever (ada-002) slightly harms models that already handle long contexts well (Table 4).
+3. **Per-category evaluation is more meaningful than overall averaging.** Synthetic tasks exhibit near-binary discriminability, so averaging across all tasks may let these dominate rankings. LongBench's category-level reporting provides more nuanced benchmarking (Appendix C).
 4. **Bilingual evaluation reveals important differences.** Some models (Llama2-7B-chat-4k, XGen-7B-8k) show large EN-ZH gaps (31.0 vs. 14.3 and 28.3 vs. 15.1), suggesting long-context capability does not transfer equally across languages (Tables 2-3).
 
 ---
 
 ## Key Claims
 
-1. **C1: First bilingual, multi-task long-context benchmark.** LongBench provides 21 datasets across 6 categories in English and Chinese. No prior benchmark combined bilingual coverage, multitask breadth, and controlled-length subsets (Table 1, Section 1). **Status: supported.**
+1. **C1: First bilingual, multi-task long-context benchmark.** LongBench provides 21 datasets across 6 categories in English and Chinese. No prior benchmark combined bilingual coverage, multitask breadth, and controlled-length subsets (Table 1, Section 1). **Scope:** English and Chinese, 6 task categories, up to ~40K tokens. **Magnitude:** 21 datasets, 4,750 test instances. **Status: supported** (benchmark novelty verifiable by comparison with prior work; limited to EN/ZH bilingual scope).
 
-2. **C2: GPT-3.5-Turbo-16k leads but degrades on longer contexts.** GPT-3.5-Turbo-16k achieves the highest overall macro-average (44.7%) but drops 17% from 0--4K to 8K+ on LongBench-E (Tables 2-3, Figure 3). **Status: supported.**
+2. **C2: GPT-3.5-Turbo-16k leads but degrades on longer contexts.** GPT-3.5-Turbo-16k achieves the highest overall macro-average (44.7%) but drops 17% from 0--4K (51.5) to 8K+ (42.4) on LongBench-E (Tables 2-3, Figure 3, Table 9). **Scope:** 8 models at 6B-7B scale + 1 commercial, greedy decoding, zero-shot. **Magnitude:** 44.7% overall; 17% relative degradation. **Status: supported** (8 models evaluated, single run per configuration -- moderate evidence).
 
-3. **C3: Position interpolation and longer fine-tuning yield large gains.** ChatGLM2-6B-32k improves 62% over ChatGLM2-6B; LongChat-v1.5-7B-32k improves 19% over Llama2-7B-chat-4k (Tables 2-3, Section 4.1). **Status: supported.**
+3. **C3: Position interpolation and longer fine-tuning yield large gains.** ChatGLM2-6B-32k improves 62% over ChatGLM2-6B (41.4 vs 25.7); LongChat-v1.5-7B-32k improves 19% over Llama2-7B-chat-4k (31.6 vs 26.8) (Tables 2-3, Section 4.1). **Scope:** 6B-7B models, position interpolation + alignment training. **Magnitude:** 62% and 19% relative improvement. **Status: supported** (2 model pairs compared, no ablation isolating position interpolation from fine-tuning -- limited evidence for isolating the mechanism).
 
-4. **C4: Retrieval-based compression helps only weak models.** Llama2-7B-chat-4k gains +21% with best retrieval, but GPT-3.5-Turbo-16k loses 2% and ChatGLM2-6B-32k loses 5% (Table 4, Section 4.2). **Status: supported.**
+4. **C4: Retrieval-based compression helps only weak models.** Llama2-7B-chat-4k gains +21% with best retrieval (19.9 to 24.0), but GPT-3.5-Turbo-16k loses 2% (40.7 to 39.9) and ChatGLM2-6B-32k loses 5% (36.1 to 34.4) (Table 4, Section 4.2). **Scope:** QA tasks only, 3 retrievers, 2 chunk sizes, 3 models. **Magnitude:** +21%, -2%, -5%. **Status: supported** (3 models, QA tasks only, 6 retrieval configurations each -- moderate evidence within QA scope).
 
-5. **C5: Models trained on longer contexts are most robust to length increases.** ChatGLM2-6B-32k and LongChat-v1.5-7B-32k show relative drops of only 4% and 7% from 0--4K to 8K+ on LongBench-E, while GPT-3.5-Turbo-16k drops 17% (Figure 3, Section 4.1). **Status: supported.**
+5. **C5: Models trained on longer contexts are most robust to length increases.** ChatGLM2-6B-32k and LongChat-v1.5-7B-32k show relative drops of only 4% and 7% from 0--4K to 8K+ on LongBench-E, while GPT-3.5-Turbo-16k drops 17% (Figure 3, Table 9, Section 4.1). **Scope:** 13 English datasets in LongBench-E, 3 length bins. **Magnitude:** 4% and 7% drops vs 17% for GPT-3.5. **Status: supported** (8 models across 13 tasks and 3 length bins -- strong evidence for this specific set of models).
 
-6. **C6: Wikipedia-based tasks are partially solvable through memorization.** Without context, GPT-3.5-Turbo-16k scores 31.7 on HotpotQA and 28.9 on 2WikiMultihopQA, compared to 4.7 on NarrativeQA. The delta metric provides a purer measure of context understanding (Table 6, Section 4.3). **Status: supported.**
+6. **C6: Wikipedia-based tasks are partially solvable through memorization.** Without context, GPT-3.5-Turbo-16k scores 31.7 on HotpotQA and 28.9 on 2WikiMultihopQA, compared to 4.7 on NarrativeQA. The delta metric provides a purer measure of context understanding (Table 6, Section 4.3). **Scope:** GPT-3.5-Turbo-16k, Llama2-7B-chat-4k, ChatGLM2-6B-32k on single-doc and multi-doc QA. **Magnitude:** w/o context scores of 28.9-31.7 on Wikipedia QA vs 4.7 on non-Wikipedia QA. **Status: supported** (3 models, 8 QA datasets -- moderate evidence).
 
-7. **C7: Synthetic tasks have near-binary discriminability.** On PassageRetrieval-en, scores range from 3.0% (ChatGLM2-6B) to 77.0% (ChatGLM2-6B-32k); on PassageCount, all models score below 6.5% except none. Simple averaging across all tasks would let these extremes dominate rankings (Tables 2-3, Appendix D). **Status: supported.**
+7. **C7: Synthetic tasks have near-binary discriminability.** On PassageRetrieval-en, scores range from 3.0% (ChatGLM2-6B) to 77.0% (ChatGLM2-6B-32k); on PassageCount, all models score below 6.5%. Simple averaging across all tasks would let these extremes dominate rankings (Tables 2-3, Appendix C-D). **Scope:** PassageCount and PassageRetrieval tasks, 8 models. **Magnitude:** 3.0% to 77.0% range on PassageRetrieval-en; all <6.5% on PassageCount. **Status: supported** (8 models, 3 synthetic tasks -- strong evidence for this specific observation).
 
 ---
 
@@ -313,7 +353,7 @@ Summarization-based compression degrades performance on 3 of 4 summarization tas
 - **Yang et al. (2018)** -- *HotpotQA.* Source of 2-hop multi-document QA data.
 - **Ho et al. (2020)** -- *2WikiMultihopQA.* Source of up-to-5-hop multi-document QA data.
 - **Trivedi et al. (2022)** -- *MuSiQue.* Source of up-to-4-hop multi-document QA with shortcut-resistant questions.
-- **Kociskỳ et al. (2018)** -- *NarrativeQA.* Source of single-document QA over long stories.
+- **Kocisky et al. (2018)** -- *NarrativeQA.* Source of single-document QA over long stories.
 - **Dasigi et al. (2021)** -- *Qasper.* Source of QA over NLP papers.
 - **Huang et al. (2021)** -- *GovReport.* Source of government report summarization data.
 - **Zhong et al. (2021)** -- *QMSum.* Source of query-based meeting summarization data.
@@ -321,6 +361,10 @@ Summarization-based compression degrades performance on 3 of 4 summarization tas
 - **Liu et al. (2023b)** -- *RepoBench.* Source of repository-level code completion data.
 - **Guo et al. (2023)** -- *LongCoder/LCC.* Source of long code completion data.
 - **He et al. (2018)** -- *DuReader.* Source of Chinese reading comprehension data from Baidu Search.
+- **Wu et al. (2023)** -- *VCSUM.* Source of Chinese meeting summarization data.
+- **Li and Roth (2002)** -- *TREC.* Source of question classification data.
+- **Joshi et al. (2017)** -- *TriviaQA.* Source of reading comprehension QA data.
+- **Gliwa et al. (2019)** -- *SAMSum.* Source of dialogue summarization data.
 
 ### Models Evaluated
 

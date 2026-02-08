@@ -1,7 +1,8 @@
 # write_analysis — Usage for Main Agent
 
 Create `analysis.md` from completed `sections/` (papers) or `sources/`
-(non-standard references).
+(non-standard references), then update reciprocal cross-references, claim
+interactions, and open question resolutions in existing papers.
 
 ## Files
 
@@ -26,7 +27,7 @@ Also required:
 
 ## Invocation
 
-Spawn a single `general-purpose` subagent with this prompt:
+Spawn a single `general-purpose` subagent (**model: opus**) with this prompt:
 
 ```
 Read prompts/add_reference/write_analysis/prompt.md and follow those

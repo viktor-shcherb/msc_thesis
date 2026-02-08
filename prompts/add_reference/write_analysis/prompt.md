@@ -482,6 +482,67 @@ many error logs.
 
 ---
 
-This is a **write-only** task. Only write to `references/<SLUG>/analysis.md`
-and the error log at `prompts/add_reference/.errors/write_analysis/`. Do NOT
-modify any files outside those paths.
+## Step 5: Cross-reference update
+
+After writing and verifying `analysis.md`, update the broader reference
+network so other papers link back to this one.
+
+### 5a. Read the new paper's YAML front matter
+
+Note the `cross_references`, `key_claims`, and `open_questions` you just wrote.
+
+### 5b. Add reciprocal cross-references
+
+For every entry in the new paper's `cross_references`:
+1. Open the target paper's `analysis.md`.
+2. Add a reciprocal entry in its `cross_references` YAML block pointing back
+   to SLUG.
+3. Relationship type mapping:
+   - `extends` ↔ `extended-by`
+   - `contradicts` ↔ `contradicts`
+   - `uses-benchmark` — no reciprocal needed
+   - `evaluates` — no reciprocal needed
+   - `concurrent` ↔ `concurrent`
+   - `complementary` ↔ `complementary`
+   - `formalizes` — add `formalized-by` note in target (use `complementary` type)
+4. Skip if the reciprocal entry already exists in the target.
+
+### 5c. Check for claim interactions
+
+If the new paper contests or validates claims from existing papers:
+- Update the `status` and `contested_by` fields on the relevant `key_claims`
+  entries in the existing paper's YAML.
+- Update the existing paper's "Key Claims" prose section if needed.
+
+### 5d. Check for open question resolution
+
+If the new paper addresses an `open_question` from an existing paper:
+- Update the `addressed_by` field in the existing paper's YAML.
+- Add a note in the existing paper's "Open Questions" prose section.
+
+### 5e. Update meta-analyses
+
+Check whether the new paper falls within the corpus of any existing
+meta-analysis in `meta-analysis/` (match on categories, cross-references, or
+keyword overlap). If it does, follow the maintenance procedure in
+`meta-analysis/GUIDELINES.md`.
+
+### 5f. Validate
+
+Run validation to confirm the updates are consistent:
+
+```bash
+python3 references/search.py related <SLUG>
+python3 references/search.py info <SLUG>
+python3 references/search.py contradictions
+```
+
+---
+
+This agent writes to:
+- `references/<SLUG>/analysis.md` (primary output)
+- `references/*/analysis.md` (reciprocal cross-reference updates in Step 5)
+- `meta-analysis/` (maintenance updates in Step 5e, if applicable)
+- `prompts/add_reference/.errors/write_analysis/` (error logs)
+
+Do NOT modify any files outside these paths.

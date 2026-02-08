@@ -8,29 +8,39 @@ categories: ["benchmarking", "long-context-evaluation"]
 scope: ["100K+ token evaluation", "bilingual benchmark", "mixed synthetic and natural tasks"]
 benchmarks_used: ["infinitebench"]
 models_introduced: []
-models_evaluated: ["gpt-4", "claude-2.1", "mistral-7b"]
+models_evaluated: ["gpt-4", "claude-2.1", "mistral-7b", "moonshot-v1-128k"]
 key_claims:
   - id: C1
     claim: "∞Bench is the first LLM benchmark with average data length surpassing 100K tokens, spanning 5 domains in English and Chinese with 12 tasks and 3,946 examples"
     evidence: "Table 1, Table 2, Section 3"
     status: supported
+    scope: "public benchmarks as of Feb 2024, English and Chinese"
+    magnitude: "~200K average token length vs ~10K for LongBench and LRA"
   - id: C2
     claim: "All evaluated models show significant performance degradation at 100K+ contexts compared to shorter contexts"
     evidence: "Table 3, Figure 4, Section 4.3 and 5.1"
     status: supported
+    scope: "4 models (GPT-4, Claude 2, Kimi-Chat, YaRN-Mistral), auto-generated tasks with controllable length"
+    magnitude: "average scores 19.96--45.63%; GPT-4 Code.Run drops from ~75% at depth 2 to ~20% at depth 10"
   - id: C3
     claim: "No consistent lost-in-the-middle effect exists at 100K+ contexts; position-dependent performance is task- and model-specific"
     evidence: "Figure 5, Section 5.2"
     status: supported
     contested_by: 2024-02-lost-in-the-middle
+    scope: "4 models, 3 position-dependent tasks (Retrieve.Number, Retrieve.KV, En.Dia), 100K+ context lengths"
+    magnitude: "qualitative -- no universal U-shaped pattern; GPT-4 favors early answers on KV but later on En.Dia"
   - id: C4
     claim: "Context recalling prompting improves GPT-4 Code.Debug accuracy from 15.74% to 39.59%"
     evidence: "Section 5.3, Figure 6"
     status: supported
+    scope: "GPT-4 only, Code.Debug task only, single prompt comparison"
+    magnitude: "15.74% to 39.59% (2.5x improvement)"
   - id: C5
     claim: "Open-source YaRN-Mistral-7B-128K substantially underperforms proprietary models (19.96% vs 45.63% average)"
     evidence: "Table 3, Section 4.3"
     status: supported
+    scope: "YaRN-Mistral-7B-128K vs GPT-4/Claude 2/Kimi-Chat, all 12 InfiniteBench tasks"
+    magnitude: "19.96% average vs 45.63% (GPT-4), 37.06% (Claude 2), 34.73% (Kimi-Chat); 0% on Retrieve.KV"
 cross_references:
   - target: 2023-12-landmark-attention-infinite-context
     type: extends
@@ -229,12 +239,17 @@ This 2.5x improvement suggests that prompting models to relocate relevant inform
 
 ## Limitations and Failure Modes
 
-1. **Small set of baselines.** Only 4 models are benchmarked, compared to 34+ in later benchmarks like BABILong (Kuratov et al., 2024). The limited model set restricts the generalizability of observed patterns.
-2. **Manual evaluation for two models.** Claude 2 and Kimi-Chat are evaluated by manually entering examples through web interfaces, limiting scalability, reproducibility, and control over decoding parameters (Appendix D).
+1. **[Inferred] Small set of baselines.** Only 4 models are benchmarked, compared to 34+ in later benchmarks like BABILong (Kuratov et al., 2024). The limited model set restricts the generalizability of observed patterns.
+2. **[Inferred] Manual evaluation for two models.** Claude 2 and Kimi-Chat are evaluated by manually entering examples through web interfaces, limiting scalability, reproducibility, and control over decoding parameters (Appendix D).
 3. **Exact match scoring sensitivity.** Performance depends on prompt templates and answer parsing, requiring tailored prompt engineering for each model. The paper acknowledges this "may necessitate tailored redesigns for new model evaluations" (Limitations section).
 4. **100K ceiling may be insufficient.** The authors note that "supporting contexts up to 100K tokens may fall short for applications requiring analysis of extensive datasets, such as multiple books or entire databases." Later benchmarks like BABILong extend to 10M+ tokens.
-5. **No controllable length scaling for realistic tasks.** Unlike BABILong's predefined length splits, ∞Bench's realistic tasks have fixed lengths determined by the source material (novels, code repositories), preventing systematic analysis of performance degradation curves on these tasks.
+5. **[Inferred] No controllable length scaling for realistic tasks.** Unlike BABILong's predefined length splits, ∞Bench's realistic tasks have fixed lengths determined by the source material (novels, code repositories), preventing systematic analysis of performance degradation curves on these tasks.
 6. **Limited diversity of benchmark.** The paper acknowledges that ∞Bench "may not be sufficiently diverse or extensive to provide a comprehensive assessment of model capabilities" (Limitations section).
+
+#### Scope and Comparability
+
+- **What was not tested:** Only 4 models were evaluated (3 proprietary, 1 open-source 7B). No models in the 13B--70B open-source range were tested. No evaluation of retrieval-augmented generation (RAG) approaches as baselines. No evaluation with different decoding strategies (temperature, top-p) -- GPT-4 used default API settings, Claude 2 and Kimi-Chat used web interfaces with no control over decoding parameters. RWKV-4-World-7B was tested (Appendix A, Table 4) but excluded from main results due to being trained on only 4K sequences.
+- **Comparability notes:** Kimi-Chat and Claude 2 were evaluated via manual web interface entry (not API), making exact reproduction impossible and introducing potential variability. Input truncation (center removal) was applied for inputs exceeding model limits, which affects tasks differently depending on where the answer is located -- the Kimi-Chat Retrieve.KV middle-position drop is directly caused by this truncation. ∞Bench's ~200K average length is substantially longer than LongBench (~10K) and L-Eval (up to 60K), so direct cross-benchmark score comparison is not meaningful. The benchmark uses exact match for most tasks, while other benchmarks may use F1 or LLM-as-judge metrics, further limiting cross-benchmark comparability.
 
 ---
 

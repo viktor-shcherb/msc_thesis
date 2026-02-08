@@ -1,0 +1,5 @@
+# 9. Discussion and Conclusion [p. 14]
+
+In this work, Gemma 2 is presented, the newest additions to the Gemma family of open language models for text and code. Distillation is shown to be an effective method for training these models, and the benefits distillation confers over raw text training are demonstrated. Specifically, training over output probabilities can produce superior results over purely next token prediction. The authors hope that releasing these models to the community will unlock access to capabilities previously only seen in large-scale LLMs and fuel future waves of research and development. [p. 14]
+
+While there is inherent risk to an irreversible release of this nature, the extensive safety investigations and responsible deployment procedures give the authors confidence that these models will have a net positive impact on the community. As discussed in the report, there are still many limitations to these models, and future research is required to investigate and improve factuality, robustness to adversarial attacks, reasoning, and alignment. [p. 14]

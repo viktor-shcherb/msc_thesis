@@ -1,0 +1,3 @@
+# 11 Conclusion [p. 36]
+
+[p. 36] The authors proposed a theoretical framework based on well-studied classes of structured matrices that bridges the conceptual gap between SSMs and attention variants. This framework yields insights on how recent SSMs (e.g. Mamba) perform as well as Transformers on language modeling. Moreover, their theoretical tools provide new ideas to improve SSMs (and potentially Transformers) by connecting the algorithmic and systems advances on both sides. As a demonstration, the framework guides their design of a new architecture (Mamba-2) whose core layer is a refinement of Mamba's selective SSM that is 2-8x faster, while continuing to be competitive with Transformers on language modeling.

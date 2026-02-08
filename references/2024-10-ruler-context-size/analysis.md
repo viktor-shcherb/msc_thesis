@@ -8,28 +8,38 @@ categories: ["benchmarking", "long-context-evaluation"]
 scope: ["synthetic long-context benchmark", "multi-task evaluation beyond retrieval"]
 benchmarks_used: ["ruler", "niah", "squad", "hotpotqa"]
 models_introduced: []
-models_evaluated: ["gemini-1.5-pro", "gpt-4", "llama-3-8b", "llama-3-70b", "yi-34b", "mistral-7b", "qwen-series"]
+models_evaluated: ["gemini-1.5-pro", "gpt-4", "llama-3.1-8b", "llama-3.1-70b", "yi-34b", "yi-9b", "yi-6b", "mistral-7b", "qwen-series", "phi-3-medium", "mamba-2.8b", "rwkv-7b"]
 key_claims:
   - id: C1
     claim: "Despite near-perfect vanilla NIAH scores, almost all models exhibit large performance drops on the full RULER suite as context length increases"
     evidence: "Table 3 vs Appendix E (Tables 10-11), Section 4"
     status: supported
+    scope: "17 long-context LMs (7B-8x22B MoE), 13 RULER tasks, 4K-128K context, greedy decoding, BFloat16"
+    magnitude: "All models except Gemini-1.5-Pro fall below 85.6% threshold before claimed context length; e.g., GPT-4 drops from 96.6% at 4K to 81.2% at 128K"
   - id: C2
     claim: "While all models claim context sizes of 32K+ tokens, only half can maintain satisfactory performance at 32K on RULER"
     evidence: "Table 3, effective vs claimed context lengths"
     status: supported
+    scope: "17 long-context LMs, 85.6% Llama2-7B threshold, 13 RULER tasks averaged"
+    magnitude: "~8 of 17 models exceed 85.6% threshold at 32K; effective lengths range from <4K to >128K vs claimed 32K-1M"
   - id: C3
     claim: "Larger model sizes positively correlate with better long-context capabilities on RULER"
     evidence: "Section 6, Figure 4 middle-right; Yi-34B vs Yi-9B vs Yi-6B comparison"
     status: supported
+    scope: "Yi model family only (6B/9B/34B), same 200K training context and data blend"
+    magnitude: "Yi-34B ~93% at 4K vs Yi-6B ~80% at 4K; Yi-34B maintains >70% at 256K vs Yi-6B ~20%"
   - id: C4
     claim: "Training on longer sequences does not always lead to better RULER performance"
     evidence: "Section 6, Figure 4 left and middle-left; LWM-1M worse than LWM-512K at 256K"
     status: supported
+    scope: "LWM-7B series only (128K-1M training lengths), RoPE-based models"
+    magnitude: "LWM-1M ~55% vs LWM-512K ~60% at 256K; abrupt drops at extrapolation boundaries"
   - id: C5
     claim: "Non-Transformer architectures (RWKV, Mamba) lag behind the Transformer baseline by large margins on RULER"
     evidence: "Section 6, Figure 4 right"
     status: supported
+    scope: "RWKV-v5-7B and Mamba-2.8B-slimpj only, 1K-8K context range"
+    magnitude: "RWKV-v5 ~50% at 1K vs Llama2-7B ~85% at 4K; Mamba ~40% at 1K, both degrade to ~15-20% by 8K"
 cross_references:
   - target: 2023-11-needle-in-a-haystack
     type: extends
@@ -102,7 +112,7 @@ open_questions:
 
 The needle-in-a-haystack (NIAH) test (Kamradt, 2023) has become the standard synthetic evaluation for long-context language models, but it measures only a superficial form of long-context understanding: retrieving a single piece of information from distractor text. Models achieving near-perfect NIAH scores may still fail at tasks requiring multi-hop tracing, aggregation, or robust retrieval under harder conditions (e.g., many distractors, multiple needles, non-standard needle types).
 
-Existing realistic benchmarks (ZeroSCROLLS, L-Eval, LongBench, InfiniteBench) offer task diversity but lack control over sequence length and task complexity. Their reliance on parametric knowledge confounds measurement of genuine long-context utilization (Shaham et al., 2023; Bai et al., 2023). Purely synthetic benchmarks like passkey retrieval or key-value retrieval offer controllability but cover only retrieval. **The core challenge is how to build a synthetic benchmark that is both controllable (arbitrary sequence length and complexity) and comprehensive (testing behaviors beyond simple retrieval).**
+Existing realistic benchmarks (ZeroSCROLLS, L-Eval, LongBench, InfiniteBench) offer task diversity but lack control over sequence length and task complexity. Their reliance on parametric knowledge confounds measurement of genuine long-context utilization (Shaham et al., 2023; Bai et al., 2023). Purely synthetic benchmarks like passkey retrieval or key-value retrieval offer controllability but cover only retrieval (Table 1, Section 1). **The core challenge is how to build a synthetic benchmark that is both controllable (arbitrary sequence length and complexity) and comprehensive (testing behaviors beyond simple retrieval).**
 
 ---
 
@@ -127,7 +137,7 @@ RULER generates evaluation examples automatically from input configurations (Tab
 
 **Retrieval tasks (NIAH variants).** Each task inserts key-value pair "needles" into a "haystack" of distractor text. The query appears at the end of the sequence and cues matching keys to retrieve associated values. Four sub-tasks test distinct retrieval capabilities:
 
-- **Single NIAH (S-NIAH):** Vanilla retrieval of one needle. The needle format is "the special magic number for XXX is: YYY". Query/key/value can be words, 7-digit numbers, or 32-digit UUIDs. The haystack can be repeated noise sentences (Mohtashami & Jaggi, 2023) or Paul Graham essays (Kamradt, 2023) (Section 3.1).
+- **Single NIAH (S-NIAH):** Vanilla retrieval of one needle. The needle format is "the special magic number for XXX is: YYY" (Liu et al., 2024a). Query/key/value can be words, 7-digit numbers, or 32-digit UUIDs. The haystack can be repeated noise sentences (Mohtashami & Jaggi, 2023) or Paul Graham essays (Kamradt, 2023) (Section 3.1).
 - **Multi-keys NIAH (MK-NIAH):** Multiple needles inserted, only one must be retrieved. The additional needles are hard distractors. The most challenging variant fills the entire haystack with distractor needles (Section 3.1).
 - **Multi-values NIAH (MV-NIAH):** Multiple needles share the same key. All associated values must be retrieved (Section 3.1).
 - **Multi-queries NIAH (MQ-NIAH):** Multiple needles with distinct keys, all must be retrieved. This is the same multi-query associative recall task setup used by Arora et al. (2024) (Section 3.1).
@@ -136,11 +146,11 @@ RULER generates evaluation examples automatically from input configurations (Tab
 
 **Common Words Extraction (CWE).** Words are sampled from discrete uniform distributions: a fixed number of common words (each appearing `freq_cw` times) and a growing number of uncommon words (each appearing `freq_ucw` times, with `freq_ucw < freq_cw`). The number of uncommon words increases with sequence length. The model must return the top-K most frequent words (K = number of common words). One in-context demonstration is included (Section 3.3, Appendix D).
 
-**Frequent Words Extraction (FWE).** Words are sampled from a Zeta distribution inspired by Zipf's Law. The frequency of the k-th ranked word is:
+**Frequent Words Extraction (FWE).** Words are sampled from a Zeta distribution inspired by Zipf's Law (Kingsley Zipf, 1932). The frequency of the k-th ranked word is:
 
-> freq(k) = k^{-α} · N / ζ(α)
+> freq(k) = k^{-alpha} * N / zeta(alpha)
 
-where N is the total number of words (determined by context size) and ζ(α) is the Zeta function. The top-ranked word is set to noise. The model must return the top-3 most frequent words. Lower values of α make the task harder by reducing frequency differences between words (Section 3.3, footnote 4, Figure 1).
+where N is the total number of words (determined by context size) and zeta(alpha) is the Zeta function. The top-ranked word is set to noise. The model must return the top-3 most frequent words. Lower values of alpha make the task harder by reducing frequency differences between words (Section 3.3, footnote 4, Figure 1).
 
 **Question Answering (QA).** Golden paragraphs from SQuAD (Rajpurkar et al., 2018) or HotpotQA (Yang et al., 2018) are embedded among randomly sampled distractor paragraphs from the same dataset. The number of distractor paragraphs scales with context length. This is a real-world adaptation (Ivgi et al., 2023) of NIAH, where the question serves as the query and the golden paragraphs are the needles (Section 3.4).
 
@@ -148,37 +158,42 @@ where N is the total number of words (determined by context size) and ζ(α) is 
 
 - **Models:** 17 long-context LLMs in the main evaluation (15 open-source, 2 closed-source: Gemini-1.5-Pro and GPT-4), covering 7B to 8x22B (MoE) parameters and claimed context lengths from 32K to 1M. An additional 7 base models, model series for ablation (Yi-6B/9B/34B, LWM-128K/256K/512K/1M), and 2 non-Transformer models (RWKV-v5-7B, Mamba-2.8B-slimpj) bring the total to 37 models (Table 4, Appendix A).
 - **Inference:** All models evaluated using vLLM (Kwon et al., 2023), BFloat16, 8 NVIDIA A100 GPUs, greedy decoding.
-- **Task configurations:** 13 representative tasks selected via a correlational study on 8 open-source models across 18 configurations, using agglomerative clustering with correlation coefficient distance. The four categories form cohesive non-redundant clusters; 5 redundant tasks were eliminated (Appendix C, Figure 5). Final 13 tasks (Table 5): S-NIAH (3 subtasks: passkey retrieval, vanilla NIAH, word-UUID), MK-NIAH (3 subtasks: 4 keys, line retrieval, KV retrieval), MV-NIAH (4 values), MQ-NIAH (4 queries), VT (1 chain, 4 hops), CWE (freq_cw=30, freq_ucw=3, num_cw=10), FWE (α=2.0), QA (SQuAD, HotpotQA).
+- **Task configurations:** 13 representative tasks selected via a correlational study on 8 open-source models across 18 configurations, using agglomerative clustering with correlation coefficient distance. The four categories form cohesive non-redundant clusters; 5 redundant tasks were eliminated (Appendix C, Figure 5). Final 13 tasks (Table 5): S-NIAH (3 subtasks: passkey retrieval, vanilla NIAH, word-UUID), MK-NIAH (3 subtasks: 4 keys, line retrieval, KV retrieval), MV-NIAH (4 values), MQ-NIAH (4 queries), VT (1 chain, 4 hops), CWE (freq_cw=30, freq_ucw=3, num_cw=10), FWE (alpha=2.0), QA (SQuAD, HotpotQA).
 - **Evaluation:** 500 examples per task per length from the series (4K, 8K, 16K, 32K, 64K, 128K). Each model's chat template is applied. An answer prefix is appended to prevent refusals. Recall-based accuracy checks the presence of target output tokens (Section 4).
 - **Effective context size:** The maximum length at which a model exceeds the Llama2-7B baseline performance at 4K (85.6% averaged across 13 tasks).
 - **Ranking:** Two weighted average scores -- wAvg.(inc) and wAvg.(dec) -- with weights linearly increasing or decreasing with sequence length, simulating usage distributions dominated by longer or shorter sequences respectively (Section 4).
+- **Reproducibility:** Code is open-sourced at https://github.com/hsiehjackson/RULER. Inference uses greedy decoding (deterministic). Number of evaluation seeds is not reported. Hardware details are specified (8x A100 GPUs, BFloat16).
 
 ### Key Results
 
-| Model | Claimed | Effective | 4K | 8K | 16K | 32K | 64K | 128K | Avg. |
-|---|---|---|---|---|---|---|---|---|---|
-| Llama2-7B (baseline) | 4K | - | 85.6 | - | - | - | - | - | - |
-| Gemini-1.5-Pro | 1M | >128K | 96.7 | 95.8 | 96.0 | 95.9 | 95.9 | 94.4 | 95.8 |
-| GPT-4 | 128K | 64K | 96.6 | 96.3 | 95.2 | 93.2 | 87.0 | 81.2 | 91.6 |
-| Llama3.1 (70B) | 128K | 64K | 96.5 | 95.8 | 95.4 | 94.8 | 88.4 | 66.6 | 89.6 |
-| Qwen2 (72B) | 128K | 32K | 96.9 | 96.1 | 94.9 | 94.1 | 79.8 | 53.7 | 85.9 |
-| Command-R-plus (104B) | 128K | 32K | 95.6 | 95.2 | 94.2 | 92.0 | 84.3 | 63.1 | 87.4 |
-| GLM4 (9B) | 1M | 64K | 94.7 | 92.8 | 92.1 | 89.9 | 86.7 | 83.1 | 89.9 |
-| Llama3.1 (8B) | 128K | 32K | 95.5 | 93.8 | 91.6 | 87.4 | 84.7 | 77.0 | 88.3 |
-| Mixtral-8x22B (39B/141B) | 64K | 32K | 95.6 | 94.9 | 93.4 | 90.9 | 84.7 | 31.7 | 81.9 |
-| Yi (34B) | 200K | 32K | 93.3 | 92.2 | 91.3 | 87.5 | 83.2 | 77.3 | 87.5 |
-| Phi3-medium (14B) | 128K | 32K | 93.3 | 93.2 | 91.1 | 86.8 | 78.6 | 46.1 | 81.5 |
-| Mistral-v0.2 (7B) | 32K | 16K | 93.6 | 91.2 | 87.2 | 75.4 | 49.0 | 13.8 | 68.4 |
-| LWM (7B) | 1M | <4K | 82.3 | 78.4 | 73.7 | 69.1 | 68.1 | 65.0 | 72.8 |
-| DBRX (36B/132B) | 32K | 8K | 95.1 | 93.8 | 83.6 | 63.1 | 2.4 | 0.0 | 56.3 |
+| Model | Claimed | Effective | 4K | 8K | 16K | 32K | 64K | 128K | Avg. | wAvg.(inc) | wAvg.(dec) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Llama2 (7B) baseline | 4K | - | 85.6 | | | | | | | | |
+| Gemini-1.5-Pro | 1M | >128K | 96.7 | 95.8 | 96.0 | 95.9 | 95.9 | 94.4 | 95.8 | 95.5 (1st) | 96.1 (1st) |
+| GPT-4 | 128K | 64K | 96.6 | 96.3 | 95.2 | 93.2 | 87.0 | 81.2 | 91.6 | 89.0 (2nd) | 94.1 (2nd) |
+| Llama3.1 (70B) | 128K | 64K | 96.5 | 95.8 | 95.4 | 94.8 | 88.4 | 66.6 | 89.6 | 85.5 (4th) | 93.7 (3rd) |
+| Qwen2 (72B) | 128K | 32K | 96.9 | 96.1 | 94.9 | 94.1 | 79.8 | 53.7 | 85.9 | 79.6 (9th) | 92.3 (4th) |
+| Command-R-plus (104B) | 128K | 32K | 95.6 | 95.2 | 94.2 | 92.0 | 84.3 | 63.1 | 87.4 | 82.7 (7th) | 92.1 (5th) |
+| GLM4 (9B) | 1M | 64K | 94.7 | 92.8 | 92.1 | 89.9 | 86.7 | 83.1 | 89.9 | 88.0 (3rd) | 91.7 (6th) |
+| Llama3.1 (8B) | 128K | 32K | 95.5 | 93.8 | 91.6 | 87.4 | 84.7 | 77.0 | 88.3 | 85.4 (5th) | 91.3 (7th) |
+| GradientAI/Llama3 (70B) | 1M | 16K | 95.1 | 94.4 | 90.8 | 85.4 | 80.9 | 72.1 | 86.5 | 82.8 (6th) | 90.3 (8th) |
+| Mixtral-8x22B (39B/141B) | 64K | 32K | 95.6 | 94.9 | 93.4 | 90.9 | 84.7 | 31.7 | 81.9 | 73.5 (11th) | 90.3 (9th) |
+| Yi (34B) | 200K | 32K | 93.3 | 92.2 | 91.3 | 87.5 | 83.2 | 77.3 | 87.5 | 84.8 (8th) | 90.1 (10th) |
+| Phi3-medium (14B) | 128K | 32K | 93.3 | 93.2 | 91.1 | 86.8 | 78.6 | 46.1 | 81.5 | 74.8 (10th) | 88.3 (11th) |
+| Mistral-v0.2 (7B) | 32K | 16K | 93.6 | 91.2 | 87.2 | 75.4 | 49.0 | 13.8 | 68.4 | 55.6 (13th) | 81.2 (12th) |
+| LWM (7B) | 1M | <4K | 82.3 | 78.4 | 73.7 | 69.1 | 68.1 | 65.0 | 72.8 | 69.9 (12th) | 75.7 (13th) |
+| DBRX (36B/132B) | 32K | 8K | 95.1 | 93.8 | 83.6 | 63.1 | 2.4 | 0.0 | 56.3 | 38.0 (14th) | 74.7 (14th) |
+| Together (7B) | 32K | 4K | 88.2 | 81.1 | 69.4 | 63.0 | 0.0 | 0.0 | 50.3 | 33.8 (15th) | 66.7 (15th) |
+| LongChat (7B) | 32K | <4K | 84.7 | 79.9 | 70.8 | 59.3 | 0.0 | 0.0 | 49.1 | 33.1 (16th) | 65.2 (16th) |
+| LongAlpaca (13B) | 32K | <4K | 60.6 | 57.0 | 56.6 | 43.6 | 0.0 | 0.0 | 36.3 | 24.7 (17th) | 47.9 (17th) |
 
-(Table 3, Section 4. Performance (%) averaged across 13 RULER tasks. Scores exceeding the 85.6% Llama2-7B threshold are underlined in the paper.)
+(Table 3, Section 4. Performance (%) averaged across 13 RULER tasks. Scores exceeding the 85.6% Llama2-7B threshold are underlined in the paper. wAvg.(inc) and wAvg.(dec) aggregate performance with weights linearly increasing or decreasing with sequence length.)
 
-- **Gemini-1.5-Pro** dominates all other models by a large margin, with effective length exceeding 128K (Section 4).
-- **All models claim 32K+ context, but only half maintain satisfactory performance at 32K** on the full RULER suite (Table 3).
+- **Gemini-1.5-Pro** dominates all other models by a large margin, with effective length exceeding 128K and average score of 95.8% (Section 4).
+- **All models claim 32K+ context, but only half maintain satisfactory performance at 32K** on the full RULER suite (Table 3). Models like DBRX (effective 8K), Together (effective 4K), LongChat (<4K), and LongAlpaca (<4K) fall far short of their claimed 32K.
 - **Near-perfect vanilla NIAH performance does not predict RULER performance.** Almost all models achieve near-perfect passkey retrieval and vanilla NIAH scores (Appendix E, Tables 10-11) but degrade substantially on harder tasks (Table 3).
 - **Top open-source models (Llama3.1, Qwen2, Command-R-plus) share traits:** larger model sizes and larger RoPE base frequencies (Xiong et al., 2023). Large training context window is not always necessary -- Qwen2 (trained on 32K) matches or beats models trained on 1M context (Section 4).
-- The two ranking schemes (wAvg.inc and wAvg.dec) produce consistent top-tier rankings (Gemini-1.5 and GPT-4 remain top 2) but diverge for mid-tier models, revealing a **trade-off between absolute short-context performance and relative degradation at long context** (Section 4).
+- The two ranking schemes (wAvg.inc and wAvg.dec) produce consistent top-tier rankings (Gemini-1.5 and GPT-4 remain top 2) but diverge for mid-tier models. For instance, LWM ranks 12th on wAvg.(inc) but 13th on wAvg.(dec), revealing a **trade-off between absolute short-context performance and relative degradation at long context** (Section 4).
 
 ### Task Error Analysis (Yi-34B Case Study)
 
@@ -189,7 +204,7 @@ Yi-34B-200K was evaluated up to 256K tokens with increased task complexity (Sect
 - **Incomplete retrieval:** Increasing queries from 1 to 8 drops performance by ~15 points. With multi-values, Yi outputs duplicated answers instead of the complete set, implying uneven associations between the key and each of its values (Figure 2, middle-right and right).
 - **Tendency to copy from context:** At 128K, over 80% of Yi's CWE output is a verbatim copy of the one-shot example, whereas copying is nonexistent for short sequences. This behavior is also present in LWM and LongAlpaca but less prevalent in Mixtral. When the one-shot example is removed, the model copies the beginning of the input instead, likely due to attention sinks (Xiao et al., 2024b) (Section 5, footnote 7).
 - **Unreliable tracking:** Both more chains and more hops degrade VT performance. Yi returns empty strings or variables from other chains. Degradation in the more-chains setting is most significant at lengths >128K (Figure 3, left and middle-left).
-- **Failure to aggregate:** Some models ignore context and use parametric knowledge instead -- Mistral-v0.2 returns "the", "an", "a" rather than counting words in context. Yi fails to distinguish top-frequent words as the Zeta α parameter decreases (Figure 3, middle-right).
+- **Failure to aggregate:** Some models ignore context and use parametric knowledge instead -- Mistral-v0.2 returns "the", "an", "a" rather than counting words in context. Yi fails to distinguish top-frequent words as the Zeta alpha parameter decreases (Figure 3, middle-right).
 - **Hallucination in QA:** At large context sizes, Yi's performance approaches its no-context baseline. Predictions sometimes are irrelevant to the question and coincide with no-context answers (Figure 3, right).
 
 ### Model Analysis
@@ -210,6 +225,17 @@ The paper explicitly acknowledges four limitations (Section 8):
 2. **Lack of correlation with realistic long-context tasks.** Variable tracking and frequent words extraction are proposed as proxies for real long-context tasks (coreference resolution, summarization), but this proxy relationship is not validated. The authors emphasize RULER should be used as "convenient behavioral checks" rather than preferred over realistic settings such as NoCHA (Karpinska et al., 2024).
 3. **Lack of evaluation on short context.** Tasks are selected to be easy at 4K; increasing task complexity degrades performance at shorter lengths too, but these results are excluded. FlenQA (Levy et al., 2024) has shown degrading performance at just a few thousand tokens.
 4. **Lack of verification of prompt robustness.** Sensitivity to prompt format and fixed hyperparameters (variable name length in VT, synthetic vocabulary size in CWE/FWE) is not studied.
+
+**[Inferred]** All evaluation uses greedy decoding; sensitivity to sampling strategies (temperature, top-p) is not explored, though decoding strategy can significantly affect generation quality at long contexts.
+
+**[Inferred]** The benchmark evaluates only English-language tasks. Generalizability to multilingual settings is unknown.
+
+**[Inferred]** No variance estimates or confidence intervals are reported across the 500 examples per configuration. Without these, it is unclear whether small performance differences between models are statistically significant.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models smaller than 2.8B parameters are absent (Mamba-2.8B is the smallest). No evaluation of retrieval-augmented generation approaches, no testing of instruction-tuned vs. base model variants in a controlled comparison (the main evaluation mixes chat and base models), and no testing beyond 128K for most models (only Yi-34B is extended to 256K). The architecture comparison is limited to only two non-Transformer models (RWKV-v5-7B and Mamba-2.8B-slimpj), both significantly smaller or architecturally different from the Transformer baselines they are compared against.
+- **Comparability notes:** RULER's "effective context size" is defined relative to a Llama2-7B 4K threshold (85.6%), which is benchmark-specific and not comparable to effective context sizes reported in other papers using different definitions (e.g., percentage of 4K performance, passkey accuracy thresholds). The wAvg scores depend on the assumed length distribution (linear increasing/decreasing), making cross-paper ranking comparisons sensitive to this assumption. Models are evaluated using their respective chat templates, introducing a confound: performance differences may partly reflect prompt sensitivity rather than pure long-context capability.
 
 ---
 
@@ -233,15 +259,15 @@ The paper explicitly acknowledges four limitations (Section 8):
 
 ## Key Claims
 
-1. **C1: Near-perfect vanilla NIAH does not predict RULER performance.** Almost all models achieve near-perfect passkey retrieval and vanilla NIAH scores (100% or near-100% for most models at their claimed lengths; Appendix E, Tables 10-11) but exhibit large degradation on the full 13-task RULER suite as context length increases (Table 3, Section 4). **Status: supported.**
+1. **C1: Near-perfect vanilla NIAH does not predict RULER performance.** Almost all models achieve near-perfect passkey retrieval and vanilla NIAH scores (100% or near-100% for most models at their claimed lengths; Appendix E, Tables 10-11) but exhibit large degradation on the full 13-task RULER suite as context length increases (Table 3, Section 4). For example, GPT-4 drops from 96.6% at 4K to 81.2% at 128K. **Scope:** 17 long-context LMs, 13 RULER tasks, 4K-128K, greedy decoding. **Magnitude:** All models except Gemini-1.5-Pro fall below 85.6% threshold before claimed context length. Tested across 17 models and 13 tasks (strong evidence). **Status: supported.**
 
-2. **C2: Only half of 32K+ models maintain satisfactory performance at 32K.** Despite all 17 evaluated models claiming context sizes of 32K or greater, only about half exceed the 85.6% Llama2-7B threshold at 32K tokens (Table 3). **Status: supported.**
+2. **C2: Only half of 32K+ models maintain satisfactory performance at 32K.** Despite all 17 evaluated models claiming context sizes of 32K or greater, only about half exceed the 85.6% Llama2-7B threshold at 32K tokens (Table 3). Effective lengths range from <4K (LongAlpaca, LongChat, LWM) to >128K (Gemini-1.5-Pro). **Scope:** 17 models, 85.6% threshold on 13-task average. **Magnitude:** ~8 of 17 models pass at 32K. Tested across 17 models (strong evidence for the binary threshold claim). **Status: supported.**
 
-3. **C3: Larger model sizes correlate with better long-context capabilities.** Yi-34B-200K significantly outperforms Yi-9B-200K and Yi-6B-200K on RULER, both in absolute 4K performance and relative degradation with context scaling, with all three trained on the same 200K context and data blend (Section 6, Figure 4 middle-right). **Status: supported.**
+3. **C3: Larger model sizes correlate with better long-context capabilities.** Yi-34B-200K significantly outperforms Yi-9B-200K and Yi-6B-200K on RULER, both in absolute 4K performance (~93% vs ~80%) and relative degradation with context scaling, with all three trained on the same 200K context and data blend (Section 6, Figure 4 middle-right). **Scope:** Yi model family only (6B/9B/34B), same training context length and data. **Magnitude:** Yi-34B maintains >70% at 256K vs Yi-6B ~20%. Single model family, 3 sizes (limited evidence -- correlation not tested across diverse architectures). **Status: supported.**
 
-4. **C4: Training on longer sequences does not always improve RULER performance.** In the LWM-7B series, LWM-1M is worse than LWM-512K at 256K, likely due to insufficient training for the new RoPE base frequency. Abrupt drops occur at extrapolation boundaries (Section 6, Figure 4 left and middle-left). **Status: supported.**
+4. **C4: Training on longer sequences does not always improve RULER performance.** In the LWM-7B series, LWM-1M is worse than LWM-512K at 256K (~55% vs ~60%), likely due to insufficient training for the new RoPE base frequency. Abrupt drops occur at extrapolation boundaries (Section 6, Figure 4 left and middle-left). **Scope:** LWM-7B series only (128K-1M training lengths), RoPE-based architecture. **Magnitude:** LWM-1M ~5 points worse than LWM-512K at 256K; abrupt drops at extrapolation boundaries. Single model family, 4-5 training lengths (limited evidence). **Status: supported.**
 
-5. **C5: Non-Transformer architectures lag behind Transformers on RULER.** RWKV-v5-7B and Mamba-2.8B-slimpj underperform the Transformer baseline Llama2-7B by large margins at lengths up to 4K and show significant degradation extending to 8K (Section 6, Figure 4 right). **Status: supported.**
+5. **C5: Non-Transformer architectures lag behind Transformers on RULER.** RWKV-v5-7B and Mamba-2.8B-slimpj underperform the Transformer baseline Llama2-7B by large margins at lengths up to 4K and show significant degradation extending to 8K (Section 6, Figure 4 right). RWKV starts at ~50% at 1K vs Llama2 ~85% at 4K; Mamba starts at ~40%. **Scope:** RWKV-v5-7B and Mamba-2.8B-slimpj only, 1K-8K context range. **Magnitude:** 35-45 percentage point gap at comparable context lengths. Only 2 non-Transformer models tested, with different parameter counts (limited evidence -- Mamba is 2.8B vs 7B Transformer baseline). **Status: supported.**
 
 ---
 

@@ -90,28 +90,30 @@ Cross-paper synthesis documents live in `meta-analysis/`. Guidelines for scoping
 
 ## Prompt system
 
-Agent prompts live in `prompts/`. The main workflow is `add_reference`, which orchestrates four subagent stages to go from a paper title or URL to a complete reference directory with analysis.
+Agent prompts live in `prompts/`. The main workflow is `add_reference`, a Sonnet-orchestrated pipeline that goes from a paper title or URL to a complete reference directory with analysis.
 
 ### How it works
 
 ```
-init_reference → read_paper OR read_sources → write_analysis → cross-reference update
+init_reference → read_paper OR read_sources → verify_reading → write_analysis (incl. cross-reference update)
 ```
 
-1. **init_reference** creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
-2. **read_paper** reads the PDF in overlapping 6-page windows, writing structured notes to `sections/`. For non-standard contributions (blogs, repos, Reddit), **read_sources** fetches web content into `sources/` instead
-3. **write_analysis** synthesizes the notes into `analysis.md` with YAML front matter, all 9 required sections, and 13 style rules
+1. **init_reference** (sonnet) creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
+2. **read_paper** (sonnet) reads the PDF in overlapping 6-page windows, writing structured notes to `sections/`. For non-standard contributions (blogs, repos, Reddit), **read_sources** (sonnet) fetches web content into `sources/` instead
+3. **verify_reading** (opus) checks all section files against the full PDF for completeness, accuracy, reference consistency, and section coverage. Can selectively re-read specific page ranges for critical issues
+4. **write_analysis** (opus) synthesizes the notes into `analysis.md` with YAML front matter, all 9 required sections, and 13 style rules. Also updates reciprocal cross-references, claim interactions, and open questions in existing papers
 
-Every subagent has a **verification mode**: if its output files already exist, it verifies them against ground truth (the PDF or live sources) and rewrites anything that falls short. Errors caught during verification are logged to `prompts/add_reference/.errors/` for prompt improvement.
+Subagents that re-run on already-completed work enter **verification mode**: they verify existing output against ground truth and rewrite anything that falls short. Errors caught during verification are logged to `prompts/add_reference/.errors/` for prompt improvement.
 
 ### Where to find what
 
 | Topic | Location |
 |---|---|
-| Full pipeline + decision tree + batch mode | `prompts/add_reference/README.md` |
+| Full pipeline + decision tree + batch mode + model assignments | `prompts/add_reference/README.md` |
 | `source.md` structure + `cite.bib` rules | `prompts/add_reference/init_reference/prompt.md` |
 | PDF reading procedure + extraction rules | `prompts/add_reference/read_paper/prompt.md` |
 | Non-standard source fetching | `prompts/add_reference/read_sources/prompt.md` |
+| Post-reading verification + targeted re-reads | `prompts/add_reference/verify_reading/prompt.md` |
 | `analysis.md` structure + YAML schema + 13 style rules | `prompts/add_reference/write_analysis/prompt.md` |
 | Controlled vocabularies (categories, benchmarks, models) | `references/metadata.yaml` |
 | Cross-reference types + ontology maintenance | `prompts/add_reference/README.md` § "Ontology maintenance" |

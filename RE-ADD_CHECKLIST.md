@@ -67,22 +67,22 @@ Legend: `S` = standard (has PDF), `N` = non-standard (blog/repo/Reddit)
 | 56 | `2024-05-attention-sinks-streaming` | S | [x] | [x] | [x] |
 | 57 | `2024-05-deepseek-v2-moe` | S | [x] | [x] | [x] |
 | 58 | `2024-05-flashattention-2` | S | [x] | [x] | [x] |
-| 59 | `2024-05-mamba-selective-state-spaces` | S | [x] | [~] | [ ] |
+| 59 | `2024-05-mamba-selective-state-spaces` | S | [x] | [x] | [x] |
 | 60 | `2024-05-ring-attention-near-infinite-context` | S | [x] | [x] | [x] |
-| 61 | `2024-05-yarn-context-extension` | S | [x] | [~] | [ ] |
-| 62 | `2024-06-ada-leval-length-adaptable-benchmark` | S | [ ] | [ ] | [ ] |
-| 63 | `2024-06-effective-long-context-scaling` | S | [ ] | [ ] | [ ] |
-| 64 | `2024-07-llama-3-herd-of-models` | S | [ ] | [ ] | [ ] |
-| 65 | `2024-07-longrope-context-extension` | S | [ ] | [ ] | [ ] |
-| 66 | `2024-07-mamba-2-transformers-ssms` | S | [ ] | [ ] | [ ] |
-| 67 | `2024-07-qwen2-technical-report` | S | [ ] | [ ] | [ ] |
-| 68 | `2024-08-deepseek-moe` | S | [ ] | [ ] | [ ] |
-| 69 | `2024-08-flenqa-input-length-reasoning` | S | [ ] | [ ] | [ ] |
-| 70 | `2024-08-found-in-the-middle` | S | [ ] | [ ] | [ ] |
-| 71 | `2024-08-gemma-2-technical-report` | S | [ ] | [ ] | [ ] |
-| 72 | `2024-08-infinitebench-long-context-evaluation` | S | [ ] | [ ] | [ ] |
-| 73 | `2024-08-l-eval-standardized-evaluation` | S | [ ] | [ ] | [ ] |
-| 74 | `2024-08-longbench-bilingual-benchmark` | S | [ ] | [ ] | [ ] |
+| 61 | `2024-05-yarn-context-extension` | S | [x] | [x] | [x] |
+| 62 | `2024-06-ada-leval-length-adaptable-benchmark` | S | [x] | [x] | [x] |
+| 63 | `2024-06-effective-long-context-scaling` | S | [x] | [x] | [x] |
+| 64 | `2024-07-llama-3-herd-of-models` | S | [x] | [x] | [x] |
+| 65 | `2024-07-longrope-context-extension` | S | [x] | [x] | [x] |
+| 66 | `2024-07-mamba-2-transformers-ssms` | S | [x] | [x] | [x] |
+| 67 | `2024-07-qwen2-technical-report` | S | [x] | [x] | [x] |
+| 68 | `2024-08-deepseek-moe` | S | [x] | [x] | [x] |
+| 69 | `2024-08-flenqa-input-length-reasoning` | S | [x] | [x] | [x] |
+| 70 | `2024-08-found-in-the-middle` | S | [x] | [x] | [x] |
+| 71 | `2024-08-gemma-2-technical-report` | S | [x] | [x] | [x] |
+| 72 | `2024-08-infinitebench-long-context-evaluation` | S | [x] | [x] | [x] |
+| 73 | `2024-08-l-eval-standardized-evaluation` | S | [x] | [x] | [x] |
+| 74 | `2024-08-longbench-bilingual-benchmark` | S | [x] | [x] | [x] |
 | 75 | `2024-08-scaling-llm-test-time-compute` | S | [ ] | [ ] | [ ] |
 | 76 | `2024-10-ruler-context-size` | S | [ ] | [ ] | [ ] |
 | 77 | `2024-10-rwkv-eagle-finch-matrix-states` | S | [ ] | [ ] | [ ] |

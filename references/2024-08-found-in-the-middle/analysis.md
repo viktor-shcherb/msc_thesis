@@ -6,7 +6,7 @@ venue: "Findings of ACL 2024"
 paper_type: conference-paper
 categories: ["position-bias", "attention-analysis"]
 scope: ["positional attention bias in decoder-only LLMs", "RAG performance", "multi-document QA"]
-benchmarks_used: ["natural-questions"]
+benchmarks_used: ["natural-questions", "synthwiki"]
 models_introduced: []
 models_evaluated: ["vicuna-7b-v1.5-16k", "tulu-2-7b"]
 key_claims:
@@ -14,26 +14,38 @@ key_claims:
     claim: "LLMs exhibit a U-shaped positional attention bias where tokens at the beginning and end receive higher attention regardless of content relevance, persisting after random document shuffling"
     evidence: "Figure 4, Section 2.1"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k, K=20 documents, NaturalQuestions, greedy decoding"
+    magnitude: "~4x attention ratio between positions 1/20 and mid-sequence positions 8-12 (0.00020 vs 0.00005)"
   - id: C2
     claim: "Documents receiving higher model attention are disproportionately used in generation: 74% of incorrect predictions use content from the highest-attention half of documents"
     evidence: "Table 1, Section 2.2"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k, K=20, NaturalQuestions, gold doc at position 10, incorrect predictions only"
+    magnitude: "526 out of 712 incorrect examples (74%) vs 186 (26%)"
   - id: C3
     claim: "Model attention decomposes additively into document relevance and positional bias terms, with monotonicity conditions holding in 83% and 72% of tested pairs and 0.76 Spearman rank correlation"
     evidence: "Table 2, Section 3.1"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k, K=20, 100 randomly sampled NaturalQuestions examples"
+    magnitude: "83% valid pairs (Condition 1), 72% valid pairs (Condition 2), 0.76 Spearman rank correlation (linear), 0.75 (log-linear)"
   - id: C4
     claim: "Calibrated attention outperforms existing document ranking methods, achieving 0.7427 and 0.6832 Recall@3 at K=10 and K=20, surpassing the next best method (query generation) by 6-10 points"
     evidence: "Table 3, Section 3.2"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k, NaturalQuestions, gold document placed in the middle, greedy decoding"
+    magnitude: "0.7427 vs 0.6851 (K=10), 0.6832 vs 0.5815 (K=20), improvement of 5.8-10.2 Recall@3 points"
   - id: C5
     claim: "Inference-time attention calibration improves mid-sequence RAG accuracy by 6-15 percentage points across two models and two datasets without any fine-tuning"
     evidence: "Figure 5, Table 5, Section 4.2"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k and Tulu-2-7b, NaturalQuestions and SynthWiki, K=10 and K=20, greedy decoding, last 16 of 32 layers"
+    magnitude: "6-15 pp mid-sequence improvement; calibrated curve above vanilla in 22/24 position-model-dataset combinations"
   - id: C6
     claim: "Attention calibration is complementary to re-ordering methods, providing 2-5 percentage point additional improvements on top of LongLLMLingua-r_k"
     evidence: "Figure 6, Table 5, Section 4.3"
     status: supported
+    scope: "Vicuna-7b-v1.5-16k and Tulu-2-7b, NaturalQuestions and SynthWiki, K=10 and K=20"
+    magnitude: "2-5 pp average accuracy improvement on top of LongLLMLingua-r_k across all tested settings"
 cross_references:
   - target: 2024-02-lost-in-the-middle
     type: extends
@@ -72,7 +84,7 @@ cross_references:
     type: complementary
     detail: "FlenQA shows length degrades reasoning even at optimal positions (key paragraphs first), indicating the positional attention bias identified here is one mechanism but length-induced degradation is broader"
 open_questions:
-  - question: "What is the root cause of positional attention bias — pretraining data distribution, transformer architecture, or optimization process?"
+  - question: "What is the root cause of positional attention bias -- pretraining data distribution, transformer architecture, or optimization process?"
     addressed_by: null
   - question: "What is the optimal set of attention heads to intervene on for attention calibration, rather than applying to all heads in the last 16 layers?"
     addressed_by: null
@@ -81,16 +93,17 @@ open_questions:
   - question: "Can more efficient calibration methods be developed that reduce the O(K) forward pass overhead?"
     addressed_by: null
 ---
+
 # Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization
 
-**Authors:** Cheng-Yu Hsieh, Yung-Sung Chuang, Chun-Liang Li, Zifeng Wang, Long T. Le, Abhishek Kumar, James Glass, Alexander Ratner, Chen-Yu Lee, Ranjay Krishna, Tomas Pfister (University of Washington, MIT, Google Cloud AI Research, Google DeepMind)
+**Authors:** Cheng-Yu Hsieh (University of Washington; Google Cloud AI Research), Yung-Sung Chuang (MIT), Chun-Liang Li (Google Cloud AI Research), Zifeng Wang (Google Cloud AI Research), Long T. Le (Google Cloud AI Research), Abhishek Kumar (Google DeepMind), James Glass (MIT), Alexander Ratner (University of Washington), Chen-Yu Lee (Google Cloud AI Research), Ranjay Krishna (University of Washington), Tomas Pfister (Google Cloud AI Research)
 **Date:** August 2024, Findings of ACL 2024, DOI:10.18653/v1/2024.findings-acl.890 (arXiv:2406.16008)
 
 ---
 
 ## Core Research Problem
 
-Large language models trained to handle long input contexts consistently struggle to locate and use relevant information placed in the middle of their input — the "lost-in-the-middle" phenomenon first characterized by Liu et al. (2023). This U-shaped performance degradation has been observed across multiple decoder-only LLMs (Touvron et al., 2023; Li et al., 2023a; OpenAI, 2022), yet the underlying cause remained poorly understood. Prior mitigation strategies relied on re-ranking documents and re-ordering the most relevant ones to the beginning or end of the context (Jiang et al., 2023; Peysakhovich and Lerer, 2023). However, re-ranking requires additional supervision or dedicated fine-tuning (Karpukhin et al., 2020; Shi et al., 2023c; Sun et al., 2023), and critically, re-ordering does not fundamentally improve LLMs' ability to utilize mid-sequence context — it merely avoids placing important content there.
+Large language models trained to handle long input contexts consistently struggle to locate and use relevant information placed in the middle of their input -- the "lost-in-the-middle" phenomenon first characterized by Liu et al. (2023). This U-shaped performance degradation has been observed across multiple decoder-only LLMs (Touvron et al., 2023; Li et al., 2023a; OpenAI, 2022), yet the underlying cause remained poorly understood. Prior mitigation strategies relied on re-ranking documents and re-ordering the most relevant ones to the beginning or end of the context (Jiang et al., 2023; Peysakhovich and Lerer, 2023). However, re-ranking requires additional supervision or dedicated fine-tuning (Karpukhin et al., 2020; Shi et al., 2023c; Sun et al., 2023), and critically, re-ordering does not fundamentally improve LLMs' ability to utilize mid-sequence context -- it merely avoids placing important content there.
 
 **The core challenge is: identifying what causes the lost-in-the-middle phenomenon and developing an intervention that directly improves LLMs' ability to attend to relevant context regardless of its position in the input.**
 
@@ -122,9 +135,9 @@ where attn(x^doc_{k,i}) is the attention weight on token i of document k when pr
 
 **Two key observations:**
 
-1. **U-shaped attention bias.** Plotting Attn(x^prompt, k) across positions k = 1...20 reveals a U-shaped curve: documents at positions 1 and 20 receive the highest attention, while mid-sequence documents receive the lowest. This pattern persists after randomly shuffling document order, confirming that the bias is positional, not content-driven (Figure 4).
+1. **U-shaped attention bias.** Plotting Attn(x^prompt, k) across positions k = 1...20 reveals a U-shaped curve: documents at positions 1 and 20 receive the highest attention (~0.00020), while mid-sequence documents (positions 8-12) receive the lowest (~0.00005). This pattern persists after randomly shuffling document order, confirming that the bias is positional, not content-driven (Figure 4).
 
-2. **Attention-generation correlation.** Documents receiving higher attention are disproportionately likely to be used in the model's response. This is confirmed both qualitatively — the model's output exhibits a strong bias toward the first-position document regardless of shuffling (Figure 2), measured via TF-IDF similarity between response and each document (Figure 3) — and quantitatively (Table 1):
+2. **Attention-generation correlation.** Documents receiving higher attention are disproportionately likely to be used in the model's response. This is confirmed both qualitatively -- the model's output exhibits a strong bias toward the first-position document regardless of shuffling (Figure 2), measured via TF-IDF similarity between response and each document (Figure 3) -- and quantitatively (Table 1):
 
 | Document attention group | # of examples | % |
 |---|---|---|
@@ -148,7 +161,12 @@ Following Occam's razor, the authors adopt a simple linear model:
 
 > Attn(x^doc, k) = rel(x^doc) + bias(k) + epsilon
 
-This yields a Spearman rank correlation of 0.76 between Attn(x^doc1, k) - Attn(x^doc2, k) and Attn(x^doc1, l) - Attn(x^doc2, l) across quadruplets (x^doc1, x^doc2, k, l), supporting the additive form. A log-linear alternative achieves comparable 0.75 correlation (Appendix C, Table 4).
+This yields a Spearman rank correlation of 0.76 between Attn(x^doc1, k) - Attn(x^doc2, k) and Attn(x^doc1, l) - Attn(x^doc2, l) across quadruplets (x^doc1, x^doc2, k, l), supporting the additive form. A log-linear alternative achieves comparable 0.75 correlation (Appendix C, Table 4):
+
+| Model form of f | Rank correlation |
+|---|---|
+| Linear | 0.76 |
+| Log-linear | 0.75 |
 
 **Calibrated attention via dummy document.** With the additive model, the positional bias can be removed by subtraction. A content-neutral dummy document x^dum is placed at each position k, and its attention is measured:
 
@@ -168,7 +186,7 @@ where alpha_k = Softmax(rel(x^doc_k), t), t is the temperature hyperparameter (s
 
 > Attn_calibrated(x^doc_k) proportional to Softmax(rel(x^doc_k), t)
 
-**Intervention scope.** Attention calibration is applied only to the last 16 of 32 decoder layers (all attention heads in those layers). Intervening on early layers leads to unstable generation (Appendix B).
+**Intervention scope.** Attention calibration is applied only to the last 16 of 32 decoder layers (all attention heads in those layers). Intervening on early layers leads to unstable generation (Appendix B). The temperature t = 5e-5 is robust across all tested settings (Appendix B).
 
 ### Experimental Setup
 
@@ -201,7 +219,9 @@ NaturalQuestions uses the 2655-query subset from Liu et al. (2023) with distract
 - LongLLMLingua-r_k (Jiang et al., 2023): reorder by query generation likelihood.
 - LongLLMLingua-r_k + Calibration: LongLLMLingua-r_k with attention calibration applied on top.
 
-**Hardware:** Two NVIDIA A100 GPUs. Inference: 1-3 hours per dataset. Greedy decoding throughout; no training or hyperparameter search required.
+**Hardware:** Two NVIDIA A100 GPUs. Inference: 1-3 hours per dataset. Greedy decoding throughout; no training or hyperparameter search required. All results are single-run (no variance reported) since greedy decoding is deterministic.
+
+**Reproducibility:** The paper uses publicly available models (Vicuna-7b-v1.5-16k, Tulu-2-7b) and datasets (NaturalQuestions under Apache-2.0, SynthWiki). The method is purely inference-based with a single hyperparameter (t = 5e-5). No code availability is mentioned in the paper.
 
 ### Key Results
 
@@ -215,37 +235,42 @@ NaturalQuestions uses the 2655-query subset from Liu et al. (2023) with distract
 | **Calibrated attention** | **0.7427** | **0.6832** |
 
 - Calibrated attention outperforms vanilla attention by 38-48 Recall@3 points.
-- It also outperforms query generation (the next best method) by 6-10 points.
+- It also outperforms query generation (the next best method) by 5.8-10.2 points.
+- Tested on a single model (Vicuna) and single dataset (NaturalQuestions) for document ranking (limited evidence for ranking claim specifically).
 
-**RAG accuracy with attention calibration (Table 5, selected results for K = 20):**
+**RAG accuracy with attention calibration (Table 5, selected results):**
 
-| Dataset | Model | Method | 1st | 10th | 20th | Avg. |
-|---|---|---|---|---|---|---|
-| NQ | Vicuna | Vanilla | 71.93 | 47.34 | 50.65 | 56.64 |
-| NQ | Vicuna | Calibrated | 66.40 | 56.19 | 51.75 | 58.11 |
-| NQ | Tulu | Vanilla | 56.94 | 35.32 | 46.59 | 46.28 |
-| NQ | Tulu | Calibrated | 57.17 | 43.08 | 61.50 | 53.91 |
-| SynthWiki | Vicuna | Vanilla | 53.73 | 43.63 | 60.20 | 52.52 |
-| SynthWiki | Vicuna | Calibrated | 57.77 | 51.21 | 68.78 | 59.25 |
-| SynthWiki | Tulu | Vanilla | 80.40 | 60.30 | 95.75 | 78.81 |
-| SynthWiki | Tulu | Calibrated | 82.22 | 75.15 | 96.14 | 84.50 |
+| Dataset | Model | Method | K=10 1st | K=10 5th | K=10 10th | K=10 Avg. | K=20 1st | K=20 10th | K=20 20th | K=20 Avg. |
+|---|---|---|---|---|---|---|---|---|---|---|
+| NQ | Vicuna | Vanilla | 74.35 | 54.83 | 52.01 | 60.39 | 71.93 | 47.34 | 50.65 | 56.64 |
+| NQ | Vicuna | Calibrated | 70.84 | 62.61 | 55.78 | 63.07 | 66.40 | 56.19 | 51.75 | 58.11 |
+| NQ | Tulu | Vanilla | 70.50 | 48.81 | 49.26 | 56.19 | 56.94 | 35.32 | 46.59 | 46.28 |
+| NQ | Tulu | Calibrated | 71.52 | 57.13 | 63.54 | 64.06 | 57.17 | 43.08 | 61.50 | 53.91 |
+| SynthWiki | Vicuna | Vanilla | 65.15 | 48.68 | 68.58 | 60.80 | 53.73 | 43.63 | 60.20 | 52.52 |
+| SynthWiki | Vicuna | Calibrated | 68.58 | 53.83 | 74.14 | 65.52 | 57.77 | 51.21 | 68.78 | 59.25 |
+| SynthWiki | Tulu | Vanilla | 92.22 | 81.51 | 94.34 | 89.35 | 80.40 | 60.30 | 95.75 | 78.81 |
+| SynthWiki | Tulu | Calibrated | 92.92 | 87.77 | 95.25 | 91.98 | 82.22 | 75.15 | 96.14 | 84.50 |
 
-- Mid-sequence improvements of 6-15 percentage points across all settings.
+- Mid-sequence improvements of 6-15 percentage points across all settings (tested across 2 models, 2 datasets, 2 context lengths -- moderate evidence).
 - Calibrated attention performance curves lie above vanilla baselines in 22 out of 24 position-model-dataset combinations (Figure 5).
-- Slight performance decrease at position 1 for some settings (e.g., Vicuna on NQ drops from 71.93 to 66.40) reflects the deliberate redistribution of attention away from position-favored documents.
+- Slight performance decrease at position 1 for some settings (e.g., Vicuna on NQ drops from 71.93 to 66.40 at K = 20) reflects the deliberate redistribution of attention away from position-favored documents.
+- Average accuracy improvements range from 1.47 pp (NQ/Vicuna/K=20) to 7.87 pp (NQ/Tulu/K=10).
 
 **Complementarity with re-ordering methods (Table 5, LongLLMLingua-r_k + Calibration, average accuracy):**
 
-| Dataset | K | Model | LongLLMLingua-r_k | LongLLMLingua-r_k + Cal. |
-|---|---|---|---|---|
-| NQ | 10 | Vicuna | 63.95 | 66.17 |
-| NQ | 20 | Vicuna | 59.92 | 62.22 |
-| NQ | 10 | Tulu | 56.39 | 61.31 |
-| NQ | 20 | Tulu | 43.90 | 47.34 |
-| SynthWiki | 10 | Vicuna | 70.50 | 73.43 |
-| SynthWiki | 20 | Vicuna | 62.42 | 66.96 |
+| Dataset | K | Model | LongLLMLingua-r_k | LongLLMLingua-r_k + Cal. | Improvement |
+|---|---|---|---|---|---|
+| NQ | 10 | Vicuna | 63.95 | 66.17 | +2.22 |
+| NQ | 20 | Vicuna | 59.92 | 62.22 | +2.30 |
+| NQ | 10 | Tulu | 56.39 | 61.31 | +4.92 |
+| NQ | 20 | Tulu | 43.90 | 47.34 | +3.44 |
+| SynthWiki | 10 | Vicuna | 70.50 | 73.43 | +2.93 |
+| SynthWiki | 20 | Vicuna | 62.42 | 66.96 | +4.54 |
+| SynthWiki | 10 | Tulu | 94.04 | 94.44 | +0.40 |
+| SynthWiki | 20 | Tulu | 95.45 | 95.75 | +0.30 |
 
-- Calibration provides 2-5 percentage point improvements on top of re-ordering, achieving the highest overall performance across all tested settings.
+- Calibration provides 0.3-4.9 percentage point improvements on top of re-ordering across all 8 dataset-K-model combinations, achieving the highest overall performance.
+- The improvement is smallest on SynthWiki/Tulu where both methods already achieve >94% accuracy (ceiling effect).
 
 ---
 
@@ -259,11 +284,16 @@ The paper explicitly discusses four limitations (Section 6, Limitations):
 
 3. **Positional bias may be beneficial.** In some tasks or scenarios, the natural tendency of models to focus on the beginning and end of inputs could align with the structure of the task or the nature of the data. Blanket removal of positional bias may not always be beneficial. Task-specific assessment is recommended before applying calibration.
 
-4. **Root cause unexplained.** The paper identifies and calibrates the positional attention bias but does not determine its origin — whether it stems from pretraining data distribution, transformer architecture, or optimization process.
+4. **Root cause unexplained.** The paper identifies and calibrates the positional attention bias but does not determine its origin -- whether it stems from pretraining data distribution, transformer architecture, or optimization process.
 
 5. **Performance decrease at favored positions.** Calibrated attention can slightly reduce performance when the gold document is at position 1 (e.g., Vicuna on NQ drops from 71.93 to 66.40 at K = 20), a direct consequence of redistributing attention away from position-favored documents (Table 5). In 2 out of 24 position-model-dataset combinations, calibrated attention slightly underperforms vanilla (Figure 5).
 
-6. **Limited model scale.** Both models evaluated are 7B parameter models. The paper does not test whether the findings generalize to larger models or different architectures. [Inference: not stated explicitly.]
+6. **[Inferred] Limited model scale.** Both models evaluated are 7B parameter models. The paper does not test whether the findings generalize to larger models (13B, 70B) or different architectures (e.g., encoder-decoder, non-RoPE position encodings).
+
+#### Scope and Comparability
+
+- **What was not tested:** Models larger than 7B parameters, non-decoder-only architectures, non-RoPE positional encodings, non-English datasets, tasks beyond multi-document QA (e.g., summarization, multi-hop reasoning, code generation), context lengths beyond 16K tokens, settings with more than 20 documents.
+- **Comparability notes:** The experimental setup follows Liu et al. (2023) exactly (same 2655-query NaturalQuestions subset, same serialization format with question repeated before and after documents), making results directly comparable to the lost-in-the-middle paper. However, comparisons with other position-bias mitigation methods (e.g., PINE, Pos2Distill, single-dimension scaling) are not possible because those papers post-date this work or use different evaluation protocols. The SynthWiki dataset uses randomly ordered distractors (unlike NaturalQuestions which uses relevance-decreasing order), which means the two datasets test somewhat different scenarios. All results use greedy decoding; different decoding strategies may yield different relative improvements.
 
 ---
 
@@ -275,11 +305,11 @@ The paper explicitly discusses four limitations (Section 6, Limitations):
 
 2. **Additive attention decomposition.** Model attention decomposes as rel(x^doc) + bias(k) + epsilon, with 0.76 Spearman rank correlation and monotonicity conditions satisfied in 72-83% of tested pairs (Table 2, Section 3.1).
 
-3. **Calibrated attention mechanism.** Subtracting the attention on a dummy document removes the positional bias, yielding relevance estimates that outperform query generation and relevance prompting by 6-10 Recall@3 points (Table 3, Section 3.2).
+3. **Calibrated attention mechanism.** Subtracting the attention on a dummy document removes the positional bias, yielding relevance estimates that outperform query generation and relevance prompting by 5.8-10.2 Recall@3 points (Table 3, Section 3.2).
 
 4. **Inference-time attention intervention.** Redistributing attention according to calibrated relevance yields 6-15 percentage point improvements on mid-sequence gold documents across two models, two datasets, and two context lengths (Figure 5, Table 5, Section 4.2).
 
-5. **Complementarity with re-ordering.** Attention calibration stacks on top of existing re-ordering pipelines (LongLLMLingua-r_k, prompt reordering, attention sorting), providing a further 2-5 percentage point boost, suggesting calibration addresses a fundamentally different aspect of the problem than re-ordering (Figure 6, Table 5, Section 4.3).
+5. **Complementarity with re-ordering.** Attention calibration stacks on top of existing re-ordering pipelines (LongLLMLingua-r_k, prompt reordering, attention sorting), providing a further 0.3-4.9 percentage point boost, suggesting calibration addresses a fundamentally different aspect of the problem than re-ordering (Figure 6, Table 5, Section 4.3).
 
 6. **Training-free approach.** The method works as a pure inference-time intervention requiring no fine-tuning, additional training data, or model modifications. The only hyperparameter (temperature t = 5e-5) is robust across all tested settings (Appendix B).
 
@@ -287,7 +317,7 @@ The paper explicitly discusses four limitations (Section 6, Limitations):
 
 1. **Models can find relevant context in the middle.** The results challenge the view that LLMs inherently cannot use mid-sequence information. Models do attend to relevant documents even in the middle, but the positional bias masks this signal. Removing the bias reveals latent retrieval capability. [Speculative: may not hold for all model families or scales.]
 
-2. **Attention bias as a general problem.** The U-shaped attention bias may affect tasks beyond multi-document QA, including summarization (Ravaut et al., 2023) and other long-context applications. Calibration-style interventions may be broadly applicable. [Speculative: not validated outside RAG.]
+2. **Attention bias as a general problem.** The U-shaped attention bias may affect tasks beyond multi-document QA, including summarization (Ravaut et al., 2023) and other long-context applications. Calibration-style interventions may be broadly applicable. [Speculative: not validated outside RAG in this paper.]
 
 3. **Root cause investigation needed.** Understanding whether positional bias originates from pretraining data, architecture, or optimization could lead to architectural improvements that eliminate the bias at training time rather than requiring inference-time correction.
 
@@ -295,17 +325,17 @@ The paper explicitly discusses four limitations (Section 6, Limitations):
 
 ## Key Claims
 
-1. **C1: U-shaped positional attention bias exists in decoder-only LLMs.** Documents at the beginning and end of the input receive higher attention weights regardless of content, and this persists after random shuffling of document order (Figure 4, Section 2.1). Status: **supported**.
+1. **C1: U-shaped positional attention bias exists in decoder-only LLMs.** Documents at the beginning and end of the input receive higher attention weights (~0.00020) regardless of content, while mid-sequence documents receive lower weights (~0.00005). This persists after random shuffling of document order (Figure 4, Section 2.1). Scope: Vicuna-7b-v1.5-16k, K=20, NaturalQuestions. Evidence: single model, one dataset, but confirmed across both original and shuffled orderings (moderate evidence). Status: **supported**.
 
-2. **C2: Attention-generation correlation.** 74% of incorrect predictions incorporate content from the highest-attention half of documents, establishing a direct link between positional attention bias and the lost-in-the-middle performance degradation (Table 1, Section 2.2). Status: **supported**.
+2. **C2: Attention-generation correlation.** 74% of incorrect predictions (526/712) incorporate content from the highest-attention half of documents, establishing a direct link between positional attention bias and the lost-in-the-middle performance degradation (Table 1, Section 2.2). Scope: Vicuna-7b-v1.5-16k, K=20, NaturalQuestions, gold doc at position 10, incorrect predictions only. Evidence: single model, single dataset, single position (limited evidence for generality). Status: **supported**.
 
-3. **C3: Additive attention decomposition.** Model attention decomposes as relevance + positional bias + noise, validated by monotonicity conditions (83% and 72%) and 0.76 Spearman rank correlation across document-position quadruplets (Table 2, Section 3.1). Status: **supported**.
+3. **C3: Additive attention decomposition.** Model attention decomposes as relevance + positional bias + noise, validated by monotonicity conditions (83% and 72%) and 0.76 Spearman rank correlation across document-position quadruplets (Table 2, Section 3.1). Log-linear alternative achieves competitive 0.75 correlation (Table 4, Appendix C). Scope: Vicuna-7b-v1.5-16k, K=20, 100 randomly sampled NaturalQuestions examples. Evidence: single model, 100 examples (limited evidence for generality of decomposition). Status: **supported**.
 
-4. **C4: Calibrated attention outperforms existing ranking methods.** Achieves 0.7427 and 0.6832 Recall@3 at K = 10 and K = 20, surpassing query generation (0.6851 and 0.5815) and vanilla attention (0.3638 and 0.2052) (Table 3, Section 3.2). Status: **supported**.
+4. **C4: Calibrated attention outperforms existing ranking methods.** Achieves 0.7427 and 0.6832 Recall@3 at K = 10 and K = 20, surpassing query generation (0.6851 and 0.5815) and vanilla attention (0.3638 and 0.2052) (Table 3, Section 3.2). Scope: Vicuna-7b-v1.5-16k, NaturalQuestions, gold in middle, greedy decoding. Evidence: single model, single dataset for ranking evaluation (limited evidence). Status: **supported**.
 
-5. **C5: Attention calibration improves mid-sequence RAG accuracy by 6-15 percentage points.** Performance curves lie above vanilla baselines in 22 out of 24 position-model-dataset combinations (Figure 5, Table 5, Section 4.2). Status: **supported**.
+5. **C5: Attention calibration improves mid-sequence RAG accuracy by 6-15 percentage points.** Performance curves lie above vanilla baselines in 22 out of 24 position-model-dataset combinations (Figure 5, Table 5, Section 4.2). Scope: 2 models (both 7B), 2 datasets, K=10 and K=20, greedy decoding, last 16/32 layers. Evidence: tested across 2 models, 2 datasets, 2 context lengths (moderate evidence, though both models are 7B scale). Status: **supported**.
 
-6. **C6: Calibration is complementary to re-ordering.** Applying calibration on top of LongLLMLingua-r_k yields 2-5 percentage point additional improvements, achieving the highest overall RAG performance across all tested settings (Figure 6, Table 5, Section 4.3). Status: **supported**.
+6. **C6: Calibration is complementary to re-ordering.** Applying calibration on top of LongLLMLingua-r_k yields 0.3-4.9 percentage point additional improvements across all 8 tested settings (Figure 6, Table 5, Section 4.3). Scope: same as C5. Evidence: consistent across all 8 dataset-K-model combinations (moderate evidence). Status: **supported**.
 
 ---
 

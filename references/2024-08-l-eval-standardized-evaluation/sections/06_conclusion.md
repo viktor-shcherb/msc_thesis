@@ -1,0 +1,3 @@
+# 6 Conclusion [p. 9–10]
+
+[p. 9–10] The much-needed rigorous benchmark L-Eval introduced in this work provides a comprehensive suite of tasks and evaluation metrics to assess the capabilities of long context language models. Most open-source LCLMs were tested and experiments demonstrate promising gains from extending context length and gaps compared to commercial models. The analysis using L-Eval offers valuable insights into the current state and limitations of LCLMs. The authors believe that with its focus on practical, long-form documents across domains, L-Eval can serve as a challenging testbed to drive advances in modeling longer contexts. [p. 9–10]
