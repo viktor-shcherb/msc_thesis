@@ -1,0 +1,5 @@
+# Acknowledgements [p. 57–58]
+
+[p. 57–58] This work was supported as part of the Swiss AI Initiative by a grant from the Swiss National Supercomputing Centre (CSCS) under project ID a06 on Alps.
+
+The authors are grateful to the management teams of EPFL, ETH Zurich and CSCS, the Hugging Face research team, the PublicAI team, Swisscom, as well as the following individuals: Abdessalam Derouich, Alex Dremov, Anaelle Toure, Atli Kosson, Chris Wendler, Christiane Sibille, Dan Alistarh, Daniel Dobos, David Atienza, Deniz Bayazit, Fabio Rinaldi, Florian Meyer, Gael Hurlimann, Guilherme Penedo, Helga Rietz, Hynek Kydlicek, Ignacio Perez Prat and all of Lia Rumantscha, James Henderson, Khadidja Malleck, Leandro Von Werra, Lonneke van der Plas, Loubna Ben Allal, Marcel Salathe, Maria Grazia Giuffreda, Mark Cieliebak, Mary-Anne Hartley, Mateo Muller, Melissa Anchisi, Mrinmaya Sachan, Pascal Frossard, Rico Sennrich, Robert West, Rudiger Urbanke, Simon Scandella, Stefan Bechtold, Stella Biderman, Timo Kehrer.

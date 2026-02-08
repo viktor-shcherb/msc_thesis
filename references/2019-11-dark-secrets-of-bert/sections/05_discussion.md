@@ -1,0 +1,7 @@
+# 5 Discussion [p. 8-9]
+
+[p. 8-9] In general, the results suggest that even the smaller base BERT model is significantly overparametrized. This is supported by the discovery of repeated self-attention patterns in different heads, as well as the fact that disabling both single and multiple heads is not detrimental to model performance and in some cases even improves it.
+
+The authors found no evidence that attention patterns that are mappable onto core frame-semantic relations actually improve BERT's performance. 2 out of 144 heads that seem to be "responsible" for these relations (see Section 4.2) do not appear to be important in any of the GLUE tasks: disabling of either one does not lead to a drop of accuracy. This implies that fine-tuned BERT does not rely on this piece of semantic information and prioritizes other features instead.
+
+[p. 9] For instance, both STS-B and RTE fine-tuned models rely on attention in the same pair of heads (head 1 in the fourth layer, and head 12 in the second layer), as shown in Figure 8. The authors manually checked the attention maps in those heads for a set of random inputs, and established that both of them have high weights for words that appear in both sentences of the input examples. This most likely means that word-by-word comparison of the two sentences provides a solid strategy of making a classification prediction for STS-B and RTE. They were not able to find a conceptually similar interpretation of heads important for other tasks.

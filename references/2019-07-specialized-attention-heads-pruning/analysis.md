@@ -14,26 +14,34 @@ key_claims:
     claim: "Only a small subset of encoder attention heads are important for translation: 10 out of 48 on WMT EN-RU (-0.15 BLEU) and 4 out of 48 on OpenSubtitles EN-RU (-0.25 BLEU)"
     evidence: "Section 6.2.1, Figure 7"
     status: supported
+    scope: "Transformer base encoder self-attention, EN-RU, WMT 2.5M and OpenSubtitles 6M"
+    magnitude: "-0.15 BLEU with 10/48 heads (WMT), -0.25 BLEU with 4/48 heads (OpenSubtitles)"
   - id: C2
     claim: "Three types of specialized heads emerge consistently across language pairs: positional (attending to adjacent tokens), syntactic (tracking dependency relations), and rare-word (attending to least frequent tokens)"
     evidence: "Section 5, Figures 1c, 2b, 2d, Table 1"
     status: supported
+    scope: "Transformer base encoder, EN-RU/EN-DE/EN-FR on WMT 2.5M, EN-RU on OpenSubtitles 6M"
   - id: C3
     claim: "Specialized heads are the last to be pruned by the differentiable L0 method, confirming their importance independently of LRP"
     evidence: "Section 6.2.2, Figure 8"
     status: supported
+    scope: "Transformer base encoder, EN-RU OpenSubtitles"
   - id: C4
     claim: "Encoder self-attention heads are the most compressible attention type; decoder-encoder attention heads are the least compressible"
     evidence: "Section 6.3.2, Figure 9"
     status: supported
+    scope: "Transformer base, EN-RU, WMT and OpenSubtitles"
   - id: C5
     claim: "Models trained from scratch with the same sparse head configuration underperform pruned models by 0.15-0.50 BLEU"
     evidence: "Section 6.3.1, Table 2"
     status: supported
+    scope: "Transformer base, EN-RU, WMT 2.5M and OpenSubtitles 6M"
+    magnitude: "0.15-0.50 BLEU degradation vs. pruned models"
   - id: C6
     claim: "When heads are pruned, remaining heads acquire additional functions (function drift): positional heads begin tracking syntactic dependencies"
     evidence: "Section 6.2.2, Figure 8"
     status: supported
+    scope: "Transformer base encoder, EN-RU OpenSubtitles"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends

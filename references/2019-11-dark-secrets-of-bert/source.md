@@ -1,7 +1,7 @@
 # Revealing the Dark Secrets of BERT
 
 **Authors:** Olga Kovaleva, Alexey Romanov, Anna Rogers, Anna Rumshisky
-**Affiliation:** University of Massachusetts Lowell
+**Affiliation:** Department of Computer Science, University of Massachusetts Lowell, Lowell, MA 01854
 
 ## Publication Status
 

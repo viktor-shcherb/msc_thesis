@@ -14,30 +14,44 @@ key_claims:
     claim: "Feed-forward layers are mathematically equivalent to unnormalized key-value memories, differing from neural memory only in the non-linearity (ReLU vs softmax)"
     evidence: "Section 2, comparison of Equations 1 and 2"
     status: supported
+    scope: "any Transformer with ReLU FF layers"
+    magnitude: "qualitative"
   - id: C2
     claim: "Keys capture human-interpretable input patterns: experts identified at least one pattern for every sampled key, with an average of 3.6 patterns per key and 65-80% of trigger examples covered"
     evidence: "Section 3.2, Figure 2"
     status: supported
+    scope: "16-layer 247M-param Transformer LM on WikiText-103, 160 sampled keys (10 per layer)"
+    magnitude: "3.6 patterns/key, 65-80% trigger coverage"
   - id: C3
     claim: "Lower layers (1-9) detect shallow patterns (n-grams, shared last word) while upper layers (10-16) detect semantic patterns (topics, relations)"
-    evidence: "Section 3.2, Figure 2, Table 1"
+    evidence: "Section 3.2, Figure 2, Table 1, Figure 3"
     status: supported
+    scope: "16-layer 247M-param Transformer LM on WikiText-103, 160 annotated keys + 1600 ablation keys"
+    magnitude: "last-token removal causes 65-70% drop in layer 1 vs ~20% in layer 16"
   - id: C4
     claim: "Values in upper layers (11-16) induce output distributions that agree with key trigger patterns at 3.5%, orders of magnitude above the 0.0004% random baseline"
     evidence: "Section 4, Figure 4"
     status: supported
+    scope: "16-layer 247M-param Transformer LM on WikiText-103, all 65,536 keys; assumes shared embedding space across layers"
+    magnitude: "3.5% agreement rate vs 0.0004% random baseline (8750x improvement)"
   - id: C5
     claim: "Feed-forward layer outputs are compositional: in at least 68% of examples, the layer's top prediction differs from every individual memory's top prediction"
     evidence: "Section 5.1, Figure 8"
     status: supported
+    scope: "16-layer 247M-param Transformer LM, 4000 random validation prefixes"
+    magnitude: ">=68% zero-agreement rate across all layers"
   - id: C6
     claim: "The model refines predictions across layers via residual connections, with roughly a third of predictions determined in the bottom layers and the rest refined through upper layers"
-    evidence: "Section 5.2, Figure 9"
+    evidence: "Section 5.2, Figure 9, Figure 10"
     status: supported
+    scope: "16-layer 247M-param Transformer LM, 4000 random validation prefixes"
+    magnitude: "~33% of final predictions determined by bottom layers, rapid growth from layer 10"
   - id: C7
     claim: "When the residual's prediction changes at a layer, it rarely changes to the FFN layer's prediction; instead a compromise prediction emerges from composing the two distributions"
     evidence: "Section 5.2, Figure 11"
     status: supported
+    scope: "16-layer 247M-param Transformer LM, 4000 random validation prefixes, 100 manually analyzed last-layer composition cases"
+    magnitude: "66/100 last-layer composition cases produce semantically distant changes, 34/100 produce semantically related changes"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -77,9 +91,9 @@ open_questions:
 
 ## Core Research Problem
 
-Transformer-based language models (Vaswani et al., 2017) rely on intertwined self-attention and feed-forward layers. While much literature has been devoted to analyzing the function of self-attention layers -- characterizing specialized attention heads (Voita et al., 2019), BERT's attention patterns (Clark et al., 2019), and the structure of attention in language models (Vig and Belinkov, 2019) -- self-attention accounts for only a third of a typical transformer's parameters (4d^2 per layer, where d is the hidden dimension). The remaining two-thirds of the parameter budget (8d^2 per layer) are spent on position-wise feed-forward layers, yet their role in the network remains under-explored.
+Transformer-based language models (Vaswani et al., 2017) rely on intertwined self-attention and feed-forward layers. While much literature has been devoted to analyzing the function of self-attention layers -- characterizing specialized attention heads (Voita et al., 2019), BERT's attention patterns (Clark et al., 2019), and the structure of attention in language models (Vig and Belinkov, 2019) -- self-attention accounts for only **a third of a typical transformer's parameters** (4d^2 per layer, where d is the hidden dimension). The remaining two-thirds of the parameter budget (8d^2 per layer) are spent on position-wise feed-forward layers, yet their role in the network remains under-explored (Section 1).
 
-Sukhbaatar et al. (2019) noted the theoretical similarity between feed-forward layers and key-value memories, and reparameterized feed-forward parameters as persistent memory cells in the self-attention layers. While this reparameterization works in practice, the experiment does not characterize what information these layers actually store or how they contribute to the model's predictions.
+Sukhbaatar et al. (2019) noted the theoretical similarity between feed-forward layers and key-value memories, and reparameterized feed-forward parameters as persistent memory cells in the self-attention layers. While this reparameterization works in practice, the experiment does not characterize what information these layers actually store or how they contribute to the model's predictions (Section 2).
 
 **The core challenge is: what function do feed-forward layers serve in a transformer language model, and what information do they store?**
 
@@ -87,11 +101,11 @@ Sukhbaatar et al. (2019) noted the theoretical similarity between feed-forward l
 
 ## Problem Solutions
 
-The paper proposes that feed-forward layers operate as unnormalized key-value memories, where the first parameter matrix acts as keys and the second as values. The key contributions are:
+The paper proposes that feed-forward layers operate as **unnormalized key-value memories**, where the first parameter matrix acts as keys and the second as values. The key contributions are:
 
-1. **Keys capture human-interpretable input patterns.** Each key vector correlates with specific textual patterns in the training data -- shallow patterns (e.g., n-grams) in lower layers and semantic patterns (e.g., topics) in upper layers.
-2. **Values represent next-token distributions.** Each value vector, when projected onto the output vocabulary, induces a distribution that correlates with the next-token distribution of the corresponding key's trigger patterns, particularly in upper layers.
-3. **Memory composition and residual refinement.** The model's output is formed by first composing hundreds of active memories within each layer (intra-layer composition), then refining predictions across layers via residual connections (inter-layer refinement).
+1. **Keys capture human-interpretable input patterns.** Each key vector correlates with specific textual patterns in the training data -- shallow patterns (e.g., n-grams) in lower layers and semantic patterns (e.g., topics) in upper layers (Section 3).
+2. **Values represent next-token distributions.** Each value vector, when projected onto the output vocabulary, induces a distribution that correlates with the next-token distribution of the corresponding key's trigger patterns, particularly in upper layers (Section 4).
+3. **Memory composition and residual refinement.** The model's output is formed by first composing hundreds of active memories within each layer (intra-layer composition), then refining predictions across layers via residual connections (inter-layer refinement) (Section 5).
 
 ---
 
@@ -101,13 +115,13 @@ The paper proposes that feed-forward layers operate as unnormalized key-value me
 
 The paper establishes the key-value memory interpretation by comparing the mathematical form of feed-forward layers with neural memories. A feed-forward layer processes an input vector x in R^d as (bias terms omitted):
 
-> FF(x) = f(x * K^T) * V
+> FF(x) = f(x * K^T) * V    (Equation 1)
 
 where K, V in R^{d_m x d} are parameter matrices and f is a non-linearity such as ReLU. A neural memory (Sukhbaatar et al., 2015) computes:
 
-> MN(x) = softmax(x * K^T) * V
+> MN(x) = softmax(x * K^T) * V    (Equation 2)
 
-The only difference is the non-linearity: neural memory uses softmax (producing a normalized distribution over keys), while the standard transformer uses ReLU (producing unnormalized non-negative coefficients). The hidden dimension d_m is the number of memories in the layer. The activation m = f(x * K^T), commonly called the hidden layer, is a vector of **memory coefficients**, one per memory cell (Section 2, Equations 1--2).
+The **only difference** is the non-linearity: neural memory uses softmax (producing a normalized distribution over keys), while the standard transformer uses ReLU (producing unnormalized non-negative coefficients). The hidden dimension d_m is the number of memories in the layer. The activation m = f(x * K^T), commonly called the hidden layer, is a vector of **memory coefficients**, one per memory cell (Section 2, Equations 1--2).
 
 The paper then investigates three questions empirically: (1) what patterns do keys detect (Section 3), (2) what distributions do values encode (Section 4), and (3) how do individual memory cells compose to form the model's output (Section 5).
 
@@ -121,7 +135,7 @@ The paper then investigates three questions empirically: (1) what patterns do ke
 
 > p^l_i = softmax(v^l_i * E)
 
-The distribution p^l_i is uncalibrated (since v^l_i is normally scaled by the input-dependent memory coefficient), but the ranking it induces is invariant to the coefficient. This conversion assumes that all layers operate in the same embedding space -- acknowledged by the authors as a simplification. In practice, the adaptive softmax of Baevski and Auli (2019) is used to compute probabilities. The **agreement rate** measures how often the value's top-ranked token (argmax(p^l_i)) matches the next token in the key's top-1 trigger example (w^l_i).
+The distribution p^l_i is uncalibrated (since v^l_i is normally scaled by the input-dependent memory coefficient), but the ranking it induces is invariant to the coefficient. This conversion assumes that all layers operate in the same embedding space -- acknowledged by the authors as a simplification. In practice, the adaptive softmax of Baevski and Auli (2019) is used to compute probabilities. The **agreement rate** measures how often the value's top-ranked token (argmax(p^l_i)) matches the next token in the key's top-1 trigger example (w^l_i) (Section 4).
 
 **Detecting predictive values (Section 4).** To identify values with high agreement automatically, the authors analyzed max(p^l_i) across all layers and dimensions. Values with higher maximum probabilities are more likely to agree with their key's top trigger example (Figure 6). The 100 values with highest max(p^l_i) were selected for detailed analysis.
 
@@ -137,7 +151,7 @@ The paper defines top(h) = argmax(h * E) as the top prediction from any vector, 
 > y^l = FF(x^l)
 > o^l = y^l + r^l
 
-The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction matches the model's final output), and decomposes each layer's behavior into four cases: (1) **residual**: output matches the residual but not the FFN (top(o^l) = top(r^l) != top(y^l)), (2) **ffn**: output matches the FFN but not the residual (top(o^l) = top(y^l) != top(r^l)), (3) **agreement**: output matches both (top(o^l) = top(r^l) = top(y^l)), or (4) **composition**: output matches neither (top(r^l) != top(o^l) != top(y^l)). By construction, there are no cases where the residual and FFN agree but the output does not.
+The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction matches the model's final output), and decomposes each layer's behavior into four cases: (1) **residual**: output matches the residual but not the FFN (top(o^l) = top(r^l) != top(y^l)), (2) **ffn**: output matches the FFN but not the residual (top(o^l) = top(y^l) != top(r^l)), (3) **agreement**: output matches both (top(o^l) = top(r^l) = top(y^l)), or (4) **composition**: output matches neither (top(r^l) != top(o^l) != top(y^l)). By construction, there are no cases where the residual and FFN agree but the output does not (Section 5.2).
 
 ### Experimental Setup
 
@@ -153,18 +167,20 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 
 **Composition analysis:** 4,000 randomly-sampled prefixes from the validation set (not the training set, since the goal is to characterize inference-time behavior) (Section 5).
 
+**Reproducibility:** Code is publicly available at https://github.com/mega002/ff-layers/. The pretrained model checkpoint and dataset are publicly available via fairseq and WikiText-103. Human annotation was performed by one expert per key (no inter-annotator agreement reported). No random seeds are mentioned for the sampling procedures.
+
 ### Key Results
 
 **Keys capture human-interpretable patterns (Section 3.2):**
 
-- Experts identified at least one pattern for every sampled key, with an average of 3.6 patterns per key.
-- 65%--80% of retrieved trigger prefixes were associated with at least one identified pattern (Figure 2).
+- Experts identified at least one pattern for every sampled key, with an average of **3.6 patterns per key** (single model, 160 sampled keys out of 65,536 -- limited sample, no inter-annotator agreement reported).
+- **65%--80%** of retrieved trigger prefixes were associated with at least one identified pattern (Figure 2).
 
 **Layer-wise pattern distribution (Section 3.2, Figure 2, Table 1):**
 
 | Layer Range | Dominant Pattern Type | Example |
 |---|---|---|
-| 1--9 (lower) | Shallow (n-grams, shared last word) | k^1_449: ends with "substitutes" |
+| 1--9 (lower) | Shallow (n-grams, shared last word) | k^1_149: ends with "substitutes" |
 | 6 (middle) | Shallow + semantic | k^6_2546: military context, ends with "base"/"bases" |
 | 10--16 (upper) | Semantic (topic, relations) | k^16_1935: TV shows |
 
@@ -173,10 +189,10 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 | Token Removed | Impact on Memory Coefficient |
 |---|---|
 | Last token | 10%--70% decrease (largest impact across all layers) |
-| First token | Smaller decrease |
-| Random token | Intermediate decrease |
+| First token | ~10--15% decrease |
+| Random token | ~15--20% decrease |
 
-- In upper layers, removing the last token has less impact than in lower layers, supporting the finding that upper-layer keys capture semantic rather than shallow patterns.
+- In upper layers, removing the last token has less impact than in lower layers (roughly -20% in layer 16 vs -65 to -70% in layer 1), supporting the finding that upper-layer keys capture semantic rather than shallow patterns (1,600 keys across all 16 layers -- moderate evidence).
 
 **Value-key agreement (Section 4, Figure 4):**
 
@@ -186,7 +202,7 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 | 11--16 | Rises to 3.5% |
 | Random baseline | 0.0004% |
 
-- The agreement rate in layers 11--16 is orders of magnitude above the random baseline (3.5% vs. 0.0004%).
+- The agreement rate in layers 11--16 is orders of magnitude above the random baseline (3.5% vs. 0.0004%) (computed over all 65,536 keys -- strong coverage, but single model and single dataset).
 - Among the 100 values with highest max(p^l_i), 97 out of 100 are in the upper layers (11--16), and 46 out of 100 have at least one trigger example agreeing with the value's top prediction (Section 4, Table 2).
 - The rank of the next token of a trigger example in the value's distribution decreases (i.e., gets higher probability) through the layers (Figure 5).
 
@@ -194,11 +210,12 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 
 | Value | Prediction | Precision@50 | Example Trigger |
 |---|---|---|---|
-| v^15_222 | "each" | 68% | "But when bees and wasps resemble each" |
+| v^13_222 | "each" | 68% | "But when bees and wasps resemble each" |
 | v^15_881 | "part" | 92% | "Comet served only briefly with the fleet, owing in large part" |
 | v^16_2070 | "line" | 84% | "Sailing from Lorient in October 1805 with one ship of the line" |
 | v^16_752 | "played" | 16% | "...where Padukone was cast as the supportive girlfriend of a depressed man (played" |
 | v^13_2601 | "extratropical" | 4% | "...low pressure weather systems (large scale storms such as extratropical" |
+| v^12_3186 | "jail" | 4% | "On May 11, 2011, four days after scoring 6 touchdowns for the Slaughter, Grady was sentenced to twenty days in jail" |
 
 **Intra-layer memory composition (Section 5.1):**
 
@@ -208,7 +225,7 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 | Zero-agreement rate | >= 68% across all layers (Figure 8) |
 
 - The number of active memories drops toward layer 10, coinciding with the transition from shallow to semantic patterns (Figure 7).
-- In at least 68% of examples, the layer's final prediction differs from every individual memory's top prediction, demonstrating that layer outputs are compositional (Figure 8).
+- In at least **68%** of examples, the layer's final prediction differs from every individual memory's top prediction, demonstrating that layer outputs are compositional (Figure 8) (4,000 validation prefixes, single model -- moderate evidence).
 - When a single memory does agree with the layer output, 60% of cases involve common stop words ("the", "of") and 43% involve short prefixes (<5 tokens), suggesting very common patterns may be "cached" in individual memory cells (Section 5.1).
 
 **Inter-layer prediction refinement (Section 5.2):**
@@ -216,19 +233,25 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 - Roughly a third of the model's final predictions are already determined in the bottom few layers (top(r^l) = top(o^L)), growing rapidly from layer 10 onward (Figure 9).
 - The probability mass assigned by the residual to the final prediction also increases monotonically through the layers (Figure 10).
 - In the vast majority of examples, the layer output matches the residual's prediction (residual + agreement cases dominate) (Figure 11).
-- When the residual's prediction does change, it rarely changes to the feed-forward layer's prediction. Instead, a "compromise" prediction emerges from composing the two distributions (composition case), suggesting feed-forward layers act as **"veto" mechanisms** that shift probability mass away from the residual's top prediction (Figure 11).
-- Manual analysis of 100 random last-layer composition cases: 66 resulted in semantically distant changes (e.g., "people" -> "same"), 34 in semantically related changes (e.g., "later" -> "earlier", "gastric" -> "stomach") (Section 5.2).
+- When the residual's prediction does change, it rarely changes to the feed-forward layer's prediction. Instead, a "compromise" prediction emerges from composing the two distributions (composition case), suggesting feed-forward layers act as **"veto" mechanisms** that shift probability mass away from the residual's top prediction (Figure 11) (4,000 validation prefixes, single model -- limited evidence for generalization).
+- Manual analysis of 100 random last-layer composition cases: 66 resulted in semantically distant changes (e.g., "people" -> "same"), 34 in semantically related changes (e.g., "later" -> "earlier", "gastric" -> "stomach") (Section 5.2) (100 examples, single annotator -- limited evidence).
 
 ---
 
 ## Limitations and Failure Modes
 
 - **Single model and dataset.** All experiments are conducted on one model (16-layer, 247M parameters) trained on one dataset (WikiText-103). Generalization to larger models, different architectures (e.g., BERT, seq2seq), or different tasks is hypothesized but not verified (Section 7).
-- **Small key sample for human annotation.** The key pattern analysis relies on human annotation of 160 keys out of 65,536 total (0.24%). Automated pattern identification is not attempted (Section 3.1).
+- **Small key sample for human annotation.** The key pattern analysis relies on human annotation of 160 keys out of 65,536 total (0.24%), each annotated by a single expert with no inter-annotator agreement metric. Automated pattern identification is not attempted (Section 3.1).
 - **Embedding space assumption.** The value-to-distribution projection assumes all layers operate in the same embedding space, which the authors acknowledge is a simplification. The lower layers' lack of key-value agreement may be due to embedding space misalignment rather than absence of meaningful structure (Section 4).
 - **Limited to autoregressive language modeling.** The analysis is restricted to next-token prediction. Encoder-only models (BERT) and sequence-to-sequence models are not examined (Section 7).
 - **Unnormalized coefficients.** The memory coefficient is unnormalized (ReLU, not softmax), so the interpretation as a probability distribution over memories is approximate. The uncalibrated probability distributions from values can only be examined by ranking, not absolute probability values (Section 2, Section 4).
-- **No causal interventions.** The paper establishes correlations between keys and patterns, and between values and next-token distributions, but does not perform causal experiments (e.g., editing or ablating specific memory cells to verify their functional role).
+- **[Inferred] No causal interventions.** The paper establishes correlations between keys and patterns, and between values and next-token distributions, but does not perform causal experiments (e.g., editing or ablating specific memory cells to verify their functional role). All evidence is correlational.
+- **[Inferred] No statistical testing or variance reporting.** No confidence intervals, significance tests, or variance estimates are reported for any of the measurements (agreement rates, pattern counts, ablation impacts).
+
+#### Scope and Comparability
+
+- **What was not tested:** Models larger than 247M parameters, non-English languages, encoder-only architectures (BERT), encoder-decoder architectures (translation models), models using non-ReLU activations (e.g., GELU, SwiGLU), and models trained on datasets other than WikiText-103.
+- **Comparability notes:** The model analyzed (Baevski and Auli, 2019) uses adaptive softmax and adaptive input representations, which differ from the standard softmax used in most modern LLMs. The adaptive softmax introduces a non-uniform projection from hidden states to vocabulary, which may affect value-to-distribution projections differently than standard softmax. The 247M parameter scale is small by current standards; whether the shallow-to-semantic gradient and composition dynamics hold at billion-parameter scale is untested. The WikiText-103 training corpus (100M+ tokens) is small compared to modern pretraining corpora, which may affect the nature of memorized patterns.
 
 ---
 
@@ -260,19 +283,19 @@ The paper tracks how often top(r^l) = top(o^L) (the residual's top prediction ma
 
 ## Key Claims
 
-1. **Feed-forward layers are mathematically equivalent to unnormalized key-value memories.** The FFN computation FF(x) = f(x * K^T) * V differs from neural memory MN(x) = softmax(x * K^T) * V only in the non-linearity. The hidden dimension d_m corresponds to the number of memory cells, and the activation vector m = f(x * K^T) contains the memory coefficients (Section 2, Equations 1--2). **Status: supported.**
+1. **Feed-forward layers are mathematically equivalent to unnormalized key-value memories.** The FFN computation FF(x) = f(x * K^T) * V differs from neural memory MN(x) = softmax(x * K^T) * V only in the non-linearity. The hidden dimension d_m corresponds to the number of memory cells, and the activation vector m = f(x * K^T) contains the memory coefficients (Section 2, Equations 1--2). **Scope:** any Transformer with ReLU FF layers. **Status: supported** (mathematical equivalence, not empirical -- definitional claim).
 
-2. **Keys capture human-interpretable patterns.** Experts identified at least one pattern for every sampled key (160 keys, 10 per layer), with an average of 3.6 patterns per key. 65%--80% of the top-25 trigger examples were associated with at least one identified pattern (Section 3.2, Figure 2). **Status: supported.**
+2. **Keys capture human-interpretable patterns.** Experts identified at least one pattern for every sampled key (160 keys, 10 per layer), with an average of 3.6 patterns per key. 65%--80% of the top-25 trigger examples were associated with at least one identified pattern (Section 3.2, Figure 2). **Scope:** 16-layer 247M-param model on WikiText-103, 160 sampled keys annotated by single experts. **Magnitude:** 3.6 patterns/key, 65--80% trigger coverage. **Status: supported** (limited sample of 160/65,536 keys, single annotator per key -- moderate evidence).
 
-3. **Lower layers detect shallow patterns; upper layers detect semantic patterns.** Layers 1--9 are dominated by shallow patterns (n-grams, shared last word); layers 10--16 are characterized by semantic patterns (topics, relations). Removing the last token from trigger examples decreases memory coefficients by 10%--70%, with less impact in upper layers (Section 3.2, Figure 2, Figure 3, Table 1). **Status: supported.**
+3. **Lower layers detect shallow patterns; upper layers detect semantic patterns.** Layers 1--9 are dominated by shallow patterns (n-grams, shared last word); layers 10--16 are characterized by semantic patterns (topics, relations). Removing the last token from trigger examples decreases memory coefficients by 10%--70%, with less impact in upper layers (Section 3.2, Figure 2, Figure 3, Table 1). **Scope:** same model, 160 annotated keys + 1,600 ablation keys. **Magnitude:** last-token removal causes ~65--70% coefficient drop in layer 1 vs ~20% in layer 16. **Status: supported** (corroborated by both human annotation and ablation experiment across all layers -- moderate evidence).
 
-4. **Values in upper layers encode next-token distributions.** The agreement rate between value top predictions and key trigger next-tokens rises from ~0% in layers 1--10 to 3.5% in layers 11--16, compared to a 0.0004% random baseline. 97 of the 100 values with highest max(p^l_i) are in layers 11--16; 46 of these have at least one trigger example matching the value's top prediction (Section 4, Figure 4, Figure 6). **Status: supported.**
+4. **Values in upper layers encode next-token distributions.** The agreement rate between value top predictions and key trigger next-tokens rises from ~0% in layers 1--10 to 3.5% in layers 11--16, compared to a 0.0004% random baseline. 97 of the 100 values with highest max(p^l_i) are in layers 11--16; 46 of these have at least one trigger example matching the value's top prediction (Section 4, Figure 4, Figure 6). **Scope:** all 65,536 keys in one model, assumes shared embedding space. **Magnitude:** 3.5% vs 0.0004% baseline. **Status: supported** (full coverage of keys, but single model and dataset, embedding space assumption limits lower-layer conclusions -- moderate evidence).
 
-5. **Layer outputs are compositional.** In at least 68% of examples, the feed-forward layer's top prediction (top(y^l)) differs from every individual memory's top prediction (top(v^l_i)). When single memories do agree with the layer, 60% involve stop words and 43% involve short prefixes (<5 tokens) (Section 5.1, Figure 8). **Status: supported.**
+5. **Layer outputs are compositional.** In at least 68% of examples, the feed-forward layer's top prediction (top(y^l)) differs from every individual memory's top prediction (top(v^l_i)). When single memories do agree with the layer, 60% involve stop words and 43% involve short prefixes (<5 tokens) (Section 5.1, Figure 8). **Scope:** 4,000 validation prefixes, single model. **Magnitude:** >=68% zero-agreement rate. **Status: supported** (moderate evidence; single model, no variance reported).
 
-6. **Predictions are refined incrementally via residual connections.** Roughly a third of the model's final predictions are determined in the bottom few layers. From layer 10 onward, the fraction of examples where top(r^l) = top(o^L) grows rapidly (Section 5.2, Figure 9). **Status: supported.**
+6. **Predictions are refined incrementally via residual connections.** Roughly a third of the model's final predictions are determined in the bottom few layers. From layer 10 onward, the fraction of examples where top(r^l) = top(o^L) grows rapidly (Section 5.2, Figure 9). **Scope:** 4,000 validation prefixes, single model. **Magnitude:** ~33% of predictions determined by bottom layers, rapid growth from layer 10. **Status: supported** (moderate evidence; single model, no variance reported).
 
-7. **Feed-forward layers act as veto mechanisms rather than overrides.** When the residual's top prediction changes after interaction with the FFN layer, it rarely changes to the FFN's prediction. Instead, a compromise prediction emerges that equals neither (composition case). In 100 random last-layer composition examples, 66 produced semantically distant changes and 34 produced semantically related changes (Section 5.2, Figure 11). **Status: supported.**
+7. **Feed-forward layers act as veto mechanisms rather than overrides.** When the residual's top prediction changes after interaction with the FFN layer, it rarely changes to the FFN's prediction. Instead, a compromise prediction emerges that equals neither (composition case). In 100 random last-layer composition examples, 66 produced semantically distant changes and 34 produced semantically related changes (Section 5.2, Figure 11). **Scope:** 4,000 validation prefixes for quantitative analysis, 100 manually analyzed composition cases. **Magnitude:** 66/100 semantically distant, 34/100 semantically related changes. **Status: supported** (limited evidence for generalization; 100 examples, single annotator, single model).
 
 ---
 

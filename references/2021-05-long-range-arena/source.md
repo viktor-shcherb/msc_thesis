@@ -1,7 +1,7 @@
 # Long Range Arena: A Benchmark for Efficient Transformers
 
 **Authors:** Yi Tay, Mostafa Dehghani, Samira Abnar, Yikang Shen, Dara Bahri, Philip Pham, Jinfeng Rao, Liu Yang, Sebastian Ruder, Donald Metzler
-**Affiliations:** Google Research, Google DeepMind
+**Affiliations:** Yi Tay, Mostafa Dehghani, Samira Abnar, Yikang Shen, Dara Bahri, Philip Pham, Jinfeng Rao, Liu Yang, Donald Metzler (Google Research); Sebastian Ruder (Google DeepMind)
 
 ## Publication Status
 

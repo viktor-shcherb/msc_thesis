@@ -5,7 +5,7 @@
 # This file contains only the shared ontology (categories, paper types,
 # relationship types, benchmarks, and models).
 #
-# Maintenance: see references/GUIDELINES.md § "Metadata Maintenance".
+# Maintenance: see prompts/add_reference/README.md § "Ontology maintenance".
 # Search:      see references/search.py or run  ./references/search.py --help
 # =============================================================================
 

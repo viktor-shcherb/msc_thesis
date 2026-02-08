@@ -6,7 +6,7 @@ venue: "NeurIPS 2022"
 paper_type: conference-paper
 categories: ["in-context-learning", "reasoning-evaluation"]
 scope: ["chain-of-thought prompting", "emergent reasoning abilities", "few-shot prompting for reasoning"]
-benchmarks_used: ["gsm8k", "svamp", "csqa", "strategyqa"]
+benchmarks_used: ["gsm8k", "svamp", "asdiv", "mawps", "csqa", "strategyqa"]
 models_introduced: []
 models_evaluated: ["palm-540b", "lamda-137b", "gpt-3-175b"]
 key_claims:
@@ -14,26 +14,38 @@ key_claims:
     claim: "Chain-of-thought prompting is an emergent ability of model scale, only yielding performance gains with models of ~100B parameters"
     evidence: "Figure 4, Table 2, Section 3.2"
     status: supported
+    scope: "LaMDA, GPT-3, PaLM model families; arithmetic, commonsense, and symbolic reasoning tasks"
+    magnitude: "Flat or negative gains below ~100B; GSM8K +39.0 points for PaLM 540B, +31.3 for GPT-3 175B"
   - id: C2
     claim: "PaLM 540B with chain-of-thought prompting achieves 56.9% on GSM8K, surpassing finetuned GPT-3 with a verifier (55%)"
     evidence: "Figure 2, Table 1, Section 3.2"
     status: supported
+    scope: "GSM8K benchmark, greedy decoding, 8 manually written exemplars"
+    magnitude: "56.9% vs 55% prior best (finetuned GPT-3 + verifier), vs 17.9% standard prompting"
   - id: C3
     claim: "Chain-of-thought prompting has larger performance gains for more complicated problems and minimal gains on easy one-step problems"
     evidence: "Figure 4, Table 3, Section 3.2"
     status: supported
+    scope: "MAWPS subtasks (SingleOp, SingleEq, AddSub, MultiArith) and GSM8K; PaLM 540B"
+    magnitude: "GSM8K +39.0 vs SingleOp +0.0 for PaLM 540B; MultiArith +52.5 vs AddSub -2.0"
   - id: C4
     claim: "The benefit of chain-of-thought prompting comes from natural language reasoning steps, not just variable computation or equation extraction"
     evidence: "Figure 5, Table 6, Section 3.3"
     status: supported
+    scope: "GSM8K, LaMDA 137B and PaLM 540B; three ablation variants"
+    magnitude: "LaMDA 137B GSM8K: CoT 14.3% vs equation-only 5.4%, variable-compute 6.4%, reasoning-after-answer 6.1%, standard 6.5%"
   - id: C5
     claim: "Chain-of-thought prompting facilitates length generalization to longer sequences on symbolic reasoning tasks"
     evidence: "Figure 8, Table 5, Section 5"
     status: supported
+    scope: "PaLM 540B; last-letter concatenation and coin-flip tasks; 2-step exemplars tested on 3- and 4-step inputs"
+    magnitude: "Last letter concat OOD (4): 63.0% CoT vs 0.0% standard; Coin flip OOD (4): 90.2% CoT vs 54.8% standard"
   - id: C6
     claim: "Chain-of-thought prompting is robust to different annotators, exemplar orders, and language models"
     evidence: "Figure 6, Table 6, Table 7, Section 3.4"
     status: supported
+    scope: "LaMDA 137B on GSM8K, MAWPS, commonsense, and symbolic tasks; 3 annotators, multiple exemplar sets"
+    magnitude: "All annotators outperform standard prompting by large margin; variance: coin flip 99.6% (A) vs 71.4% (C)"
 cross_references:
   - target: 2019-02-gpt-2-language-models-unsupervised
     type: extends
@@ -219,6 +231,15 @@ Scaling from PaLM 62B to 540B fixed a substantial portion of errors in all categ
 
 - **Annotation cost for finetuning.** While the cost of writing 8 chain-of-thought exemplars is minimal, scaling to finetuning-sized datasets of rationales would be prohibitively expensive (Section 6).
 
+- **[Inferred]** No evaluation on non-English languages, limiting the generalizability of chain-of-thought prompting claims to multilingual settings.
+
+- **[Inferred]** All experiments use greedy decoding; the interaction between chain-of-thought prompting and sampling strategies (temperature, top-k, nucleus sampling) is not systematically explored beyond the self-consistency follow-up mention (Section 3.1).
+
+### Scope and Comparability
+
+- **What was not tested:** Models smaller than 350M and larger than 540B; non-English languages; tasks beyond arithmetic, commonsense, and symbolic reasoning (e.g., machine translation, summarization, code generation); open-ended generation tasks; sampling strategies other than greedy decoding; prompt optimization or automatic chain-of-thought generation; models trained on code-heavy data beyond Codex.
+- **Comparability notes:** The prior best results on arithmetic benchmarks (GSM8K, SVAMP, MAWPS) are from finetuned models with task-specific training data, making direct comparison with a prompting-only approach imprecise -- the methods differ in compute allocation (training-time vs. inference-time), data requirements, and generalizability. The StrategyQA prior best is from a single-model leaderboard entry as of May 2022. BIG-bench tasks (Date Understanding, Sports Understanding) lack established prior baselines for comparison.
+
 ---
 
 ## Conclusions
@@ -247,17 +268,17 @@ Scaling from PaLM 62B to 540B fixed a substantial portion of errors in all categ
 
 ## Key Claims
 
-1. **C1: Emergent ability of model scale.** Chain-of-thought prompting does not improve performance for small models and only yields gains with models of ~100B parameters. For smaller models, it can actually hurt performance by producing fluent but illogical chains of thought (Figure 4, Table 2, Section 3.2). Status: **supported**.
+1. **C1: Emergent ability of model scale.** Chain-of-thought prompting does not improve performance for small models and only yields gains with models of ~100B parameters. For smaller models, it can actually hurt performance by producing fluent but illogical chains of thought (Figure 4, Table 2, Section 3.2). Tested across 3 model families (LaMDA, GPT-3, PaLM) at 4--5 scales each, on 5 arithmetic benchmarks (strong evidence). Status: **supported**.
 
-2. **C2: State-of-the-art on GSM8K.** PaLM 540B with chain-of-thought prompting achieves 56.9% accuracy on GSM8K, surpassing finetuned GPT-3 with a verifier (55%) and standard prompting (17.9%) (Figure 2, Table 1). Status: **supported**.
+2. **C2: State-of-the-art on GSM8K.** PaLM 540B with chain-of-thought prompting achieves 56.9% accuracy on GSM8K, surpassing finetuned GPT-3 with a verifier (55%) and standard prompting (17.9%) (Figure 2, Table 1). Single model, greedy decoding, 8 exemplars (limited evidence for robustness of the exact number; LaMDA results averaged over 5 seeds). Status: **supported**.
 
-3. **C3: Larger gains on harder problems.** Chain-of-thought prompting has larger performance gains for more complicated multi-step problems (GSM8K: +39.0) and minimal gains on easy single-step problems (MAWPS SingleOp: +0.0 for PaLM 540B) (Figure 4, Table 3, Section 3.2). Status: **supported**.
+3. **C3: Larger gains on harder problems.** Chain-of-thought prompting has larger performance gains for more complicated multi-step problems (GSM8K: +39.0) and minimal gains on easy single-step problems (MAWPS SingleOp: +0.0 for PaLM 540B) (Figure 4, Table 3, Section 3.2). Demonstrated across 4 MAWPS subtasks stratified by difficulty plus GSM8K, for all 3 model families (strong evidence). Status: **supported**.
 
-4. **C4: Natural language reasoning is the key ingredient.** Ablations show that equation-only prompting, variable-compute-only prompting, and reasoning-after-answer prompting all perform near the standard prompting baseline on GSM8K, while chain-of-thought prompting substantially outperforms all of them (Figure 5, Table 6, Section 3.3). Status: **supported**.
+4. **C4: Natural language reasoning is the key ingredient.** Ablations show that equation-only prompting, variable-compute-only prompting, and reasoning-after-answer prompting all perform near the standard prompting baseline on GSM8K, while chain-of-thought prompting substantially outperforms all of them (Figure 5, Table 6, Section 3.3). Ablation on LaMDA 137B and PaLM 540B across 4 arithmetic and 4 commonsense/symbolic datasets (moderate evidence -- 2 model sizes, multiple datasets, but single run per configuration with standard deviations from exemplar ordering only). Status: **supported**.
 
-5. **C5: Length generalization on symbolic tasks.** Chain-of-thought prompting enables PaLM 540B to generalize from 2-step exemplars to 4-step test inputs on last-letter concatenation (63.0% OOD vs. 0.0% standard) and coin flip (90.2% OOD vs. 54.8% standard) (Figure 8, Table 5, Section 5). Status: **supported**.
+5. **C5: Length generalization on symbolic tasks.** Chain-of-thought prompting enables PaLM 540B to generalize from 2-step exemplars to 4-step test inputs on last-letter concatenation (63.0% OOD vs. 0.0% standard) and coin flip (90.2% OOD vs. 54.8% standard) (Figure 8, Table 5, Section 5). Tested on 2 synthetic tasks for PaLM and LaMDA at multiple scales (moderate evidence -- only 2 toy tasks). Status: **supported**.
 
-6. **C6: Robustness across annotators and models.** Chain-of-thought prompting outperforms standard prompting across all tested annotators (A, B, C), exemplar sets (including exemplars from GSM8K training set), and language models (LaMDA, GPT-3, PaLM), though with notable variance on some tasks (Figure 6, Tables 6--7, Section 3.4). Status: **supported**.
+6. **C6: Robustness across annotators and models.** Chain-of-thought prompting outperforms standard prompting across all tested annotators (A, B, C), exemplar sets (including exemplars from GSM8K training set), and language models (LaMDA, GPT-3, PaLM), though with notable variance on some tasks (Figure 6, Tables 6--7, Section 3.4). LaMDA 137B tested with 3 annotators + 3 GSM8K training set exemplar sets across 8 datasets; standard deviations from 5 random exemplar orderings (strong evidence for arithmetic; moderate for commonsense/symbolic due to single model size in robustness analysis). Status: **supported**.
 
 ---
 

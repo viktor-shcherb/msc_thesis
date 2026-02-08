@@ -1,16 +1,16 @@
 # A Mathematical Framework for Transformer Circuits
 
-**Authors:** Nelson Elhage, Neel Nanda, Catherine Olsson, Tom Henighan, Nicholas Joseph, Ben Mann, Amanda Askell, Yuntao Bai, Anna Chen, Tom Conerly, Nova DasSarma, Dawn Drain, Deep Ganguli, Zac Hatfield-Dodds, Danny Hernandez, Andy Jones, Jackson Kernion, Liane Lovitt, Kamal Ndousse, Dario Amodei, Tom Brown, Jack Clark, Jared Kaplan, Sam McCandlish, Chris Olah
+**Authors:** Nelson Elhage\*, Neel Nanda\*, Catherine Olsson\*, Tom Henighan&dagger;, Nicholas Joseph&dagger;, Ben Mann&dagger;, Amanda Askell, Yuntao Bai, Anna Chen, Tom Conerly, Nova DasSarma, Dawn Drain, Deep Ganguli, Zac Hatfield-Dodds, Danny Hernandez, Andy Jones, Jackson Kernion, Liane Lovitt, Kamal Ndousse, Dario Amodei, Tom Brown, Jack Clark, Jared Kaplan, Sam McCandlish, Chris Olah
 **Affiliation:** Anthropic
+
+\* Core Research Contributors, &dagger; Core Infrastructure Contributors. Correspondence: Chris Olah (colah@anthropic.com).
 
 ## Publication Status
 
-- **Published:** December 2021, Transformer Circuits Thread
+- **Published:** December 22, 2021, Transformer Circuits Thread
 - **Peer-reviewed:** No
 - **Conference/Journal:** None. This is a long-form research article published on Anthropic's Transformer Circuits Thread, a dedicated publication venue for mechanistic interpretability research. There is no arXiv version or traditional PDF.
 - **Status:** Informal research publication (web article)
-
-The paper is one of the foundational publications of the Transformer Circuits Thread, a series of research articles from Anthropic focused on reverse-engineering the computations learned by transformer models. Despite not being peer-reviewed, it is one of the most widely cited works in the mechanistic interpretability literature.
 
 ## Preferred Citation
 

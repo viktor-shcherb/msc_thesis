@@ -8,36 +8,50 @@ categories: ["benchmarking", "attention-efficiency"]
 scope: ["efficient Transformer evaluation", "long-range dependency benchmarking", "synthetic and real-world probing tasks"]
 benchmarks_used: ["lra"]
 models_introduced: []
-models_evaluated: ["transformer-base"]
+models_evaluated: ["transformer-base", "linear-transformer", "longformer-base", "bigbird-base"]
 key_claims:
   - id: C1
     claim: "No single efficient Transformer variant dominates across all LRA tasks; BigBird achieves the best average (55.01) through consistency, not dominance on any individual task"
     evidence: "Table 1, Section 3.5"
     status: supported
+    scope: "10 xformer models, 6 tasks (1K-16K tokens), fixed hyperparameters, no pretraining, encoder-only"
+    magnitude: "BigBird avg 55.01 vs next-best Transformer avg 54.39; no model wins more than one task"
   - id: C2
-    claim: "Kernel-based models (Performer, Linear Transformer) collapse on hierarchically structured data (ListOps: 16--18%) while excelling on text classification (65--66%) and spatial tasks (Pathfinder: 75--77%)"
+    claim: "Kernel-based models (Performer, Linear Transformer) collapse on hierarchically structured data (ListOps: 16-18%) while excelling on text classification (65-66%) and spatial tasks (Pathfinder: 75-77%)"
     evidence: "Table 1, Section 3.3"
     status: supported
+    scope: "Performer and Linear Transformer only, ListOps/Text/Pathfinder tasks, fixed hyperparameters"
+    magnitude: "ListOps 16.13-18.01% (near random chance of 10%) vs Text 65.40-65.90% and Pathfinder 75.30-77.05%"
   - id: C3
     claim: "Fixed sparse pattern models (Sparse Transformer, BigBird) outperform other approaches on document retrieval (59.59 and 59.29 respectively)"
     evidence: "Table 1, Section 3.3"
     status: supported
+    scope: "Retrieval task only (4K+4K bytes, AAN corpus), fixed hyperparameters"
+    magnitude: "59.59 and 59.29 vs next-best Transformer at 57.46; kernel/low-rank models score 52-54"
   - id: C4
     claim: "All 10 efficient Transformers and the vanilla Transformer fail on Path-X (16K tokens), achieving at best random chance (50%)"
     evidence: "Table 1, Section 3.3"
     status: supported
+    scope: "All 10 xformer models + vanilla Transformer + Local Attention, 128x128 Pathfinder images (16K pixels), both training from scratch and transfer from Pathfinder attempted"
+    magnitude: "All models at or below 50% (random chance for binary classification)"
   - id: C5
     claim: "Performer achieves 5.7x speedup over vanilla Transformer at 4K tokens; Linformer achieves the smallest memory footprint (0.99 GB vs 9.48 GB, ~10x reduction)"
     evidence: "Table 2, Section 3.4"
     status: supported
+    scope: "Byte-level text classification task, batch size 32, 4x4 TPU V3 chips, 4K sequence length"
+    magnitude: "Performer 8.0 steps/s vs Transformer 1.4 steps/s (5.7x); Linformer 0.99 GB vs Transformer 9.48 GB (~10x)"
   - id: C6
     claim: "Reformer is slower than vanilla Transformer in practice (0.8x at 4K, 0.5x at 1K) despite its theoretical efficiency gains"
     evidence: "Table 2, Section 3.4"
     status: supported
+    scope: "JAX/FLAX implementation using VMAP, byte-level text classification task, batch size 32, 4x4 TPU V3 chips"
+    magnitude: "0.8x speed at 4K (1.1 vs 1.4 steps/s); 0.5x speed at 1K (4.4 vs 8.1 steps/s)"
   - id: C7
-    claim: "All LRA tasks exhibit high required attention spans (300--1300 tokens), confirming they test genuine long-range dependencies rather than local co-occurrences"
+    claim: "All LRA tasks exhibit high required attention spans, confirming they test genuine long-range dependencies rather than local co-occurrences"
     evidence: "Figure 2, Section 2.3"
     status: supported
+    scope: "Best vanilla Transformer per task, 1K validation samples, 5 tasks (Path-X excluded)"
+    magnitude: "Approximate spans: Image ~250, Text ~350, Pathfinder ~550, ListOps ~750, Retrieval ~1350 tokens"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: evaluates
@@ -70,6 +84,8 @@ open_questions:
     addressed_by: null
   - question: "Would aggressive per-model hyperparameter tuning change the relative ordering of efficient Transformer models on LRA?"
     addressed_by: null
+  - question: "How would results change if pretraining were included, given that LRA deliberately excludes it to isolate architectural inductive bias?"
+    addressed_by: null
 ---
 
 # Long Range Arena: A Benchmark for Efficient Transformers
@@ -81,7 +97,7 @@ open_questions:
 
 ## Core Research Problem
 
-Transformers suffer from quadratic self-attention complexity, restricting their application to long sequences. A large number of efficient Transformer variants ("xformers") have been proposed -- Sparse Transformers (Child et al., 2019), Reformers (Kitaev et al., 2020), Linformers (Wang et al., 2020), Longformers (Beltagy et al., 2020), Performers (Choromanski et al., 2020), and others -- each claiming comparable quality to the vanilla Transformer while reducing memory complexity.
+Transformers suffer from quadratic self-attention complexity, restricting their application to long sequences. A large number of efficient Transformer variants ("xformers") have been proposed -- Sparse Transformers (Child et al., 2019), Reformers (Kitaev et al., 2020), Linformers (Wang et al., 2020), Longformers (Beltagy et al., 2020), Performers (Choromanski et al., 2020), and others -- each claiming comparable quality to the vanilla Transformer model while reducing memory complexity.
 
 However, evaluation of these models is inconsistent and inadequate:
 
@@ -119,7 +135,7 @@ LRA defines 6 tasks, each probing a different aspect of long-range modeling:
 | Pathfinder | Synthetic images | 1K (32x32) | 2 | Accuracy | Long-range spatial dependency |
 | Path-X | Synthetic images | 16K (128x128) | 2 | Accuracy | Extreme-length spatial dependency |
 
-**Long ListOps.** An extended version of ListOps (Nangia & Bowman, 2018) with sequences up to 2K tokens. Sequences have hierarchical structure with operators MAX, MEAN, MEDIAN, SUM_MOD enclosed in brackets. The model must access all tokens and model the logical structure to classify into one of 10 classes. Example: `[MAX 4 3 [MIN 2 3 ] 1 0 [MEDIAN 1 5 8 9, 2]]` → `5` (Section 2.2.1).
+**Long ListOps.** An extended version of ListOps (Nangia & Bowman, 2018) with sequences up to 2K tokens. Sequences have hierarchical structure with operators MAX, MEAN, MEDIAN, SUM_MOD enclosed in brackets. The model must access all tokens and model the logical structure to classify into one of 10 classes. Example: `[MAX 4 3 [MIN 2 3 ] 1 0 [MEDIAN 1 5 8 9, 2]]` -> `5` (Section 2.2.1).
 
 **Byte-Level Text Classification.** IMDb sentiment classification (Maas et al., 2011) at the byte/character level (max 4K bytes), forcing the model to compose characters into words into phrases. This setup differs from character-level language modeling, where nearby context suffices; here the model must reason with compositional, unsegmented data. Without pretraining, word-level models achieve high-80s accuracy while byte-level models score only mid-60s (Section 2.2.2, footnote 3).
 
@@ -133,11 +149,21 @@ where X1, X2 are [CLS] embeddings from shared encoders, and MLP is a 2-layer MLP
 
 **Pathfinder.** A synthetic visual task (Linsley et al., 2018; Kim et al., 2020) motivated by cognitive psychology (Houtkamp & Roelfsema, 2010). The model decides whether two circles are connected by a dashed path amid distractors. Images are 32x32 (1,024 pixels) (Section 2.2.5).
 
-**Path-X.** An extreme version of Pathfinder with 128x128 images (16,384 pixels). Included as a litmus test for whether models that solve Pathfinder at 1K can generalize to 16K (Section 2.2.6).
+**Path-X.** An extreme version of Pathfinder with 128x128 images (16,384 pixels). Included as a litmus test for whether models that solve Pathfinder at 1K can generalize to 16K. Both training from scratch and transfer from Pathfinder-trained models were attempted; neither succeeded for any architecture (Section 2.2.6, Appendix A.3).
 
 ### Key Technical Components
 
-**Required attention span.** The authors define a quantitative metric for how much long-range attention each task demands: the mean distance between the query token and the attended tokens, weighted by attention weights, averaged over all attention modules in the best vanilla Transformer for each task, over 1K validation samples. All LRA tasks show high required attention spans, confirming that models must look beyond local context. From Figure 2, approximate values range from ~300 tokens (ListOps, Text) to ~1,300 tokens (Pathfinder) (Section 2.3, Figure 2).
+**Required attention span.** The authors define a quantitative metric for how much long-range attention each task demands: the mean distance between the query token and the attended tokens, weighted by attention weights, averaged over all attention modules in the best vanilla Transformer for each task, over 1K validation samples. From Figure 2, approximate values are:
+
+| Task | Required Attention Span (approx.) |
+|---|---|
+| Image (L=1K) | ~250 tokens |
+| Text (L=4K) | ~350 tokens |
+| Pathfinder (L=1K) | ~550 tokens |
+| ListOps (L=2K) | ~750 tokens |
+| Retrieval (L=4K) | ~1,350 tokens |
+
+All LRA tasks show high required attention spans, confirming that models must look beyond local context. The metric also serves as a proxy for how difficult a task is for Transformer-based models (Section 2.3, Figure 2, footnote 4).
 
 **Fixed hyperparameter protocol.** To ensure fair comparison, all models share task-specific hyperparameters (Appendix A.1--A.3):
 
@@ -170,9 +196,11 @@ All tasks use softmax cross-entropy loss, [CLS] token pooling, and a 2-layer MLP
 
 **Implementation:** All models re-implemented in JAX/FLAX. Sparse Transformer and Longformer use equivalent mask-based implementations (no custom CUDA kernels) and are therefore **excluded from speed benchmarks** (Appendix B.2). Reformer is implemented using VMAP over batch and head dimensions rather than the standard batched tensor approach (Appendix B.2). For Linformer, projections are shared between key and value but not across layers. For Performer, the FAVOR+ variant is used (Appendix B.1).
 
+**Reproducibility:** Code is open-sourced at https://github.com/google-research/long-range-arena. The authors consulted with original model developers and plan to release configuration files. However, no variance estimates or multiple seeds are reported -- all results are single-run per configuration (limited evidence for individual data points; breadth comes from the 10-model x 6-task matrix).
+
 ### Key Results
 
-**Task performance (Table 1):**
+**Task performance (Table 1, 10 models + 2 baselines across 6 tasks, single run per configuration):**
 
 | Model | ListOps | Text | Retrieval | Image | Pathfinder | Path-X | Avg |
 |---|---|---|---|---|---|---|---|
@@ -191,34 +219,38 @@ All tasks use softmax cross-entropy loss, [CLS] token pooling, and a 2-layer MLP
 
 Average score excludes Path-X (all models FAIL, achieving at best 50% = random chance on a binary task). FAIL denotes models that did not learn anything above random chance (Table 1 caption).
 
-- **No one-size-fits-all.** BigBird achieves the best average (55.01) through consistent performance across tasks, not dominance on any single task. No model wins on more than one task (Section 3.5).
-- **Kernel-based models show task-dependent behavior.** Performers and Linear Transformers excel on Text (65--66%) and Pathfinder (75--77%) but collapse on ListOps (16--18%), suggesting kernel approximations struggle with hierarchical reasoning (Section 3.3).
-- **Fixed-pattern sparse models win on retrieval.** Sparse Transformer (59.59) and BigBird (59.29) perform best on retrieval. Models based on low-rank factorization and kernels perform relatively worse on this task, with some scoring near random chance (Section 3.3).
-- **All models fail on Path-X.** Despite solving Pathfinder (avg 72%), no model learns anything on the 16K-token Path-X variant, demonstrating that extreme sequence length alone can prevent learning entirely (Section 3.3).
-- **Image classification has a severe generalization gap.** Most models overfit training data but fail to generalize. For example, Linformer achieves 97.23% train accuracy but only 38.56% test accuracy; Synthesizer achieves 97.31% train but 41.61% test (Table 3, Appendix A.2.1). The authors note that replacing the embedding layer with a CNN stem raises vanilla Transformer test accuracy from 42.44% to 75.32%, and adding 2D relative positional embedding yields 61.72% (Appendix A.2.1). However, these modifications are excluded from the benchmark by design.
+- **No one-size-fits-all.** BigBird achieves the best average (55.01) through consistent performance across tasks, not dominance on any single task. No model wins on more than one task (Section 3.5). This finding spans 10 diverse xformer architectures across 5 scoreable tasks (moderate evidence, but single run per configuration with no variance reported).
+- **Kernel-based models show task-dependent behavior.** Performers and Linear Transformers excel on Text (65--66%) and Pathfinder (75--77%) but collapse on ListOps (16--18%), suggesting kernel approximations struggle with hierarchical reasoning (Section 3.3). Evidence limited to two kernel-based models (Performer, Linear Transformer).
+- **Fixed-pattern sparse models win on retrieval.** Sparse Transformer (59.59) and BigBird (59.29) perform best on retrieval. Models based on low-rank factorization and kernels perform relatively worse on this task, with some scoring near random chance (Section 3.3). Limited to a single retrieval task (AAN corpus).
+- **All models fail on Path-X.** Despite solving Pathfinder (avg 72%), no model learns anything on the 16K-token Path-X variant, demonstrating that extreme sequence length alone can prevent learning entirely (Section 3.3). Both training from scratch and transfer from Pathfinder were attempted for all models (Appendix A.3) -- strong evidence that this is a fundamental barrier at the time of publication.
+- **Image classification has a severe generalization gap.** Most models overfit training data but fail to generalize. For example, Linformer achieves 97.23% train accuracy but only 38.56% test accuracy; Synthesizer achieves 97.31% train but 41.61% test (Table 3, Appendix A.2.1). Replacing the embedding layer with a CNN stem raises vanilla Transformer test accuracy from 42.44% to 75.32%, and adding 2D relative positional embedding yields 61.72% (Appendix A.2.1). However, these modifications are excluded from the benchmark by design.
 
 ### Efficiency Results
 
-**Speed and memory at varying sequence lengths (Table 2, batch size 32, 4x4 TPU V3):**
+**Speed and memory at varying sequence lengths (Table 2, batch size 32, 4x4 TPU V3, byte-level text classification task):**
 
-| Model | Speed at 4K (steps/s) | Speedup vs Transformer | Memory at 4K (GB/device) |
-|---|---|---|---|
-| Transformer | 1.4 | 1.0x | 9.48 |
-| Local Attention | 7.4 | 5.3x | 1.37 |
-| Linformer | 7.7 | 5.5x | **0.99** |
-| Reformer | 1.1 | 0.8x | 2.28 |
-| Sinkhorn Trans. | 5.3 | 3.8x | 1.48 |
-| Synthesizer | 1.9 | 1.4x | 6.99 |
-| BigBird | 1.5 | 1.1x | 2.88 |
-| Linear Trans. | 7.8 | 5.6x | 1.03 |
-| Performer | **8.0** | **5.7x** | 1.06 |
+| Model | Speed 1K (steps/s) | Speed 4K (steps/s) | Speedup vs Trans. (4K) | Mem 1K (GB) | Mem 4K (GB) |
+|---|---|---|---|---|---|
+| Transformer | 8.1 | 1.4 | 1.0x | 0.85 | 9.48 |
+| Local Attention | 9.2 (1.1x) | 7.4 (5.3x) | 5.3x | 0.42 | 1.37 |
+| Linformer | 9.3 (1.2x) | 7.7 (5.5x) | 5.5x | **0.37** | **0.99** |
+| Reformer | 4.4 (0.5x) | 1.1 (0.8x) | 0.8x | 0.48 | 2.28 |
+| Sinkhorn Trans. | 9.1 (1.1x) | 5.3 (3.8x) | 3.8x | 0.47 | 1.48 |
+| Synthesizer | 8.7 (1.1x) | 1.9 (1.4x) | 1.4x | 0.65 | 6.99 |
+| BigBird | 7.4 (0.9x) | 1.5 (1.1x) | 1.1x | 0.77 | 2.88 |
+| Linear Trans. | 9.1 (1.1x) | 7.8 (5.6x) | 5.6x | **0.37** | 1.03 |
+| Performer | **9.5** (1.2x) | **8.0** (5.7x) | **5.7x** | **0.37** | 1.06 |
 
-Sparse Transformer and Longformer are excluded from speed benchmarks because their implementations use equivalent mask-based approaches rather than custom CUDA kernels (Appendix B.2).
+Sparse Transformer and Longformer are excluded from speed benchmarks because their implementations use equivalent mask-based approaches rather than custom CUDA kernels (Appendix B.2). These efficiency results are from a single hardware configuration (4x4 TPU V3) and a single task (text classification) -- generalizing speed rankings to other hardware or tasks requires caution (limited evidence for absolute speed, but relative ordering is informative).
 
 - **Kernel-based models are fastest.** Performer, Linear Transformer, and Linformer achieve 5.5--5.7x speedup at 4K tokens and ~10x memory reduction (0.99--1.06 GB vs. 9.48 GB) (Section 3.4).
 - **BigBird trades speed for quality.** Best average accuracy but similar speed to vanilla Transformer (1.1x at 4K) (Section 3.5, Figure 3).
-- **Reformer is slower than Transformer.** 0.8x at 4K and 0.5x at 1K, contrary to its theoretical efficiency, due to implementation overhead (Section 3.4).
+- **Reformer is slower than Transformer.** 0.8x at 4K and 0.5x at 1K, contrary to its theoretical efficiency, due to implementation overhead (Section 3.4). The authors attribute this to the VMAP-based implementation rather than algorithmic inefficiency (Appendix B.2).
 - **Memory scales well for kernel-based models.** Linformer and Performer memory consumption at 3K and 4K is approximately equal, indicating favorable scaling behavior (Section 3.4).
+
+### Recommendations for Fair Comparison
+
+The authors establish immutable parameters for fair benchmarking: (1) model size must remain unchanged, (2) no pretraining, (3) no alterations to fundamental setups (e.g., changing char-level to word-level, or adding spatial information to the image task) (Appendix C). New models may be compared by copying the LRA table directly, provided these constraints are respected.
 
 ---
 
@@ -226,11 +258,17 @@ Sparse Transformer and Longformer are excluded from speed benchmarks because the
 
 1. **Byte tokenization as length proxy.** The two text tasks use byte-level tokenization to artificially inflate sequence length. This conflates the compositional challenge of learning to compose bytes into words with the long-range dependency challenge. The paper acknowledges this design choice differs from standard word-level evaluation (Section 2.2.2).
 2. **Encoder-only scope.** All tasks require encoding only, excluding autoregressive generation tasks where some xformers (e.g., Linformer) are inapplicable. The authors state this is deliberate to ensure generality (desideratum 1, Section 2.1).
-3. **Maximum 16K tokens.** Path-X at 16K is the longest task, far below the context lengths of modern LLMs (128K--1M+ tokens). The benchmark does not test behavior at these extreme scales. [Inference: this limits the benchmark's applicability to evaluating modern long-context models.]
-4. **No natural language long-range tasks.** The two NLP tasks (Text, Retrieval) are byte-level and relatively short (~4K bytes each). No task involves reasoning over naturally long documents such as books or legal texts.
+3. **[Inferred]** Maximum 16K tokens. Path-X at 16K is the longest task, far below the context lengths of modern LLMs (128K--1M+ tokens). The benchmark does not test behavior at these extreme scales, limiting its applicability to evaluating modern long-context models.
+4. **[Inferred]** No natural language long-range tasks. The two NLP tasks (Text, Retrieval) are byte-level and relatively short (~4K bytes each). No task involves reasoning over naturally long documents such as books or legal texts.
 5. **Fixed hyperparameters may disadvantage some models.** The authors acknowledge that "the best performance and relative order of the models may change if we aggressively tune hyperparameters for all models" (Section 3.2). The results are presented as a starting point, not a definitive ranking.
 6. **Implementation artifacts affect efficiency comparisons.** Sparse Transformer and Longformer are excluded from speed benchmarks due to the lack of custom CUDA kernels in the JAX implementation. Reformer's poor speed is attributed to implementation overhead rather than algorithmic inefficiency (Section 3.4, Appendix B.2).
 7. **Image classification generalization gap.** All models struggle to generalize on the image task despite overfitting training data (e.g., Linformer: 97.23% train vs 38.56% test). The task tests whether models can learn pixel ordinality and spatial structure from raw symbols, which proved extremely difficult for all architectures (Appendix A.2.1, Table 3).
+8. **[Inferred]** No variance estimates or multi-seed runs reported. All results appear to be single runs per configuration, making it impossible to assess whether observed performance differences are statistically significant.
+
+#### Scope and Comparability
+
+- **What was not tested:** No autoregressive/generative tasks; no sequences beyond 16K tokens; no word-level or subword-level tokenization tasks; no multilingual data; no tasks requiring cross-attention between sequences (retrieval uses separate encoders by design). Models that require custom CUDA kernels (Sparse Transformer, Longformer) could not be fairly benchmarked for speed on the TPU setup used.
+- **Comparability notes:** LRA's byte-level tokenization inflates sequence length relative to word/subword benchmarks, making cross-benchmark length comparisons misleading (e.g., 4K bytes of IMDb text is ~700-1000 words). The fixed hyperparameter protocol ensures internal comparability across models but may differ from each model's optimal configuration, complicating comparison with results reported in individual model papers. Efficiency results are specific to TPU V3 hardware and JAX/FLAX implementations -- GPU-based results may differ substantially, particularly for Reformer whose poor speed is attributed to implementation choices (Appendix B.2).
 
 ---
 
@@ -252,29 +290,29 @@ Sparse Transformer and Longformer are excluded from speed benchmarks because the
 
 ### Implications
 
-1. **Architectural inductive biases matter more than efficiency class.** The divergent performance profiles of kernel-based vs. sparse-pattern vs. low-rank models suggest that the choice of attention approximation has task-dependent consequences that cannot be predicted from computational complexity alone. [Inference from Table 1 patterns.]
+1. **Architectural inductive biases matter more than efficiency class.** The divergent performance profiles of kernel-based vs. sparse-pattern vs. low-rank models suggest that the choice of attention approximation has task-dependent consequences that cannot be predicted from computational complexity alone (inference from Table 1 patterns; 10 models across 5 tasks provide moderate evidence).
 
-2. **Pretraining-free evaluation reveals fundamental architectural properties.** By removing pretraining, LRA exposes whether architectural design choices (e.g., kernel approximation, sparse patterns, low-rank projection) are inherently suited to different types of long-range reasoning. [Inference from Section 1 and Section 3.2.]
+2. **Pretraining-free evaluation reveals fundamental architectural properties.** By removing pretraining, LRA exposes whether architectural design choices (e.g., kernel approximation, sparse patterns, low-rank projection) are inherently suited to different types of long-range reasoning (inference from Section 1 and Section 3.2).
 
-3. **Length itself is a qualitative, not just quantitative, barrier.** The total failure on Path-X (16K) despite success on Pathfinder (1K) implies that scaling sequence length does not merely degrade performance but can categorically prevent learning. [Supported by Section 3.3.]
+3. **Length itself is a qualitative, not just quantitative, barrier.** The total failure on Path-X (16K) despite success on Pathfinder (1K) implies that scaling sequence length does not merely degrade performance but can categorically prevent learning (supported by Section 3.3, Appendix A.3; both from-scratch training and transfer attempted).
 
 ---
 
 ## Key Claims
 
-1. **C1: No single model dominates LRA.** BigBird achieves the best average (55.01) through consistency across tasks, but no model wins on more than one individual task. The ranking varies substantially across tasks (Table 1, Section 3.5). **Status: supported.**
+1. **C1: No single model dominates LRA.** BigBird achieves the best average (55.01) through consistency across tasks, but no model wins on more than one individual task. The ranking varies substantially across tasks (Table 1, Section 3.5). Scope: 10 xformer models under fixed hyperparameters, no pretraining, encoder-only tasks. Magnitude: BigBird avg 55.01 vs next-best Transformer avg 54.39. Evidence spans 10 models across 5 scoreable tasks, single run per configuration (moderate evidence from breadth, limited from lack of variance estimates). **Status: supported.**
 
-2. **C2: Kernel-based models fail on hierarchical data.** Performer and Linear Transformer score 18.01 and 16.13 on ListOps (10-way classification, random chance = 10%) while achieving 65.40/65.90 on Text and 77.05/75.30 on Pathfinder. The authors suggest "kernel-based models (e.g., Performer, Linear Transformers) are possibly not as effective on hierarchically structured data" (Table 1, Section 3.3). **Status: supported.**
+2. **C2: Kernel-based models fail on hierarchical data.** Performer and Linear Transformer score 18.01 and 16.13 on ListOps (10-way classification, random chance = 10%) while achieving 65.40/65.90 on Text and 77.05/75.30 on Pathfinder. The authors suggest "kernel-based models (e.g., Performer, Linear Transformers) are possibly not as effective on hierarchically structured data" (Table 1, Section 3.3). Scope: Performer and Linear Transformer only, fixed hyperparameters. Magnitude: ListOps 16--18% vs Text 65--66% and Pathfinder 75--77%. Evidence from 2 kernel-based models on 1 hierarchical task (limited evidence for the general claim about kernel methods). **Status: supported.**
 
-3. **C3: Sparse pattern models excel at retrieval.** Sparse Transformer (59.59) and BigBird (59.29) are the top two models on document retrieval. "Models that follow fixed sparse patterns do well on this task. Models that are based on low-rank factorization and kernels perform relatively worse" (Table 1, Section 3.3). **Status: supported.**
+3. **C3: Sparse pattern models excel at retrieval.** Sparse Transformer (59.59) and BigBird (59.29) are the top two models on document retrieval. "Models that follow fixed sparse patterns do well on this task. Models that are based on low-rank factorization and kernels perform relatively worse" (Table 1, Section 3.3). Scope: retrieval task only (AAN corpus, 4K+4K bytes). Magnitude: 59.59 and 59.29 vs next-best Transformer at 57.46. Evidence from 1 retrieval task (limited evidence). **Status: supported.**
 
-4. **C4: All models fail on Path-X.** All 10 xformers, vanilla Transformer, and the local attention baseline achieve at most 50% (random chance) on the 16K-token Path-X task. "The extreme length of the task can significantly obstruct a model from learning anything meaningful" (Table 1, Section 3.3). **Status: supported.**
+4. **C4: All models fail on Path-X.** All 10 xformers, vanilla Transformer, and the local attention baseline achieve at most 50% (random chance) on the 16K-token Path-X task. "The extreme length of the task can significantly obstruct a model from learning anything meaningful" (Table 1, Section 3.3). Both training from scratch and transfer from Pathfinder-trained models failed (Appendix A.3). Scope: all 12 model configurations, 128x128 images, 16K pixels. Magnitude: all at or below 50% on binary task. Strong evidence -- universal failure across all tested architectures. **Status: supported.**
 
-5. **C5: Performer is the fastest model; Linformer has the smallest memory footprint.** At 4K tokens, Performer achieves 5.7x speedup (8.0 steps/s vs. 1.4). Linformer uses 0.99 GB per device vs. 9.48 GB for vanilla Transformer, a ~10x reduction (Table 2, Section 3.4). **Status: supported.**
+5. **C5: Performer is the fastest model; Linformer has the smallest memory footprint.** At 4K tokens, Performer achieves 5.7x speedup (8.0 steps/s vs. 1.4). Linformer uses 0.99 GB per device vs. 9.48 GB for vanilla Transformer, a ~10x reduction (Table 2, Section 3.4). Scope: byte-level text classification task, batch size 32, 4x4 TPU V3 chips. Magnitude: 5.7x speed, ~10x memory reduction. Single hardware configuration and single task (limited evidence for generalization to other setups). **Status: supported.**
 
-6. **C6: Reformer is slower than vanilla Transformer in practice.** Reformer achieves 0.8x speed at 4K tokens and 0.5x at 1K tokens, attributed to implementation overhead despite theoretical efficiency gains (Table 2, Section 3.4). **Status: supported.**
+6. **C6: Reformer is slower than vanilla Transformer in practice.** Reformer achieves 0.8x speed at 4K tokens and 0.5x at 1K tokens, attributed to implementation overhead despite theoretical efficiency gains (Table 2, Section 3.4). Scope: JAX/FLAX implementation using VMAP, 4x4 TPU V3. Magnitude: 0.5x--0.8x Transformer speed. Authors acknowledge this may reflect implementation (VMAP approach) rather than algorithmic limitations (Appendix B.2, limited evidence). **Status: supported.**
 
-7. **C7: All LRA tasks require high attention spans.** The required attention span metric, computed from a trained vanilla Transformer, shows all tasks require attention beyond local context, with spans ranging from ~300 tokens (ListOps, Text) to ~1,300 tokens (Pathfinder) (Figure 2, Section 2.3). **Status: supported.**
+7. **C7: All LRA tasks require high attention spans.** The required attention span metric, computed from a trained vanilla Transformer over 1K validation samples, shows all tasks require attention beyond local context. Approximate spans: Image ~250, Text ~350, Pathfinder ~550, ListOps ~750, Retrieval ~1,350 tokens (Figure 2, Section 2.3). Scope: best vanilla Transformer per task, 5 tasks (Path-X excluded). Magnitude: spans range from ~250 to ~1,350 tokens. The authors note a better model might require shorter spans (footnote 4). Moderate evidence -- metric computed on one model type across 5 tasks. **Status: supported.**
 
 ---
 

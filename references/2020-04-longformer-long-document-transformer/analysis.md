@@ -14,34 +14,49 @@ key_claims:
     claim: "Longformer's attention mechanism scales linearly with sequence length while achieving competitive or superior performance to full attention on downstream tasks"
     evidence: "Figure 1, Table 7, Table 8"
     status: supported
+    scope: "encoder-only and encoder-decoder settings, up to 16K tokens"
   - id: C2
     claim: "Pretrained Longformer-base consistently outperforms RoBERTa-base across all six downstream tasks"
     evidence: "Table 7"
     status: supported
+    scope: "base model size, six long-document tasks"
+    magnitude: "+0.2 to +7.4 points across tasks"
   - id: C3
     claim: "Global attention is the single most important component — removing global attention and separate projections drops WikiHop accuracy by 8.3 points"
     evidence: "Table 10, Section 6.5"
     status: supported
+    scope: "WikiHop development set, Longformer-base"
+    magnitude: "8.3 point accuracy drop"
   - id: C4
     claim: "Copy initialization of position embeddings enables rapid convergence, reducing initial MLM BPC from 10.299 to 1.957"
     evidence: "Table 5, Section 5"
     status: supported
+    scope: "base and large models, MLM pretraining"
+    magnitude: "BPC from 10.299 to 1.957 (base), 8.738 to 1.597 (large)"
   - id: C5
     claim: "Small Longformer (41M params) achieves state-of-the-art BPC of 1.10 on text8 and 1.00 on enwik8"
     evidence: "Table 2"
     status: supported
+    scope: "41M parameter small model, character-level LM"
+    magnitude: "1.10 BPC text8, 1.00 BPC enwik8 (vs. prior best 1.11/1.02)"
   - id: C6
     claim: "Longformer-large achieves state-of-the-art on WikiHop (81.9 F1) and TriviaQA (77.3 F1) as of May 2020"
     evidence: "Table 8"
     status: supported
+    scope: "large model, May 2020 leaderboards"
+    magnitude: "+3.6 on WikiHop, +4.0 on TriviaQA over prior SOTA"
   - id: C7
     claim: "LED at 16K tokens slightly outperforms BigBird at 4K tokens on arXiv summarization despite no task-specific pretraining"
     evidence: "Table 11"
     status: supported
+    scope: "arXiv summarization, LED-large at 16K vs. BigBird at 4K"
+    magnitude: "R-2 +0.60, R-L +0.06 over BigBird"
   - id: C8
     claim: "Increasing LED input length from 1K to 16K tokens improves ROUGE-1 from 35.21 to 46.23 and ROUGE-2 from 11.54 to 19.62"
     evidence: "Figure 3"
     status: supported
+    scope: "arXiv validation set, LED-large"
+    magnitude: "ROUGE-1 +11.02, ROUGE-2 +8.08 from 1K to 16K tokens"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends

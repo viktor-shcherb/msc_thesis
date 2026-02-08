@@ -1,0 +1,3 @@
+# 8. Conclusion [p. 40–41]
+
+[p. 40–41] The authors presented a 175 billion parameter language model which shows strong performance on many NLP tasks and benchmarks in the zero-shot, one-shot, and few-shot settings, in some cases nearly matching the performance of state-of-the-art fine-tuned systems, as well as generating high-quality samples and strong qualitative performance at tasks defined on-the-fly. They documented roughly predictable trends of scaling in performance without using fine-tuning. They also discussed the social impacts of this class of model. Despite many limitations and weaknesses, these results suggest that very large language models may be an important ingredient in the development of adaptable, general language systems.

@@ -1,0 +1,17 @@
+# 1 Introduction [p. 1-2]
+
+[p. 1] Transformers (Vaswani et al., 2017) are ubiquitously state-of-the-art across many modalities, from language (Devlin et al., 2018; Raffel et al., 2019; Child et al., 2019) to images (Tan & Bansal, 2019; Lu et al., 2019) to protein sequences (Rives et al., 2019). A common weakness of Transformers is their quadratic memory complexity within the self-attention mechanism that restricts their potential application to domains requiring longer sequence lengths.
+
+A large number of efficient Transformer models ("xformers") have been proposed to tackle this problem (Liu et al., 2018; Kitaev et al., 2020; Wang et al., 2020; Tay et al., 2020b; Katharopoulos et al., 2020). Many of these models demonstrate comparable performance to the vanilla Transformer model while successfully reducing the memory complexity of the self-attention mechanism. An overview of this research area can be found in (Tay et al., 2020c).
+
+The authors identify three key observations about the current state of evaluation and experimental setups: [p. 1-2]
+
+1. There is no unifying consensus on what makes an acceptable test bed for benchmarking efficient Transformers. There is a large diversity in the types of tasks adopted -- every single model is evaluated on a different set of tasks and datasets, which makes comparison of different models as well as an assessment of their relative strengths and weaknesses difficult.
+2. The benchmarks used for evaluation are often arbitrarily chosen, without much consideration to whether the task is suitable for evaluating long-range modeling.
+3. Many papers tend to conflate the effectiveness of the inductive bias with the benefits of pretraining (Ainslie et al., 2020; Zaheer et al., 2020; Wang et al., 2020), which tends to obfuscate the true value of the architecture. Pretraining itself is a computationally expensive endeavour and de-coupling inductive bias research from pretraining would make xformer research more accessible.
+
+[p. 2] The paper proposes a new benchmark, *Long-Range Arena* (LRA), for the purpose of benchmarking sequence models under the long-context scenario. The benchmark suite is comprised of both synthetic probing tasks and real-world tasks with relative comparisons for **ten** recently proposed efficient Transformer models including Sparse Transformers (Child et al., 2019), Reformer (Kitaev et al., 2020), Linformer (Wang et al., 2020), Longformer (Beltagy et al., 2020), Sinkhorn Transformers (Tay et al., 2020b), Performers (Choromanski et al., 2020b), Synthesizers (Tay et al., 2020a), Linear Transformers (Katharopoulos et al., 2020), and BigBird (Zaheer et al., 2020). The authors describe this as the most comprehensive and extensive side-by-side evaluation of this class of models.
+
+The focus of the benchmark is twofold: (1) the ability of these architectures to reason in long-context scenarios, and (2) understanding the capabilities and properties of these xformer architectures when exposed to different types of data and conditions. The benchmark is purposefully designed to be capability probing -- the authors select datasets and tasks with certain innate structure, e.g., long sequences that are intrinsically hierarchical or that contain spatial structure.
+
+Aside from comparing quality, the paper also conducts extensive efficiency and memory usage analysis. The framework, which is open source, is written in JAX/FLAX (https://github.com/google/flax).

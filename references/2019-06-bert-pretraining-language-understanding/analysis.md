@@ -14,30 +14,44 @@ key_claims:
     claim: "BERT_LARGE achieves a GLUE score of 80.5%, a 7.7 point absolute improvement over prior state of the art"
     evidence: "Table 1, Section 4.1"
     status: supported
+    scope: "8 GLUE tasks (WNLI excluded), English, single-model single-task"
+    magnitude: "+7.7 points over prior SOTA (72.8), +7.0 average accuracy over OpenAI GPT"
   - id: C2
     claim: "Bidirectional pre-training via MLM is critical: replacing MLM with left-to-right LM drops MNLI-m from 84.4 to 82.1 and SQuAD F1 from 88.5 to 77.8"
     evidence: "Table 5, Section 5.1"
     status: supported
+    scope: "BERT_BASE architecture, same pre-training data and fine-tuning scheme"
+    magnitude: "-2.3 MNLI-m, -9.2 MRPC, -10.7 SQuAD F1"
   - id: C3
     claim: "Next sentence prediction pre-training benefits QNLI (+3.5 points), MNLI (+0.5), and SQuAD F1 (+0.6)"
     evidence: "Table 5, Section 5.1"
     status: supported
+    scope: "BERT_BASE architecture, MLM kept in both conditions"
+    magnitude: "+3.5 QNLI, +0.5 MNLI-m, +0.6 SQuAD F1"
   - id: C4
     claim: "BERT_LARGE ensemble achieves SQuAD v1.1 Test F1 of 93.2, surpassing the top leaderboard system by +1.5 F1"
     evidence: "Table 2, Section 4.2"
     status: supported
+    scope: "7-system ensemble with TriviaQA data augmentation"
+    magnitude: "+1.5 F1 over top leaderboard system (91.7)"
   - id: C5
     claim: "BERT_LARGE achieves SQuAD v2.0 Test F1 of 83.1, a +5.1 F1 improvement over the previous best system"
     evidence: "Table 3, Section 4.3"
     status: supported
+    scope: "Single model, no TriviaQA augmentation"
+    magnitude: "+5.1 F1 over MIR-MRC (78.0)"
   - id: C6
     claim: "Larger pre-trained models lead to strict accuracy improvements across all tasks, even MRPC with only 3,600 training examples"
     evidence: "Table 6, Section 5.2"
     status: supported
+    scope: "3 to 24 layers, 768 to 1024 hidden, MNLI/MRPC/SST-2, 5 random restarts"
+    magnitude: "+8.7 MNLI-m (77.9 to 86.6), +8.0 MRPC (79.8 to 87.8), +5.3 SST-2 (88.4 to 93.7)"
   - id: C7
     claim: "Feature-based BERT (concat last 4 hidden layers) achieves 96.1 Dev F1 on CoNLL-2003 NER, only 0.3 F1 behind fine-tuning"
     evidence: "Table 7, Section 5.3"
     status: supported
+    scope: "CoNLL-2003 NER, BERT_BASE, two-layer 768-dim BiLSTM classifier, 5 random restarts"
+    magnitude: "96.1 vs. 96.4 Dev F1 (0.3 gap)"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -139,7 +153,14 @@ For each pre-training example, two spans A and B are sampled from the corpus. 50
 BERT's self-attention mechanism unifies sentence-pair encoding and cross-attention into a single model: encoding a concatenated text pair with bidirectional self-attention effectively includes bidirectional cross-attention between the two sentences. For each downstream task:
 
 - **Classification tasks** (MNLI, SST-2, etc.): The [CLS] representation C is fed into a classification layer W, computing log(softmax(CW^T)).
-- **Question answering** (SQuAD): A start vector S and end vector E are learned. The probability of word i being the start of the answer span is P_i = exp(S * T_i) / sum_j exp(S * T_j). The candidate span score from position i to j is S * T_i + E * T_j.
+- **Question answering** (SQuAD): A start vector S and end vector E are learned. The probability of word i being the start of the answer span is:
+
+> P_i = exp(S * T_i) / sum_j exp(S * T_j)
+
+  The candidate span score from position i to j is:
+
+> score(i, j) = S * T_i + E * T_j
+
 - **Sequence tagging** (NER): Token representations T_i are fed into a token-level classifier.
 
 ### Experimental Setup
@@ -211,7 +232,13 @@ GLUE test results scored by the evaluation server. BERT and OpenAI GPT are singl
 | **BERT_LARGE (Single)** | **78.7** | **81.9** | **80.0** | **83.1** |
 
 - BERT_LARGE achieves +5.1 F1 improvement over the previous best system (78.0 F1) (Section 4.3).
-- The approach is simple: questions without answers are treated as having an answer span at the [CLS] token. A no-answer score s_null = S*C + E*C is compared to the best non-null span score, with threshold tau selected on the dev set to maximize F1. Fine-tuned for 2 epochs with lr=5e-5 and batch size 48 (Section 4.3).
+- The approach is simple: questions without answers are treated as having an answer span at the [CLS] token. A no-answer score is compared to the best non-null span score:
+
+> s_null = S * C + E * C
+>
+> s_hat_{i,j} = max_{j >= i} S * T_i + E * T_j
+
+  A non-null answer is predicted when s_hat_{i,j} > s_null + tau, where threshold tau is selected on the dev set to maximize F1. Fine-tuned for 2 epochs with lr=5e-5 and batch size 48 (Section 4.3).
 
 #### SWAG (Table 4, Section 4.4)
 
@@ -288,6 +315,8 @@ CoNLL-2003 Named Entity Recognition results, averaged over 5 random restarts:
 | 80% | 10% | 10% | 84.2 | 95.4 | 94.9 |
 | 100% | 0% | 0% | 84.3 | 94.9 | 94.0 |
 | 80% | 0% | 20% | 84.1 | 95.2 | 94.6 |
+| 80% | 20% | 0% | 84.4 | 95.2 | 94.7 |
+| 0% | 20% | 80% | 83.7 | 94.8 | 94.6 |
 | 0% | 0% | 100% | 83.6 | 94.9 | 94.6 |
 
 - Fine-tuning is surprisingly robust to different masking strategies (Appendix C.2).
@@ -310,6 +339,11 @@ CoNLL-2003 Named Entity Recognition results, averaged over 5 random restarts:
 6. **WNLI excluded from evaluation.** The paper excludes WNLI from the GLUE evaluation because "every trained system that's been submitted to GLUE has performed worse than the 65.1 baseline accuracy of predicting the majority class" due to dataset construction issues (Appendix B.1). For the GLUE submission, BERT always predicts the majority class on WNLI.
 
 7. **English-only evaluation.** All pre-training data and evaluation benchmarks are in English. The paper does not evaluate cross-lingual or multilingual capabilities.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models beyond BERT_BASE (110M) and BERT_LARGE (340M) were evaluated on downstream tasks. The model size ablation (Table 6) tests intermediate sizes on only 3 GLUE tasks (MNLI, MRPC, SST-2), not on SQuAD or SWAG. No decoder or encoder-decoder architectures were compared. No languages other than English were tested.
+- **Comparability notes:** The comparison with OpenAI GPT is carefully controlled (same model size for BERT_BASE, same number of training steps) but uses different training data (BERT adds Wikipedia to BooksCorpus), different batch sizes (128K vs. 32K words/batch), and different fine-tuning learning rate selection strategies (task-specific vs. fixed 5e-5). The LTR & No NSP ablation (Table 5) isolates bidirectionality more cleanly but still uses BERT's larger training data. The SQuAD v1.1 ensemble results use TriviaQA data augmentation, making them not directly comparable to systems without such augmentation.
 
 ---
 

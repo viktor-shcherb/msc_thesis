@@ -1,7 +1,7 @@
 # Longformer: The Long-Document Transformer
 
 **Authors:** Iz Beltagy, Matthew E. Peters, Arman Cohan
-**Affiliation:** Allen Institute for Artificial Intelligence (AI2)
+**Affiliation:** Allen Institute for Artificial Intelligence, Seattle, WA, USA
 
 ## Publication Status
 

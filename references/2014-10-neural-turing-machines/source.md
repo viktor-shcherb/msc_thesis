@@ -1,7 +1,7 @@
 # Neural Turing Machines
 
 **Authors:** Alex Graves, Greg Wayne, Ivo Danihelka
-**Affiliation:** Google DeepMind
+**Affiliation:** Google DeepMind, London, UK
 
 ## Publication Status
 

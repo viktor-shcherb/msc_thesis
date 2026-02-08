@@ -1,7 +1,7 @@
 # On the Bottleneck of Graph Neural Networks and its Practical Implications
 
 **Authors:** Uri Alon, Eran Yahav
-**Affiliation:** Technion — Israel Institute of Technology
+**Affiliation:** Technion, Israel
 
 ## Publication Status
 

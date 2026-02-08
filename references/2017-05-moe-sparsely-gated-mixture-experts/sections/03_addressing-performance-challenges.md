@@ -1,0 +1,23 @@
+# 3 Addressing Performance Challenges [p. 4-5]
+
+## 3.1 The Shrinking Batch Problem [p. 4-5]
+
+[p. 4] On modern CPUs and GPUs, large batch sizes are necessary for computational efficiency, to amortize the overhead of parameter loads and updates. If the gating network chooses k out of n experts for each example, then for a batch of b examples, each expert receives a much smaller batch of approximately kb/n << b examples. This causes a naive MoE implementation to become very inefficient as the number of experts increases. The solution is to make the original batch size as large as possible, but batch size tends to be limited by the memory necessary to store activations between the forward and backward passes.
+
+The following techniques are proposed for increasing the batch size:
+
+**Mixing Data Parallelism and Model Parallelism:** [p. 4] In a conventional distributed training setting, multiple copies of the model on different devices asynchronously process distinct batches of data, and parameters are synchronized through parameter servers. In this technique, these different batches run synchronously so they can be combined for the MoE layer. The standard layers of the model and the gating network are distributed according to conventional data-parallel schemes, but only one shared copy of each expert is kept. Each expert in the MoE layer receives a combined batch consisting of the relevant examples from all of the data-parallel input batches. The same set of devices function as data-parallel replicas (for the standard layers and the gating networks) and as model-parallel shards (each hosting a subset of the experts). If the model is distributed over d devices, and each device processes a batch of size b, each expert receives a batch of approximately kbd/n examples. Thus, they achieve a factor of d improvement in expert batch size.
+
+In the case of a hierarchical MoE (Section B), the primary gating network employs data parallelism, and the secondary MoEs employ model parallelism. Each secondary MoE resides on one device. [p. 4]
+
+[p. 5] This technique allows increasing the number of experts (and hence the number of parameters) by proportionally increasing the number of devices in the training cluster. The total batch size increases, keeping the batch size per expert constant. The memory and bandwidth requirements per device also remain constant, as do the step times, as does the amount of time necessary to process a number of training examples equal to the number of parameters in the model. It is their goal to train a trillion-parameter model on a trillion-word corpus. They have not scaled their systems this far as of the writing of the paper, but it should be possible by adding more hardware.
+
+**Taking Advantage of Convolutionality:** [p. 5] In their language models, they apply the same MoE to each time step of the previous layer. If they wait for the previous layer to finish, they can apply the MoE to all the time steps together as one big batch. Doing so increases the size of the input batch to the MoE layer by a factor of the number of unrolled time steps.
+
+**Increasing Batch Size for a Recurrent MoE:** [p. 5] Even more powerful models may involve applying a MoE recurrently. For example, the weight matrices of an LSTM or other RNN could be replaced by a MoE. Such models break the convolutional trick since the input to the MoE at one timestep depends on the output of the MoE at the previous timestep. Gruslys et al. (2016) describe a technique for drastically reducing the number of stored activations in an unrolled RNN, at the cost of recomputing forward activations. This would allow for a large increase in batch size.
+
+## 3.2 Network Bandwidth [p. 5]
+
+[p. 5] Another major performance concern in distributed computing is network bandwidth. Since the experts are stationary and the number of gating parameters is small, most of the communication involves sending the inputs and outputs of the experts across the network. To maintain computational efficiency, the ratio of an expert's computation to the size of its input and output must exceed the ratio of computational to network capacity of the computing device. For GPUs, this may be thousands to one.
+
+In their experiments, they use experts with one hidden layer containing thousands of RELU-activated units. Since the weight matrices in the expert have sizes input_size x hidden_size and hidden_size x output_size, the ratio of computation to input and output is equal to the size of the hidden layer. Computational efficiency can be increased simply by using a larger hidden layer, or more hidden layers.

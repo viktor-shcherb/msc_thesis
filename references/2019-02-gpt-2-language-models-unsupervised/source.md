@@ -5,11 +5,12 @@
 
 ## Publication Status
 
-- **Preprint:** February 2019
+- **Released:** February 14, 2019 (OpenAI technical report)
 - **Peer-reviewed:** No
+- **Conference/Journal:** N/A (never submitted to a venue)
 - **Status:** Technical report (not submitted to peer review)
 
-Note: This paper was released as an OpenAI technical report alongside the GPT-2 model weights. It has never been formally peer-reviewed but has been highly influential, accumulating over 15,000 citations and establishing the foundation for zero-shot evaluation of language models.
+Note: This paper was released as an OpenAI technical report alongside the GPT-2 model. It has never been posted to arXiv or formally peer-reviewed. The model weights were released in stages: the 124M parameter version in February 2019, with the full 1.5B parameter version following in November 2019.
 
 ## Preferred Citation
 
@@ -17,6 +18,6 @@ Note: This paper was released as an OpenAI technical report alongside the GPT-2 
 
 ## Links
 
-- OpenAI Blog: https://openai.com/blog/better-language-models/
+- OpenAI Blog: https://openai.com/index/better-language-models/
 - PDF: https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf
 - Code: https://github.com/openai/gpt-2

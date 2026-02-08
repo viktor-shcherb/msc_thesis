@@ -1,16 +1,16 @@
 # Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity
 
-**Authors:** William Fedus, Barret Zoph, Noam Shazeer
-**Affiliation:** Google Brain
+**Authors:** William Fedus*, Barret Zoph*, Noam Shazeer
+**Affiliation:** Google, Mountain View, CA 94043, USA
+
+*Equal contribution.
 
 ## Publication Status
 
 - **arXiv preprint:** January 2021, arXiv:2101.03961
 - **Peer-reviewed:** Yes
-- **Conference/Journal:** Journal of Machine Learning Research, Volume 23, Issue 120, Pages 1-39, 2022
+- **Journal:** Journal of Machine Learning Research, Volume 23, Number 120, Pages 1-40, Published April 2022
 - **Status:** Published journal paper
-
-The paper introduces Switch Transformers, a simplified Mixture of Experts architecture that routes each token to a single expert instead of multiple experts as in prior MoE work. This simplification dramatically reduces computational and communication costs while enabling scaling to trillion-parameter models.
 
 ## Preferred Citation
 
@@ -22,4 +22,9 @@ Cite the JMLR 2022 version:
 
 - arXiv: https://arxiv.org/abs/2101.03961
 - JMLR: https://jmlr.org/papers/v23/21-0998.html
-- Code: https://github.com/google-research/t5x (T5X framework)
+- Code (JAX/T5X): https://github.com/google-research/t5x
+- Code (TensorFlow): https://github.com/tensorflow/mesh/blob/master/mesh_tensorflow/transformer/moe.py
+
+## Notes
+
+- **Slug date discrepancy:** The directory uses `2022-06` (arXiv v3 revision date of 16 Jun 2022), but the JMLR publication date is April 2022 ("Published 4/22" on the paper header). The correct slug would be `2022-04-switch-transformers-moe`.

@@ -1,7 +1,7 @@
 # Analyzing Multi-Head Self-Attention: Specialized Heads Do the Heavy Lifting, the Rest Can Be Pruned
 
 **Authors:** Elena Voita, David Talbot, Fedor Moiseev, Rico Sennrich, Ivan Titov
-**Affiliations:** Yandex, University of Amsterdam, University of Edinburgh, University of Zurich, Moscow Institute of Physics and Technology
+**Affiliations:** Elena Voita (Yandex, Russia; University of Amsterdam, Netherlands), David Talbot (Yandex, Russia), Fedor Moiseev (Yandex, Russia; Moscow Institute of Physics and Technology, Russia), Rico Sennrich (University of Edinburgh, Scotland; University of Zurich, Switzerland), Ivan Titov (University of Edinburgh, Scotland; University of Amsterdam, Netherlands)
 
 ## Publication Status
 

@@ -254,7 +254,7 @@ Enumerate what the corpus does **not** address. For each gap:
 
 ## Style Rules
 
-All style rules from `references/GUIDELINES.md` apply, plus:
+All style rules from `prompts/add_reference/write_analysis/prompt.md` apply, plus:
 
 1. **Synthesis over summary.** Every paragraph must connect findings from multiple papers. If you find yourself describing a single paper for more than two sentences, you are summarizing, not synthesizing.
 2. **Cite paper directories, not author names, for traceability.** Use the format `2024-02-lost-in-the-middle` in the text body so references are machine-searchable. Author names (e.g., "Liu et al.") may be used alongside for readability: "Liu et al. (`2024-02-lost-in-the-middle`) found that..."

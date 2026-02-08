@@ -8,36 +8,49 @@ categories: ["architecture", "attention-efficiency", "benchmarking"]
 scope: ["memory compression", "long-range sequence modelling", "book-level language modelling"]
 benchmarks_used: ["enwik8", "perplexity-wikitext103", "perplexity-pg19"]
 models_introduced: ["compressive-transformer"]
-models_evaluated: []
+models_evaluated: ["transformer-xl"]
 key_claims:
   - id: C1
     claim: "Compressive Transformer achieves 0.97 BPC on Enwik8, state-of-the-art at time of publication"
     evidence: "Table 4, Section 5.2"
     status: supported
+    scope: "24-layer model, Enwik8 character-level LM, compressed memory 3072 at evaluation"
+    magnitude: "0.97 BPC, 0.01 improvement over Adaptive Transformer (0.98)"
   - id: C2
     claim: "Compressive Transformer achieves 17.1 perplexity on WikiText-103, 1.2 points over prior state-of-the-art TransformerXL"
     evidence: "Table 6, Section 5.3"
     status: supported
+    scope: "18-layer model, WikiText-103 closed-vocabulary word-level LM, memory 500 + compressed memory 1500 at evaluation"
+    magnitude: "17.1 perplexity, 1.2 points over published TransformerXL (18.3), 1.0 over authors' baseline (18.1)"
   - id: C3
     claim: "Convolution with attention-reconstruction loss is the best compression approach, achieving 0.973 BPC on Enwik8"
     evidence: "Table 5, Section 5.2"
     status: supported
+    scope: "Enwik8 character-level LM, sweep over compression rates 2, 3, 4"
+    magnitude: "0.973 BPC vs 0.984 (auto-encoding), 0.982 (mean pooling), 0.996 (BPTT)"
   - id: C4
     claim: "Compression disproportionately improves rare word modelling: ~20% improvement for infrequent words vs 2.6% for frequent words over TransformerXL"
     evidence: "Table 7, Section 5.3"
     status: supported
+    scope: "WikiText-103 word-level LM, frequency-stratified evaluation"
+    magnitude: "2.6% gain for >10K frequency, 9.5% for 1K-10K, 21% for 100-1K, 19.9% for <100"
   - id: C5
     claim: "Compressive Transformer achieves 33.6 test perplexity on PG-19 vs TransformerXL's 36.3"
     evidence: "Table 3, Section 5.1"
     status: supported
+    scope: "36-layer model, PG-19 book-level word LM, subword vocabulary 32K"
+    magnitude: "33.6 vs 36.3 test perplexity, 2.7 point improvement"
   - id: C6
     claim: "Attention weight increases at the transition from memory to compressed memory, indicating the network preserves salient information"
     evidence: "Figure 2, Section 5.5"
     status: supported
+    scope: "Enwik8, average over 20,000 sequences"
   - id: C7
     claim: "Reducing optimisation update frequency improves generalisation for long-context models, improving the TransformerXL baseline from 0.995 to 0.984 BPC on Enwik8"
     evidence: "Figure 3, Section 5.5.1"
     status: supported
+    scope: "Enwik8, TransformerXL baseline, updates every 4 steps after 60K iterations"
+    magnitude: "0.995 to 0.984 BPC (0.011 improvement)"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -139,14 +152,22 @@ The model attends over both memory types using the same attention mechanism, wit
 
 **Compression losses.** Three training strategies for the compression function (Section 3.2):
 - **BPTT:** gradients from the task loss flow through long unrolls into the compression function. Requires doubling the unroll length and halving the batch size.
-- **Auto-encoding loss:** L^ae = ||old_mem^(i) - g(new_cm^(i))||_2, where g is a learned decoder. This is a lossless objective that attempts to retain all information.
+- **Auto-encoding loss:** This is a lossless objective that attempts to retain all information:
+
+> L^ae = ||old_mem^(i) - g(new_cm^(i))||_2
+
+where g : R^{n_s/c x d} -> R^{n_s x d} is a learned decoder.
 - **Attention-reconstruction loss:** reconstructs the content-based attention over old memories from the compressed memories (Algorithm 2). Specifically:
 
 > L^attn = sum_i ||attn(h^(i), old_mem^(i)) - attn(h^(i), new_cm^(i))||_2
 
 where attn(h, m) = sigma((hQ)(mK)^T)(mV) uses content-based attention without relative positional embeddings. Gradients from L^attn are stopped from flowing into the main Transformer network. This is a **lossy** objective: information that is no longer attended to can be discarded. This approach worked best (Table 5).
 
-**Temporal range analysis.** The TransformerXL has maximum temporal range l x n with attention cost O(n_s^2 + n_s * n). The Compressive Transformer has maximum temporal range l x (n_m + c * n_cm) with attention cost O(n_s^2 + n_s * (n_m + n_cm)). Setting n_cm = n_m = n/2 and c = 3, the temporal range doubles compared to TransformerXL at identical attention cost (Section 3.3).
+**Temporal range analysis.** The TransformerXL has maximum temporal range l x n with attention cost O(n_s^2 + n_s * n). The Compressive Transformer has:
+
+> Maximum temporal range = l x (n_m + c * n_cm), attention cost = O(n_s^2 + n_s * (n_m + n_cm))
+
+Setting n_cm = n_m = n/2 and c = 3, the temporal range doubles compared to TransformerXL at identical attention cost (Section 3.3).
 
 **Optimisation schedule.** Reducing the learning rate (or setting it to zero) during training degrades performance drastically for both TransformerXL and Compressive Transformer, due to distributional shift between training mode (with ongoing parameter updates) and evaluation mode. Instead of decaying the learning rate, the authors reduce the frequency of optimisation updates after 60,000 iterations (e.g., updates every 4 steps). This increases the effective batch size and improves generalisation. This technique improved the TransformerXL baseline from 0.995 to 0.984 BPC on Enwik8, matching the then state-of-the-art Adaptive Transformer (Figure 3, Section 5.5.1).
 
@@ -300,6 +321,13 @@ The attention-reconstruction compression loss varies across layers but does not 
 - **Autoregressive only.** The paper evaluates only autoregressive language models. The applicability of the compression mechanism to bidirectional or encoder-decoder architectures is not explored. The Compressive Transformer's memory system is inherently left-to-right, making it unsuitable for the pretrain-finetune paradigm used by BERT and Longformer.
 
 - **Compression introduces hyperparameters.** The approach adds several hyperparameters beyond TransformerXL: compression rate c, compressed memory size n_cm, choice of compression function, and choice of auxiliary loss. The optimal settings differ across tasks (c = 2 for PG-19, c = 3 for Enwik8, c = 4 for WikiText-103 and speech).
+
+#### Scope and Comparability
+
+- **No variance estimates reported.** Language modelling results (Tables 3, 4, 6) are single-run numbers without standard deviations or confidence intervals. The RL experiments are averaged over 3 seeds, but text experiments are not.
+- **Evaluation-time memory tuning.** The Enwik8 and WikiText-103 headline results use compressed memory sizes tuned on the validation set at evaluation time (Supplementary Tables 8--9), which is standard practice but means the training-time numbers are weaker (e.g., 17.6 vs 17.1 on WikiText-103).
+- **2019-era baselines only.** All comparisons are against models available at time of submission (late 2019). Subsequent models (e.g., Routing Transformer, Performer, etc.) are not compared.
+- **What was not tested.** No bidirectional or encoder-decoder models; no evaluation on downstream NLU tasks; no evaluation at scales beyond ~277M parameters.
 
 ---
 

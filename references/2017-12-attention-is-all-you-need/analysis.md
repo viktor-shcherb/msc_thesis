@@ -14,31 +14,43 @@ key_claims:
     claim: "Self-attention can replace recurrence and convolution entirely for sequence transduction, achieving state-of-the-art results"
     evidence: "Table 2, Section 6.1"
     status: supported
+    scope: "WMT 2014 EN-DE and EN-FR, encoder-decoder Transformer"
+    magnitude: "28.4 BLEU EN-DE, 41.8 BLEU EN-FR (new SOTA on both)"
   - id: C2
     claim: "Transformer (big) achieves 28.4 BLEU on WMT 2014 EN-DE, surpassing all prior models including ensembles by more than 2.0 BLEU"
     evidence: "Table 2, Section 6.1"
     status: supported
+    scope: "WMT 2014 EN-DE newstest2014"
+    magnitude: ">2.0 BLEU over best ensemble (ConvS2S Ensemble at 26.36)"
   - id: C3
     claim: "Multi-head attention (h=8) outperforms single-head attention by 0.9 BLEU on EN-DE dev"
     evidence: "Table 3, row A: h=1 yields 24.9 BLEU vs base h=8 at 25.8 BLEU"
     status: supported
+    scope: "EN-DE dev newstest2013, base model (65M params)"
+    magnitude: "0.9 BLEU (24.9 vs 25.8)"
   - id: C4
     claim: "Sinusoidal and learned positional encodings produce nearly identical results"
     evidence: "Table 3, row E: learned embeddings yield 25.7 BLEU vs sinusoidal 25.8 BLEU"
     status: supported
+    scope: "EN-DE dev newstest2013, base model (65M params)"
+    magnitude: "0.1 BLEU difference (25.7 vs 25.8)"
   - id: C5
     claim: "The Transformer trains significantly faster than competitive RNN/CNN models at comparable or better quality"
     evidence: "Table 2: Transformer base uses 3.3e18 FLOPs vs 9.6e18 (ConvS2S), 2.3e19 (GNMT+RL) for EN-DE"
     status: supported
+    scope: "WMT 2014 EN-DE"
+    magnitude: "3.3e18 FLOPs (base) vs 9.6e18 (ConvS2S), 2.3e19 (GNMT+RL)"
   - id: C6
     claim: "Self-attention connects any two positions with O(1) maximum path length versus O(n) for recurrence"
     evidence: "Table 1, Section 4"
     status: supported
+    scope: "architectural property of self-attention layers"
   - id: C7
     claim: "Sinusoidal positional encodings may allow the model to extrapolate to sequence lengths longer than those encountered during training"
     evidence: "Section 3.5, stated as hypothesis, not empirically validated"
     status: contested
     contested_by: 2022-04-alibi-train-short-test-long
+    scope: "hypothesis, not empirically validated in this paper"
 cross_references:
   - target: 2019-07-specialized-attention-heads-pruning
     type: extended-by
@@ -115,6 +127,9 @@ cross_references:
   - target: 2017-05-moe-sparsely-gated-mixture-experts
     type: concurrent
     detail: "Shazeer et al.'s Sparsely-Gated MoE is cited as a baseline in Table 2, achieving 26.03 BLEU on WMT'14 EN-DE; both papers published in 2017 address scaling neural networks"
+  - target: 2014-10-neural-turing-machines
+    type: extends
+    detail: "The Transformer's scaled dot-product attention generalises the content-based addressing mechanism introduced in Neural Turing Machines from sequential memory access to parallel self-attention over all positions"
   - target: 2024-05-mamba-selective-state-spaces
     type: complementary
     detail: "Mamba proposes selective state space models as an alternative to Transformer attention with O(n) instead of O(n²) complexity, achieving 5× faster inference while matching or exceeding Transformer quality on language modeling"
@@ -130,6 +145,9 @@ cross_references:
   - target: 2025-12-ttt-e2e-long-context
     type: extended-by
     detail: "TTT-E2E applies test-time training to a standard Transformer with sliding-window attention, compressing context into MLP weights via meta-learned gradient descent for constant-latency long-context modeling"
+  - target: 2025-09-apertus-open-compliant-llms
+    type: extended-by
+    detail: "Apertus builds a dense decoder-only Transformer at 8B and 70B scale with GQA, RoPE, RMSNorm, xIELU activation, and QK-Norm modifications"
 open_questions:
   - question: "Why do sinusoidal and learned positional encodings produce nearly identical results?"
     addressed_by: null
@@ -139,6 +157,10 @@ open_questions:
     addressed_by: null
   - question: "Do sinusoidal positional encodings actually enable length extrapolation?"
     addressed_by: 2022-04-alibi-train-short-test-long
+  - question: "Can the Transformer extend to non-text modalities such as images, audio, and video?"
+    addressed_by: null
+  - question: "Can generation be made less sequential?"
+    addressed_by: null
 ---
 # Attention Is All You Need
 
@@ -151,7 +173,7 @@ open_questions:
 
 State-of-the-art sequence transduction models in 2017 relied on recurrent neural networks (LSTMs, GRUs) or convolutional neural networks as their core building block, typically arranged in an encoder-decoder structure with an attention mechanism connecting the two. These architectures suffer from a fundamental limitation: **recurrent models process tokens sequentially**, generating hidden states h_t as a function of h_{t-1} and the input at position t (Section 1). This sequential dependency precludes parallelization within training examples, which becomes a critical bottleneck at longer sequence lengths as memory constraints limit batching across examples.
 
-Convolutional approaches (ByteNet, ConvS2S) improve parallelism but require O(n/k) or O(log_k(n)) layers to relate signals from two arbitrary positions at distance n, making long-range dependency learning more difficult (Section 2). Attention mechanisms had been used successfully to model dependencies regardless of distance, but almost always in conjunction with a recurrent network (Bahdanau et al., 2014; Luong et al., 2015), retaining the sequential computation bottleneck. Prior work on self-attention had been applied within specific tasks (reading comprehension, sentence embeddings) but never as the sole mechanism for a full sequence transduction model.
+Convolutional approaches (ByteNet, ConvS2S) improve parallelism but require O(n/k) or O(log_k(n)) layers to relate signals from two arbitrary positions at distance n, making long-range dependency learning more difficult (Section 2). Attention mechanisms had been used successfully to model dependencies regardless of distance, but almost always in conjunction with a recurrent network (Bahdanau et al., 2014; Luong et al., 2015), retaining the sequential computation bottleneck. Prior work on self-attention had been applied within specific tasks (reading comprehension, abstractive summarization, textual entailment, task-independent sentence representations) but never as the sole mechanism for a full sequence transduction model.
 
 The core challenge is: **how to build a sequence transduction model that achieves state-of-the-art quality while eliminating sequential computation entirely, enabling full parallelization during training and constant-length dependency paths between any two positions.**
 
@@ -253,7 +275,7 @@ with warmup_steps = 4000.
 | **Transformer (big)** | **28.4** | **41.8** | **2.3e19** |
 
 - The Transformer (big) achieves **28.4 BLEU on EN-DE**, surpassing all prior models including ensembles by more than 2.0 BLEU (Table 2, Section 6.1).
-- On EN-FR, the Transformer (big) achieves **41.8 BLEU** (Table 2), a new single-model state-of-the-art, at less than 1/4 the training cost of the previous best single model.
+- On EN-FR, the Transformer (big) achieves **41.8 BLEU** (Table 2 and abstract), a new single-model state-of-the-art, at less than 1/4 the training cost of the previous best single model. (Note: the Section 6.1 text states "41.0" while Table 2 and the abstract report 41.8; the table is the standard cited figure.)
 - The base model alone (3.3e18 FLOPs) surpasses all previously published single models and ensembles on EN-DE at a fraction of the training cost.
 - The EN-FR base model (38.1 BLEU) does not surpass the best prior single models on EN-FR; only the big model does.
 
@@ -273,6 +295,8 @@ with warmup_steps = 4000.
 | N=8 layers (C) | 4.88 | 25.5 | 80 |
 | d_model=256, d_k=d_v=32 (C) | 5.75 | 24.5 | 28 |
 | d_model=1024, d_k=d_v=128 (C) | 4.66 | 26.0 | 168 |
+| d_ff=1024 (C) | 5.12 | 25.4 | 53 |
+| d_ff=4096 (C) | 4.75 | 26.2 | 90 |
 | P_drop=0.0 (D) | 5.77 | 24.6 | 65 |
 | P_drop=0.2 (D) | 4.95 | 25.5 | 65 |
 | epsilon_ls=0.0 (D) | 4.67 | 25.3 | 65 |
@@ -319,6 +343,7 @@ with warmup_steps = 4000.
 - Self-attention achieves **O(1) maximum path length** between any two positions (vs O(n) for RNNs), which is the key theoretical advantage for learning long-range dependencies (Table 1, Section 4).
 - Self-attention is faster than recurrence when sequence length n < representation dimension d, which holds for most sentence-level NLP tasks with subword tokenization (Section 4).
 - The O(n^2 * d) complexity per layer becomes a bottleneck for very long sequences; the paper suggests restricted self-attention (neighborhood size r) as a future direction (Section 4).
+- A single convolutional layer with kernel width k < n does not connect all pairs of positions, requiring O(n/k) layers (contiguous) or O(log_k(n)) layers (dilated). Even separable convolutions with k = n have complexity equal to the combination of a self-attention layer and a point-wise FFN layer (Section 4).
 - Self-attention has a side benefit of potentially yielding more interpretable models: the appendix shows attention heads learning syntactic and semantic patterns such as long-distance dependency resolution and anaphora resolution (Section 4, Figures 3-5).
 
 ---
@@ -344,6 +369,11 @@ The paper does not include a dedicated limitations section. The following limita
 8. **Length extrapolation hypothesis untested.** The authors hypothesize that sinusoidal encodings "may allow the model to extrapolate to sequence lengths longer than the ones encountered during training" (Section 3.5) but do not test this. Subsequent work (ALiBi, Press et al., 2022) showed that sinusoidal and learned positional encodings fail at length extrapolation.
 
 9. **Evaluation limited to two tasks.** The paper evaluates only on machine translation and constituency parsing. Generalization to other NLP tasks (e.g., language modeling, classification, question answering) is not demonstrated, though later work broadly confirmed the architecture's versatility.
+
+#### Scope and Comparability
+
+- **What was not tested:** Language modeling (perplexity-only evaluation), text classification, question answering, summarization, and all non-text modalities. The paper evaluates only the encoder-decoder configuration; decoder-only and encoder-only variants (later used by GPT and BERT respectively) are not explored. No evaluation of sequence lengths beyond those in the WMT training data. No variance estimates or multiple-seed runs are reported.
+- **Comparability notes:** BLEU scores are reported on newstest2014 for translation, which is standard for the WMT 2014 benchmarks, making direct comparison with contemporaneous work straightforward. Training FLOPs are estimated rather than measured, using assumed sustained TFLOPS values per GPU type (footnote 5: 9.5 TFLOPS for P100). The constituency parsing comparison uses WSJ Section 23 F1, which is the standard evaluation split.
 
 ---
 

@@ -1,0 +1,3 @@
+# 7 Conclusion [p. 10]
+
+[p. 10] The authors perform a fine-grained analysis of the impact of long-range context to both token- and sequence-level improvements on two long-range Transformer language models, using the PG-19 dataset as a testbed. The results suggest these models rarely take advantage of the long-term context, and when they do it is mostly in superficial ways (e.g., by copying rare tokens from far away). With the proliferation of research in increasing the input size of Transformer LMs, the authors hope that this research will lead to more meaningful progress on integrating discourse information into these models. [p. 10]

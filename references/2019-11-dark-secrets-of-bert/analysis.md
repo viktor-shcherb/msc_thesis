@@ -14,26 +14,37 @@ key_claims:
     claim: "BERT exhibits five recurring self-attention pattern types (Vertical, Diagonal, Vertical+Diagonal, Block, Heterogeneous) that repeat across heads and tasks"
     evidence: "Section 4.1, Figures 1-2, CNN classifier with F1=0.86"
     status: supported
+    scope: "BERT-base-uncased, 7 GLUE tasks"
+    magnitude: "CNN classifier F1 = 0.86 on ~400 annotated maps"
   - id: C2
     claim: "The upper bound on potentially linguistically informative Heterogeneous heads ranges from 32% (MRPC) to 61% (QQP)"
     evidence: "Section 4.1, Figure 2"
     status: supported
+    scope: "BERT-base-uncased fine-tuned, 7 GLUE tasks, up to 1000 validation examples per task"
+    magnitude: "32%-61% depending on task"
   - id: C3
     claim: "Only 2 out of 144 heads encode information correlated with FrameNet frame-semantic relations, with averaged max attention weights of 0.201 and 0.209 (>99th percentile), and these heads are not important for any GLUE task"
     evidence: "Section 4.2, Section 5, Figure 3"
     status: supported
+    scope: "Pre-trained BERT-base, 473 filtered FrameNet sentences (frame elements <=3 tokens, sentences <=12 tokens, linked elements >=2 tokens apart)"
+    magnitude: "2/144 heads, averaged max weights 0.201 and 0.209"
   - id: C4
     claim: "Fine-tuning primarily changes the last two BERT layers; fine-tuned BERT outperforms pre-trained BERT by an average of 35.9 absolute points on GLUE"
     evidence: "Section 4.3, Figure 5, Table 1"
     status: supported
+    scope: "BERT-base-uncased, 7 GLUE tasks (layer localization holds for all except QQP)"
+    magnitude: "35.9 absolute points average fine-tuning gain"
   - id: C5
     claim: "Disabling certain attention heads improves performance on all seven GLUE tasks, with single-head gains from +0.1% (STS-B) to +1.2% (MRPC) and up to +3.2% from disabling layer 1 on RTE"
     evidence: "Section 4.6, Figures 8-9"
     status: supported
+    scope: "BERT-base-uncased, 7 GLUE tasks, validation set"
+    magnitude: "Single-head: +0.1% (STS-B) to +1.2% (MRPC); whole-layer: +3.2% (RTE layer 1)"
   - id: C6
     claim: "Vertical attention patterns correspond predominantly to [CLS] and [SEP] tokens rather than linguistically meaningful features such as nouns, verbs, or negation"
     evidence: "Section 4.4, Figure 6"
     status: supported
+    scope: "BERT-base-uncased, 7 GLUE tasks, comparison of pre-trained and fine-tuned"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: evaluates
@@ -83,7 +94,7 @@ open_questions:
 
 ## Core Research Problem
 
-BERT-based architectures achieve state-of-the-art performance on many NLP tasks, but the exact mechanisms that contribute to their success remain unclear. Self-attention is the fundamental component distinguishing Transformers from prior RNN-based architectures, yet little is known about what information individual attention heads encode, how attention patterns change during fine-tuning, and whether all 144 heads (12 layers × 12 heads) are necessary.
+BERT-based architectures achieve state-of-the-art performance on many NLP tasks, but the exact mechanisms that contribute to their success remain unclear. Self-attention is the fundamental component distinguishing Transformers from prior RNN-based architectures, yet little is known about what information individual attention heads encode, how attention patterns change during fine-tuning, and whether all 144 heads (12 layers x 12 heads) are necessary.
 
 Prior work probed BERT's linguistic knowledge at the representation level: Goldberg (2019) tested subject-verb agreement, Jawahar et al. (2019) examined layer-wise linguistic structure, and Liu et al. (2019) studied transferability of contextual representations. However, none had systematically analyzed the self-attention mechanism itself across multiple tasks. Concurrently, work on neural network pruning (Frankle & Carbin, 2018) and head pruning (Voita et al., 2019; Michel et al., 2019) suggested Transformers are overparameterized, but the nature and distribution of redundant attention patterns had not been characterized for BERT.
 
@@ -105,7 +116,7 @@ The paper proposes a methodology for qualitative and quantitative analysis of BE
 
 ### Method
 
-All experiments use bert-base-uncased (12-layer, 768-hidden, 12-heads, 110M parameters). For a given input of length L, each head in every layer produces an L × L self-attention weight matrix. The authors extract and analyze these matrices across seven GLUE tasks: MRPC, STS-B, SST-2, QQP, RTE, QNLI, and MNLI-m. Fine-tuning follows the original BERT parameters: batch size 32, 3 epochs (Section 3). Two GLUE tasks were excluded: CoLA (due to low human performance of 66.4 from methodological issues, and its exclusion from the upcoming SuperGLUE) and the Winograd Schema Challenge (due to small dataset size).
+All experiments use bert-base-uncased (12-layer, 768-hidden, 12-heads, 110M parameters). For a given input of length L, each head in every layer produces an L x L self-attention weight matrix. The authors extract and analyze these matrices across seven GLUE tasks: MRPC, STS-B, SST-2, QQP, RTE, QNLI, and MNLI-m. Fine-tuning follows the original BERT parameters: batch size 32, 3 epochs (Section 3). Two GLUE tasks were excluded: CoLA (due to low human performance of 66.4 from methodological issues, and its exclusion from the upcoming SuperGLUE) and the Winograd Schema Challenge (due to small dataset size).
 
 ### Key Technical Components
 
@@ -123,7 +134,7 @@ The Heterogeneous category is defined as the complement of the other four, makin
 
 A **CNN classifier** (8 convolutional layers, ReLU activations) was trained on ~400 manually annotated self-attention maps, achieving **F1 = 0.86** on the annotated dataset. The annotated data was somewhat unbalanced, with the Vertical class accounting for 30% of samples. This classifier was used to estimate the proportion of each pattern type across tasks using up to 1000 validation examples per task (Section 4.1).
 
-**Frame-semantic relation probing.** Using 473 filtered FrameNet sentences (frame elements ≤ 3 tokens, sentences ≤ 12 tokens, linked elements ≥ 2 tokens apart), the authors tested whether any of the 144 pre-trained BERT heads preferentially attend between frame-evoking predicates and their core frame elements. For each sentence and each head, the maximum absolute attention weight among token pairs corresponding to the annotated semantic link was extracted, then averaged over all examples. This strategy identifies heads that prioritize features correlated with frame-semantic relations (Section 4.2).
+**Frame-semantic relation probing.** Using 473 filtered FrameNet sentences (frame elements <= 3 tokens, sentences <= 12 tokens, linked elements >= 2 tokens apart), the authors tested whether any of the 144 pre-trained BERT heads preferentially attend between frame-evoking predicates and their core frame elements. For each sentence and each head, the maximum absolute attention weight among token pairs corresponding to the annotated semantic link was extracted, then averaged over all examples. This strategy identifies heads that prioritize features correlated with frame-semantic relations (Section 4.2).
 
 **Attention to linguistic features.** For each head, the sum of attention weights assigned to a token of interest (nouns, verbs, pronouns, subjects, objects, negation, [CLS], [SEP]) from all other tokens was computed and normalized by sequence length. When multiple tokens of the same type were present, the maximum value was taken. Input sentences not containing a given feature were disregarded. Maps were compared between pre-trained and fine-tuned BERT to detect task-specific changes (Section 4.4).
 
@@ -158,6 +169,8 @@ where L is the sentence length. This preserves the information flow of the origi
 2. Random initialization + fine-tuning
 3. Pre-trained initialization + fine-tuning
 
+**Reproducibility:** Code is available at https://github.com/text-machine-lab/dark-secrets-of-BERT (source.md). No explicit mention of random seeds for fine-tuning runs. Single model size only (bert-base-uncased). Head-disabling results are shown as single runs without variance estimates.
+
 ### Key Results
 
 **Attention pattern distribution (Section 4.1, Figure 2).** The five pattern types are consistently repeated across different heads and tasks. The estimated upper bound on Heterogeneous heads (those that could encode meaningful linguistic information) varies by task:
@@ -167,9 +180,9 @@ where L is the sentence length. This preserves the information flow of the origi
 | MRPC | ~32% |
 | QQP | ~61% |
 
-MRPC has the lowest and QQP the highest proportion of Heterogeneous heads. The remaining heads attend primarily to special tokens, adjacent tokens, or intra-sentence boundaries (Figure 2).
+MRPC has the lowest and QQP the highest proportion of Heterogeneous heads. The remaining heads attend primarily to special tokens, adjacent tokens, or intra-sentence boundaries (Figure 2). The authors emphasize: "this only gives the upper bound on the percentage of attention heads that could potentially capture meaningful structural information beyond adjacency and separator tokens" (Section 4.1).
 
-**Frame-semantic relations (Section 4.2, Figure 3).** Only **2 out of 144 heads** show attention patterns correlated with FrameNet frame-semantic relations. Their averaged maximum attention weights (**0.201 and 0.209**) exceed the 99th percentile of the distribution across all heads. Both heads show high attention weight between frame-evoking predicates and their experiencers (e.g., high weight for "he" while processing "agitated" in "He was becoming agitated," frame "Emotion_directed"). However, these two heads do not appear important for any GLUE task -- disabling either one does not reduce accuracy (Section 5).
+**Frame-semantic relations (Section 4.2, Figure 3).** Only **2 out of 144 heads** show attention patterns correlated with FrameNet frame-semantic relations. Their averaged maximum attention weights (**0.201 and 0.209**) exceed the 99th percentile of the distribution across all heads. Both heads show high attention weight between frame-evoking predicates and their experiencers (e.g., high weight for "he" while processing "agitated" in "He was becoming agitated," frame "Emotion_directed"). However, these two heads do not appear important for any GLUE task -- disabling either one does not reduce accuracy (Section 5). Evidence is limited to 473 filtered sentences with specific length and distance constraints.
 
 **Fine-tuning changes (Section 4.3, Figure 5, Table 1).** For all tasks except QQP, the last two layers undergo the largest attention changes compared to pre-trained BERT (measured by cosine similarity of flattened attention weight arrays). Fine-tuned BERT outperforms pre-trained BERT by an average of **35.9 absolute points**.
 
@@ -187,25 +200,26 @@ Fine-tuning does produce some increased attention to nouns and direct objects (M
 
 **Token-to-token attention (Section 4.5, Figure 7).** Investigations of noun-pronoun and verb-subject attention links coincided with diagonally structured attention maps. The authors attribute this to English syntax where dependent elements frequently appear adjacent, making it difficult to distinguish syntactic relations from the diagonal (previous/following token) pattern. For the [CLS] token in the output layer, [SEP] receives the most attention for most tasks except STS-B, RTE, and QNLI, where punctuation tokens receive the greatest attention.
 
-**Head disabling -- single heads (Section 4.6, Figure 8):**
+**Head disabling -- single heads (Section 4.6, Figure 8).** Disabling certain heads improves performance on **all seven GLUE tasks**. The paper reports the gain from disabling a single head ranges from a minimum of **+0.1% absolute on STS-B** to a maximum of **+1.2% absolute on MRPC** (Section 4.6). Approximate baselines and best single-head-disabled scores from Figure 8:
 
-Disabling certain heads improves performance on **all seven GLUE tasks**. The gain ranges from +0.1% (STS-B) to +1.2% (MRPC) for single-head disabling:
-
-| Task | Baseline | Best (1 head disabled) | Gain |
+| Task | Approx. Baseline | Approx. Best (1 head disabled) | Approx. Worst (1 head disabled) |
 |---|---|---|---|
-| MRPC (F1/Acc) | 87.9/82.3 | 89.4/-- | +1.2 |
-| STS-B | 88.9 | 89.1 | +0.1 |
-| SST-2 | 92.0 | 93.8 | +0.2 |
-| QQP (Acc) | 78.6 | 88.3 | -- |
-| RTE | 59.6 | 61.7 | +2.1 |
-| QNLI | 91.4 | 91.6 | +0.2 |
-| MNLI-m | 83.9 | 84.1 | +0.2 |
+| MRPC | ~0.85 | ~0.882 | ~0.79 |
+| STS-B | ~0.88 | ~0.889 | ~0.856 |
+| SST-2 | ~0.92 | ~0.922 | ~0.318 |
+| QQP | ~0.88 | ~0.882 | ~0.877 |
+| RTE | ~0.58 | ~0.592 | ~0.509 |
+| QNLI | ~0.84 | ~0.856 | ~0.507 |
+| MNLI-m | ~0.83 | ~0.841 | ~0.830 |
 
-- For MRPC and RTE, disabling a random head gives, on average, an increase in performance (Section 4.6).
+Note: these values are read from Figure 8 and are approximate. For MRPC and RTE, disabling a random head gives, on average, an increase in performance (Section 4.6). Some heads are severely harmful when disabled: SST-2 drops to ~0.318 and QNLI to ~0.507 for their worst cases, indicating a small number of heads are critical.
 
-**Head disabling -- whole layers (Section 4.6, Figure 9):**
+**Head disabling -- whole layers (Section 4.6, Figure 9).** Disabling all 12 heads in a given layer also improves results in some configurations. Notably, disabling the first layer in RTE yields an **absolute performance gain of 3.2%** (layer 1 score 0.617 vs. baseline ~0.584, Figure 9). However, for QNLI and MNLI, layer disabling produces drops of up to **-0.2%**. Selected legible values from Figure 9:
 
-Disabling all 12 heads in a given layer also improves results in some configurations. Notably, disabling the first layer in RTE yields an **absolute performance gain of 3.2%**. However, for QNLI and MNLI, layer disabling produces drops of up to **-0.2%**.
+| Layer | RTE | QNLI |
+|---|---|---|
+| 1 | 0.617 (best) | 0.914 |
+| 12 | 0.574 | 0.828 |
 
 **Cross-sentence word matching (Section 5).** Both STS-B and RTE fine-tuned models rely on the same pair of heads: **head 1 in layer 4** and **head 12 in layer 2**. Manual inspection reveals these heads assign high attention weights to words appearing in both input sentences, suggesting a word-by-word comparison strategy for these tasks. The authors were not able to find a conceptually similar interpretation of heads important for other tasks.
 
@@ -220,6 +234,12 @@ Disabling all 12 heads in a given layer also improves results in some configurat
 - **Limited FrameNet probing scope.** Only frame-semantic relations from FrameNet were probed; other types of syntactic and semantic relations may be captured differently. The authors note "a wider range of relations remains to be investigated" (Section 4.2).
 - **CNN classifier accuracy.** The attention pattern classifier achieves F1 = 0.86, meaning approximately 14% of attention maps may be misclassified, introducing noise into the pattern distribution estimates.
 - **No automated pruning method.** The paper demonstrates that disabling heads can help but does not propose an automated pruning procedure or optimized sub-architecture.
+- **No variance estimates.** Head-disabling results are reported as single runs without confidence intervals or repeated trials, making it difficult to assess the reliability of small performance differences (e.g., the +0.1% gain on STS-B).
+
+#### Scope and Comparability
+
+- **What was not tested:** BERT-large, multilingual BERT, other encoder-only models (e.g., RoBERTa, XLNet). Only GLUE tasks were evaluated; other benchmarks (SQuAD, SuperGLUE) were not included. The head-disabling approach was not compared against gradient-based pruning methods like those of Voita et al. (2019).
+- **Comparability notes:** The paper uses validation set scores rather than test set scores (Table 1, Section 3), so numbers differ from the original BERT paper and GLUE leaderboard submissions. The uniform-attention head disabling method differs from the zero-masking approach used by Michel et al. (2019), making direct comparison of head importance rankings across these papers nontrivial.
 
 ---
 
@@ -241,27 +261,27 @@ Disabling all 12 heads in a given layer also improves results in some configurat
 
 ### Implications
 
-1. **Model pruning direction.** The redundancy across heads suggests that BERT can be significantly compressed through attention head pruning without performance loss, and potentially with performance gains. This supports the broader overparameterization thesis of Frankle & Carbin (2018).
+1. **Model pruning direction.** The redundancy across heads suggests that BERT can be significantly compressed through attention head pruning without performance loss, and potentially with performance gains. This supports the broader overparameterization thesis of Frankle & Carlin (2018). Evidence spans all 7 GLUE tasks, but only one model size.
 
 2. **Pre-trained representations are essential.** The large performance gap between random-init fine-tuning and pre-trained fine-tuning (Table 1) indicates that BERT's pre-trained representations contain linguistic knowledge that cannot be easily recovered through task-specific fine-tuning alone. For STS-B and QNLI, random-init fine-tuning performs worse than pre-trained BERT with no fine-tuning at all.
 
-3. **Attention maps may not reflect linguistic reasoning.** The dominance of [CLS]/[SEP] patterns and the dispensability of frame-semantic heads suggest that BERT's attention mechanism may not directly encode the linguistic knowledge that drives its performance. [Inference: this implication is consistent with the findings but not explicitly stated by the authors.]
+3. **Attention maps may not reflect linguistic reasoning.** The dominance of [CLS]/[SEP] patterns and the dispensability of frame-semantic heads suggest that BERT's attention mechanism may not directly encode the linguistic knowledge that drives its performance. [Inference: this implication is consistent with the findings but not explicitly stated by the authors in this form.]
 
 ---
 
 ## Key Claims
 
-1. **C1: Five recurring attention patterns.** BERT exhibits five self-attention pattern types (Vertical, Diagonal, Vertical+Diagonal, Block, Heterogeneous) that repeat across different heads and tasks. A CNN classifier trained on ~400 annotated maps achieves F1 = 0.86 (Section 4.1, Figures 1-2). **Status: supported.**
+1. **C1: Five recurring attention patterns.** BERT exhibits five self-attention pattern types (Vertical, Diagonal, Vertical+Diagonal, Block, Heterogeneous) that repeat across different heads and tasks. A CNN classifier trained on ~400 annotated maps achieves F1 = 0.86 (Section 4.1, Figures 1-2). **Scope:** BERT-base-uncased, 7 GLUE tasks. **Status: supported.** Evidence rests on a single model and a small annotated dataset (~400 maps); the 14% misclassification rate limits precision of pattern distribution estimates.
 
-2. **C2: Heterogeneous heads are a minority.** The estimated upper bound on potentially linguistically informative Heterogeneous heads ranges from 32% (MRPC) to 61% (QQP) depending on the task (Section 4.1, Figure 2). **Status: supported.**
+2. **C2: Heterogeneous heads are a minority.** The estimated upper bound on potentially linguistically informative Heterogeneous heads ranges from 32% (MRPC) to 61% (QQP) depending on the task (Section 4.1, Figure 2). **Scope:** BERT-base-uncased, 7 GLUE tasks, up to 1000 validation examples per task. **Magnitude:** 32-61%. **Status: supported.**
 
-3. **C3: Frame-semantic heads are not task-critical.** Only 2 out of 144 pre-trained BERT heads encode information correlated with FrameNet relations (averaged max attention weights 0.201 and 0.209, >99th percentile), but disabling either head does not reduce accuracy on any GLUE task (Sections 4.2, 5, Figure 3). **Status: supported.**
+3. **C3: Frame-semantic heads are not task-critical.** Only 2 out of 144 pre-trained BERT heads encode information correlated with FrameNet relations (averaged max attention weights 0.201 and 0.209, >99th percentile), but disabling either head does not reduce accuracy on any GLUE task (Sections 4.2, 5, Figure 3). **Scope:** Pre-trained BERT-base, 473 filtered FrameNet sentences. **Magnitude:** 2/144 heads, weights 0.201 and 0.209. **Status: supported.** Evidence is limited to one semantic framework (FrameNet) and a small filtered dataset.
 
-4. **C4: Fine-tuning changes mainly the last two layers.** Cosine similarity analysis shows the last two layers undergo the largest attention changes during fine-tuning (except for QQP). Fine-tuned BERT outperforms pre-trained BERT by an average of 35.9 absolute points across seven GLUE tasks (Section 4.3, Figure 5, Table 1). **Status: supported.**
+4. **C4: Fine-tuning changes mainly the last two layers.** Cosine similarity analysis shows the last two layers undergo the largest attention changes during fine-tuning (except for QQP). Fine-tuned BERT outperforms pre-trained BERT by an average of 35.9 absolute points across seven GLUE tasks (Section 4.3, Figure 5, Table 1). **Scope:** BERT-base-uncased, 7 GLUE tasks; the QQP exception weakens the generality of the layer-localization claim. **Magnitude:** 35.9 absolute points average gain. **Status: supported.**
 
-5. **C5: Disabling heads can improve performance.** Across all seven GLUE tasks, there exist heads whose removal improves accuracy. Single-head gains range from +0.1% (STS-B) to +1.2% (MRPC); disabling layer 1 in RTE yields +3.2% absolute gain. For MRPC and RTE, disabling a random head on average improves performance (Section 4.6, Figures 8-9). **Status: supported.**
+5. **C5: Disabling heads can improve performance.** Across all seven GLUE tasks, there exist heads whose removal improves accuracy. Single-head gains range from +0.1% (STS-B) to +1.2% (MRPC); disabling layer 1 in RTE yields +3.2% absolute gain. For MRPC and RTE, disabling a random head on average improves performance (Section 4.6, Figures 8-9). **Scope:** BERT-base-uncased, 7 GLUE tasks, validation set, single runs without variance estimates. **Magnitude:** +0.1% to +1.2% (single head), +3.2% (whole layer). **Status: supported.** The absence of repeated trials and variance estimates weakens confidence in the smaller gains.
 
-6. **C6: Vertical attention is driven by special tokens.** The prominent vertical stripe patterns in attention maps correspond to [CLS] and [SEP] tokens rather than linguistically meaningful features. Earlier layers attend more to [CLS], later layers to [SEP]. Attention to nouns, objects, and negation is detectable but negligible compared to special tokens (Section 4.4, Figure 6). **Status: supported.**
+6. **C6: Vertical attention is driven by special tokens.** The prominent vertical stripe patterns in attention maps correspond to [CLS] and [SEP] tokens rather than linguistically meaningful features. Earlier layers attend more to [CLS], later layers to [SEP]. Attention to nouns, objects, and negation is detectable but negligible compared to special tokens (Section 4.4, Figure 6). **Scope:** BERT-base-uncased, 7 GLUE tasks, comparison between pre-trained and fine-tuned. **Status: supported.**
 
 ---
 

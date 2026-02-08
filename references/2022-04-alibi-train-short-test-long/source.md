@@ -1,7 +1,7 @@
 # Train Short, Test Long: Attention with Linear Biases Enables Input Length Extrapolation
 
 **Authors:** Ofir Press, Noah A. Smith, Mike Lewis
-**Affiliations:** University of Washington, Facebook AI Research, Allen Institute for AI
+**Affiliations:** Ofir Press (Paul G. Allen School of Computer Science & Engineering, University of Washington; Facebook AI Research), Noah A. Smith (Paul G. Allen School of Computer Science & Engineering, University of Washington; Allen Institute for AI), Mike Lewis (Facebook AI Research)
 
 ## Publication Status
 

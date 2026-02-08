@@ -6,7 +6,7 @@ venue: "ICLR 2022"
 paper_type: "conference-paper"
 categories: ["position-encoding", "context-extension"]
 scope: ["positional encoding", "length extrapolation", "language modeling"]
-benchmarks_used: ["perplexity-wikitext103"]
+benchmarks_used: ["perplexity-wikitext103", "perplexity-bookcorpus", "perplexity-cc100-roberta"]
 models_introduced: []
 models_evaluated: []
 key_claims:
@@ -14,30 +14,44 @@ key_claims:
     claim: "Sinusoidal position embeddings fail to extrapolate beyond 20-50 tokens past the training length"
     evidence: "Section 2.2, Figure 1, Tables 2-3"
     status: supported
+    scope: "WikiText-103, 247M parameter model, L=512 and L=1024"
+    magnitude: "PPL degrades from 19.91 (L_valid=532) to 406.01 (L_valid=15512) for L=512"
   - id: C2
     claim: "Extrapolation ability is determined by the position method, not other architecture choices"
     evidence: "Section 2.2, controlled comparison holding all other hyperparameters constant"
     status: supported
+    scope: "WikiText-103, 247M parameter model, sinusoidal/rotary/T5 bias/ALiBi compared"
+    magnitude: "qualitative — dramatic differences in extrapolation behavior with identical architecture and hyperparameters"
   - id: C3
     claim: "ALiBi trained on L=512 outperforms sinusoidal trained on L=3072 on WikiText-103 (18.40 vs 18.67 PPL)"
     evidence: "Section 4.1, Figure 4, Table 5"
     status: supported
+    scope: "WikiText-103 validation, 247M parameter model, nonoverlapping inference, L_valid=3072"
+    magnitude: "18.40 vs 18.67 PPL (sinusoidal std. dev. 0.24), 1.84x faster training"
   - id: C4
     claim: "ALiBi incurs no runtime penalty vs sinusoidal (within 1% training, 3% inference) and only 0-100MB extra memory"
     evidence: "Section 3, Figure 2, Table 1"
     status: supported
+    scope: "WikiText-103, 247M parameter model, single V100 GPU, L=512/1024/3072"
+    magnitude: "within 1% training speed (25.8k vs 26.0k WPS at L=1024), within 3% inference (76.4k vs 77.8k WPS), 0-100MB extra memory"
   - id: C5
     claim: "At 1.3B scale, ALiBi L=1024 outperforms sinusoidal L=2048 (8.92 vs 9.01 PPL) while being 11% faster and using 3.1 GB less memory"
     evidence: "Section 4.2, Figure 5, Table 11"
     status: supported
+    scope: "1.3B parameter model, CC100+RoBERTa corpus (461 GB), 128 V100 GPUs, 50k updates"
+    magnitude: "8.92 vs 9.01 PPL (0.09 improvement), 3.1 GB less memory (26.2 vs 29.3 GB), 11% faster training"
   - id: C6
     claim: "ALiBi's extrapolation gains under nonoverlapping inference are primarily explained by reduced early token curse, not genuine long-range context utilization"
     evidence: "Appendix B, Figure 11, Tables 13-15"
     status: supported
+    scope: "WikiText-103, 247M parameter model, L=512/1024/3072, sliding window S=1 analysis"
+    magnitude: "ALiBi L=512 sliding window PPL flat at 17.98-18.3 (L_valid=512 to 3072) vs nonoverlapping drop from 19.73 to 18.40"
   - id: C7
     claim: "The geometric slope set generalizes across text domains (Wikipedia, books, web text), model sizes (247M to 1.3B), and training compute budgets without retuning"
     evidence: "Section 4, Tables 5, 8, 11-12"
     status: supported
+    scope: "WikiText-103 (Wikipedia), Toronto BookCorpus (books), CC100+RoBERTa (web text); 247M and 1.3B models"
+    magnitude: "same slope set used across all domains and scales with no retuning; ALiBi outperforms or matches sinusoidal in all settings"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -234,11 +248,16 @@ This suggests ALiBi's gains during extrapolation are primarily explained by **re
 
 1. **Extrapolation mechanism is primarily early token curse reduction.** Sliding window analysis (Appendix B) suggests ALiBi may not actually attend beyond L tokens when extrapolating -- it succeeds by gracefully handling positions beyond L rather than exploiting them for richer context. This limits the potential gains from longer contexts.
 2. **Performance peaks at ~2L.** While ALiBi maintains stable perplexity beyond 2L, it does not continue improving, limiting the practical extrapolation range. On the CC100+RoBERTa corpus, the L=512 model peaks at L_valid=1012 and the L=1024 model at L_valid=2024 (Section 4.2).
-3. **Recency bias tradeoff.** The linear penalty on distance inherently limits long-range attention, which may be undesirable for tasks requiring retrieval of specific information from distant positions (as noted by Mohtashami & Jaggi, 2023, in the context of landmark attention).
-4. **Decoder-only evaluation.** All experiments use autoregressive language models; the method's behavior in encoder-decoder or bidirectional settings is not explored.
-5. **Limited scale validation.** The largest model is 1.3B parameters. Behavior at 10B+ scale, where models may have different attention dynamics, is unknown.
+3. **[Inferred]** **Recency bias tradeoff.** The linear penalty on distance inherently limits long-range attention, which may be undesirable for tasks requiring retrieval of specific information from distant positions (as noted by Mohtashami & Jaggi, 2023, in the context of landmark attention). The authors do not discuss this as a limitation.
+4. **[Inferred]** **Decoder-only evaluation.** All experiments use autoregressive language models; the method's behavior in encoder-decoder or bidirectional settings is not explored. The authors do not flag this as a limitation.
+5. **[Inferred]** **Limited scale validation.** The largest model is 1.3B parameters. Behavior at 10B+ scale, where models may have different attention dynamics, is unknown.
 6. **Slope selection is manual.** The geometric slope sequence was found through a "brief manual exploration of around ten slope sets" (Section 3). Trainable slopes did not work, and random sampling from the exponential distribution had high variance.
 7. **Diminishing advantage at larger scale.** On the CC100+RoBERTa corpus, ALiBi no longer outperforms sinusoidal at L_valid = L when both are trained for 50k updates (e.g., 9.16 vs. 9.15 for L=1024, Table 12), unlike the smaller-scale WikiText-103 experiments where ALiBi consistently outperforms at every L.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models larger than 1.3B parameters; non-English languages; encoder-decoder or bidirectional architectures; downstream tasks beyond perplexity (e.g., question answering, summarization, retrieval); inference with non-greedy decoding strategies; combination with other context extension techniques (e.g., caching, sparse attention).
+- **Comparability notes:** The WikiText-103 experiments use the Baevski & Auli (2018) architecture and training recipe, which enables direct comparison with Transformer-XL, Shortformer, and kNN-LM results reported in prior work. However, the CC100+RoBERTa experiments use a different 1.3B architecture, making cross-paper comparison at this scale less direct. The sliding window evaluation (stride S=1) used in Appendix B is prohibitively expensive for practical use and serves only as an analytical tool. Nonoverlapping inference results are the primary comparison basis but are affected by the early token curse, complicating interpretation of extrapolation quality. Runtime comparisons (Table 1) are specific to the PyTorch Fairseq library on V100 GPUs; Narang et al. (2021) report the T5 bias is only 8.7% slower (not 2x) on TPUs with TensorFlow, illustrating hardware-dependent variability.
 
 ---
 
@@ -270,19 +289,19 @@ This suggests ALiBi's gains during extrapolation are primarily explained by **re
 
 ## Key Claims
 
-**C1. Sinusoidal embeddings cannot extrapolate.** Sinusoidal position embeddings fail after just 20--50 tokens beyond L. For L=512 on WikiText-103, perplexity degrades from 19.91 at L_valid=532 to 20.40 at L_valid=602, then rapidly worsens to 406.01 at L_valid=15512 (Table 2). Status: **supported**.
+**C1. Sinusoidal embeddings cannot extrapolate.** Sinusoidal position embeddings fail after just 20--50 tokens beyond L. For L=512 on WikiText-103, perplexity degrades from 19.91 at L_valid=532 to 20.40 at L_valid=602, then rapidly worsens to 406.01 at L_valid=15512 (Table 2). Tested at L=512, 1024, and 3072 with consistent failure pattern (Tables 2-4; strong evidence across multiple training lengths). Status: **supported**.
 
-**C2. Extrapolation is determined by the position method.** Holding architecture, hyperparameters, and random seed constant, the four position methods (sinusoidal, rotary, T5 bias, ALiBi) produce dramatically different extrapolation behavior (Section 2.2, Figure 1). Status: **supported**.
+**C2. Extrapolation is determined by the position method.** Holding architecture, hyperparameters, and random seed constant, the four position methods (sinusoidal, rotary, T5 bias, ALiBi) produce dramatically different extrapolation behavior (Section 2.2, Figure 1). Controlled comparison on a single dataset and architecture with all other variables held fixed (strong experimental design, but single dataset limits generality). Status: **supported**.
 
-**C3. ALiBi L=512 outperforms sinusoidal L=3072.** On WikiText-103, ALiBi trained on L=512 achieves 18.40 PPL at L_valid=3072, surpassing sinusoidal trained on L=3072 at 18.67 (std. dev. 0.24) while being 1.84x faster to train (Section 4.1, Table 5). Status: **supported**.
+**C3. ALiBi L=512 outperforms sinusoidal L=3072.** On WikiText-103, ALiBi trained on L=512 achieves 18.40 PPL at L_valid=3072, surpassing sinusoidal trained on L=3072 at 18.67 (std. dev. 0.24) while being 1.84x faster to train (Section 4.1, Table 5). Statistically significant given reported standard deviation; replicated across all ALiBi training lengths from L=512 to L=2048 (moderate-to-strong evidence, single dataset). Status: **supported**.
 
-**C4. ALiBi matches sinusoidal efficiency.** Speed differences are within 1% for training (25.8k vs. 26.0k WPS at L=1024) and 3% for inference (76.4k vs. 77.8k WPS). Memory overhead is 0--100MB (Table 1). Status: **supported**.
+**C4. ALiBi matches sinusoidal efficiency.** Speed differences are within 1% for training (25.8k vs. 26.0k WPS at L=1024) and 3% for inference (76.4k vs. 77.8k WPS). Memory overhead is 0--100MB (Table 1). Measured across three training lengths (L=512, 1024, 3072) on a single V100 GPU with PyTorch Fairseq (moderate evidence; hardware-specific). Status: **supported**.
 
-**C5. ALiBi scales to 1.3B parameters.** At 1.3B scale, ALiBi L=1024 outperforms sinusoidal L=2048 by 0.09 PPL (8.92 vs. 9.01) while using 3.1 GB less memory and training 11% faster (Table 11, Figure 5). Status: **supported**.
+**C5. ALiBi scales to 1.3B parameters.** At 1.3B scale, ALiBi L=1024 outperforms sinusoidal L=2048 by 0.09 PPL (8.92 vs. 9.01) while using 3.1 GB less memory and training 11% faster (Table 11, Figure 5). Validated at both L=512 and L=1024 training lengths with consistent results (moderate evidence; single dataset, single model size at this scale, no variance reported). Status: **supported**.
 
-**C6. Extrapolation gains come from reduced early token curse.** Under sliding window evaluation (S=1), ALiBi perplexity remains flat as L_valid increases beyond L, unlike nonoverlapping evaluation where it improves. This suggests ALiBi does not genuinely attend to longer contexts during extrapolation (Appendix B, Figure 11, Tables 13-15). Status: **supported**.
+**C6. Extrapolation gains come from reduced early token curse.** Under sliding window evaluation (S=1), ALiBi perplexity remains flat as L_valid increases beyond L, unlike nonoverlapping evaluation where it improves. This suggests ALiBi does not genuinely attend to longer contexts during extrapolation (Appendix B, Figure 11, Tables 13-15). Tested at L=512, 1024, and 3072 on WikiText-103 (moderate evidence; single dataset, single model size, but consistent across three training lengths). Status: **supported**.
 
-**C7. Slope hyperparameters generalize without retuning.** The geometric slope set chosen on WikiText-103 transfers to Toronto BookCorpus (different domain) and CC100+RoBERTa (different scale) without modification (Sections 4.1, 4.2, Appendix A.3). Status: **supported**.
+**C7. Slope hyperparameters generalize without retuning.** The geometric slope set chosen on WikiText-103 transfers to Toronto BookCorpus (different domain) and CC100+RoBERTa (different scale) without modification (Sections 4.1, 4.2, Appendix A.3). Tested across 3 text domains and 2 model sizes (strong evidence for domain transfer; limited evidence for scale since only two sizes tested). Status: **supported**.
 
 ---
 

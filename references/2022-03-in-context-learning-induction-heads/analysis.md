@@ -14,26 +14,38 @@ key_claims:
     claim: "Induction heads are the primary mechanism for in-context learning in small attention-only transformers, as ablating them accounts for nearly all measured in-context learning"
     evidence: "Argument 3 ablation plots, Model Analysis Table"
     status: supported
+    scope: "small attention-only models (1-6 layers, d_model=768, 12 heads/layer), pattern-preserving ablation"
+    magnitude: "ablating induction heads accounts for nearly the entire in-context learning score (~0.25 nats of the ~0.25 nat phase change improvement)"
   - id: C2
     claim: "A phase change early in training (~2.5-5 billion tokens) co-occurs with induction head formation, abrupt improvement in in-context learning, a loss curve bump, and a PCA trajectory pivot across all multi-layer models studied"
     evidence: "Argument 1, Model Analysis Table across 4 model series and 34 models"
     status: supported
+    scope: "34 models across 4 series (attention-only 1-6L, MLP 1-6L, full-scale 4-40L, smeared key 1-2L), two datasets, all multi-layer models"
+    magnitude: "in-context learning score improves from ~-0.15 nats to ~-0.4 nats during a narrow window at ~2.5-5 billion tokens"
   - id: C3
     claim: "The smeared key architecture causes the phase change in one-layer models (where it never occurs in standard architecture) and earlier in two-layer models, confirming induction heads as the minimal mechanism for the in-context learning improvement"
     evidence: "Argument 2, smeared key model series in Model Analysis Table"
     status: supported
+    scope: "small attention-only models (1-2 layers), smeared key modification with trainable interpolation parameter"
+    magnitude: "one-layer smeared key model achieves ~-0.4 nats in-context learning score (vs ~-0.1 for vanilla one-layer)"
   - id: C4
     claim: "Induction heads in a 13B parameter model implement abstract pattern matching including translation and category-based labeling while simultaneously satisfying the formal definition of induction head on random sequences"
     evidence: "Argument 4, 13B model head analysis table (copying scores 0.20--0.89, prefix matching scores 0.75--0.94)"
     status: supported
+    scope: "40-layer 13B parameter model, three specific heads examined (layers 7, 21, 26)"
+    magnitude: "copying scores 0.20--0.89, prefix matching scores 0.75--0.94; pattern-matching head allocates ~65% attention to correct positions"
   - id: C5
     claim: "In-context learning score (~0.4 nats) is approximately constant across model sizes from 2 layers to 13B parameters after the phase change, under varying definitions of the score"
     evidence: "Unexplained Curiosities section, in-context learning score sensitivity analysis plot"
     status: supported
+    scope: "all multi-layer models from 2-layer attention-only to 40-layer 13B, multiple definitions of in-context learning score"
+    magnitude: "~0.4 nats (loss at token 500 minus loss at token 50), consistent across model sizes; large models gain advantage in first ~10 tokens"
   - id: C6
     claim: "The mechanism underlying in-context learning is induction heads rather than mesa-optimization; no evidence of mesa-optimizers was observed"
     evidence: "Discussion, Safety Implications section"
     status: unvalidated
+    scope: "all models studied, but mechanistic understanding limited to small attention-only models"
+    magnitude: "qualitative"
 cross_references:
   - target: 2021-12-transformer-circuits-framework
     type: extends
@@ -242,9 +254,7 @@ In models with MLPs, ablation evidence is suggestive but less conclusive because
 |---|---|---|---|---|
 | Literal copying head | 21 / 40 | 0.89 | 0.75 | Copies repeated text sequences verbatim |
 | Translation head | 7 / 40 | 0.20 | 0.85 | Translates between English, French, German |
-| Pattern-matching head | 8 / 40 | 0.69 | 0.94 | Learns function from (category, item) -> label |
-
-Note: The table above lists the pattern-matching head at layer depth 8/40, while the text in the paper (Behavior 3 section) describes it as "found at layer 26 of our 40-layer model." This is a discrepancy in the paper; the table values are used here.
+| Pattern-matching head | 26 / 40 | 0.69 | 0.94 | Learns function from (category, item) -> label |
 
 All three heads simultaneously satisfy the formal definition of induction head (literal copying on random sequences) while also performing their more abstract behaviors. The translation head attends along a "meandering off-diagonal" due to different word orders and token lengths across languages. The logit attribution for the translation head is not perfectly sharp -- the head's output likely needs further processing by later layers, but on net the direct logit attributions show evidence of contributing to correct translation. The pattern-matching head allocates about 65% of its attention from colon tokens to semantically correct positions on category-labeling tasks using templates: (month)(animal):0, (month)(fruit):1, (color)(animal):2, (color)(fruit):3.
 
@@ -271,6 +281,11 @@ In small attention-only models, induction heads form in the last layer. In small
 - **No evidence of mesa-optimizers, but cannot rule out.** The authors did not observe mesa-optimizers, but cannot rule out more complex mechanisms in large models.
 - **Single training run per model.** All results are based on a single training run per model configuration, without repetition.
 - **Argument at transition vs. end of training.** The argument that induction heads account for most in-context learning at the transition point of the phase change is more solid than the argument that they account for most at the end of training -- a lot could be changing during training even as the score remains constant.
+
+#### Scope and Comparability
+
+- **What was not tested:** No models from other organizations (e.g., GPT-2, GPT-3, PaLM) were studied during training, only Anthropic's custom models. No encoder-only or encoder-decoder architectures were examined. No non-English-specific evaluations were conducted. The full-scale models use a specific positional embedding variant (similar to Press et al., 2020) and a mix of dense and local attention heads, which may not generalize to all Transformer variants. No evaluations on standard NLP benchmarks were performed -- in-context learning is measured solely via the loss-at-different-token-indices metric.
+- **Comparability notes:** The in-context learning score (loss at token 500 minus loss at token 50) is a custom metric not used by other ICL studies, making direct comparison with few-shot learning benchmarks (as in GPT-3) difficult. The ablation methodology (pattern-preserving ablation) differs from standard head pruning or zeroing methods used in Voita et al. (2019) and other attention analysis papers. The full-scale models have only 14--15 snapshots at exponential intervals, giving much lower time resolution than the 200 snapshots for small models, which limits the precision of co-occurrence claims for large models. External replications by Scherlis and Lieberum (on 2-layer attention-only models and GPT-2/GPT-Neo respectively) provide some cross-model validation.
 
 ---
 

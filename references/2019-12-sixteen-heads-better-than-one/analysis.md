@@ -14,26 +14,38 @@ key_claims:
     claim: "Most individual attention heads can be removed at test time without statistically significant performance loss"
     evidence: "Table 1, Section 3.2, Figure 1"
     status: supported
+    scope: "WMT encoder self-attention (96 heads) and BERT-base on MultiNLI (144 heads), test-time removal only"
+    magnitude: "Only 8 of 96 WMT Enc-Enc heads cause significant BLEU change; 4 of those 8 are improvements"
   - id: C2
     claim: "Many layers can be reduced to a single attention head without significant degradation"
     evidence: "Tables 2-3, Section 3.3"
     status: supported
+    scope: "WMT Transformer-large and BERT-base on MultiNLI, test-time single-head per layer"
+    magnitude: "All 12 BERT layers and all 6 WMT Dec-Dec layers show no significant change at p < 0.01"
   - id: C3
     claim: "20-60% of heads can be iteratively pruned across the full model without noticeable performance impact"
     evidence: "Figures 3 and 6, Section 4.2, Appendix B"
     status: supported
+    scope: "WMT En-Fr, BERT on MultiNLI/SST-2/CoLA/MRPC, test-time pruning without retraining"
+    magnitude: "~20% for WMT, ~40% for BERT-MultiNLI, ~60% for SST-2, ~50% for CoLA and MRPC"
   - id: C4
     claim: "Encoder-decoder attention is far more sensitive to head pruning than self-attention"
     evidence: "Figure 4, Table 2, Section 5"
     status: supported
+    scope: "WMT En-Fr Transformer-large, per-attention-type pruning"
+    magnitude: "Enc-Dec degrades catastrophically beyond 60% pruning; Enc-Enc and Dec-Dec retain ~30 BLEU with only 20% of heads"
   - id: C5
     claim: "The distinction between important and unimportant heads emerges early during training, suggesting two-phase dynamics"
     evidence: "Figure 5, Section 6"
     status: supported
+    scope: "IWSLT De-En model (6 layers, 8 heads), not tested on larger models"
+    magnitude: "By epoch 10, up to 40% of heads prunable while retaining 85-90% of un-pruned BLEU"
   - id: C6
     claim: "Pruning 50% of BERT heads yields up to 17.5% inference speedup at large batch sizes"
     evidence: "Table 4, Section 4.3"
     status: supported
+    scope: "BERT-base on MNLI-matched, GeForce GTX 1080Ti GPUs, batch sizes 1-64"
+    magnitude: "+17.5% at batch sizes 16 and 64; only +1.9% at batch size 1"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -231,6 +243,11 @@ This suggests that the important heads are determined early (but not immediately
 5. **Sharp performance cliff.** Despite many heads being individually removable, jointly pruning beyond the identified thresholds (20-60% depending on task) causes catastrophic degradation. The models cannot be reduced to purely single-head attention without retraining (Section 4.2).
 6. **Modest speedup at small batch sizes.** Inference speedup from pruning 50% of heads is only +1.9% at batch size 1 (Table 4), limiting practical benefit for latency-sensitive single-example inference.
 7. **No analysis of what pruned heads compute.** The paper identifies which heads can be removed but does not analyze what functions those heads perform or why they are redundant. The authors leave "a more principled investigation" of training dynamics to future work (Section 6).
+
+#### Scope and Comparability
+
+- **What was not tested:** Models beyond BERT-base and Transformer-large were not evaluated; no experiments at billion-parameter scale. Decoder-only architectures (e.g., GPT-2) were not included. Pruning with retraining or fine-tuning after removal was not explored. No evaluation of pruning's effect on generation quality beyond BLEU (e.g., human judgments, diversity metrics).
+- **Comparability notes:** Voita et al. (2019) concurrently study head pruning in NMT but use LRP-based importance and gradient-based learned masking during training, making their pruning thresholds not directly comparable to the post-hoc removal studied here. The WMT model is the Transformer-large of Ott et al. (2018), which uses a specific training recipe; pruning thresholds may differ for other training configurations. BERT experiments are on the base-uncased variant; results may differ for BERT-large or other pretrained encoders.
 
 ---
 

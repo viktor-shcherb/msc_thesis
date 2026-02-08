@@ -14,18 +14,25 @@ key_claims:
     claim: "Individual BERT attention heads specialize to specific dependency relations with high accuracy (det 94.3%, dobj 86.8%, auxpass 82.5%, poss 80.5%)"
     evidence: "Table 1, Section 4.2"
     status: supported
+    scope: "BERT-base (uncased), English WSJ, Stanford Dependencies"
+    magnitude: "det 94.3%, dobj 86.8%, auxpass 82.5%, poss 80.5%"
   - id: C2
     claim: "Attention to [SEP] tokens functions as a learned no-op mechanism when a head's specialized function is not applicable"
     evidence: "Section 3.2, Figures 2-3, Figure 5"
     status: supported
+    scope: "BERT-base (uncased), layers 6-10"
   - id: C3
     claim: "An attention-based probing classifier achieves 77 UAS at dependency parsing, showing substantial syntactic information in BERT's attention maps"
     evidence: "Table 3, Section 5"
     status: supported
+    scope: "PTB dev set, Stanford Dependencies"
+    magnitude: "77 UAS (vs. 58 UAS best baseline)"
   - id: C4
     claim: "A single attention head (5-4) achieves 65% antecedent selection accuracy on CoNLL-2012 coreference, outperforming string-matching baselines by >10 points"
     evidence: "Table 2, Section 4.3"
     status: supported
+    scope: "CoNLL-2012, documents truncated to 128 tokens"
+    magnitude: "65% accuracy, >10 points over string-matching baseline"
   - id: C5
     claim: "Attention heads in the same layer tend to exhibit similar behavior, as shown by Jensen-Shannon Divergence clustering"
     evidence: "Section 6, Figure 6"
@@ -64,6 +71,8 @@ open_questions:
   - question: "What is the functional role of the many attention heads without identified interpretable behaviors?"
     addressed_by: 2019-12-sixteen-heads-better-than-one
   - question: "Why do heads within the same layer develop similar attention distributions despite multi-head attention being designed for diversity?"
+    addressed_by: null
+  - question: "Does BERT-large exhibit the same pattern of head specialization as BERT-base?"
     addressed_by: null
 ---
 
@@ -172,6 +181,8 @@ Distances between all pairs of attention heads are computed using Jensen-Shannon
 - Coreference: nearest mention (27%), head-word match (52%), rule-based sieve system inspired by Lee et al. (2011) with 4 sieves -- full string match, head word match, number/gender/person match, all other mentions -- (69%), neural coreference system from Wiseman et al. (2015) (83%, on non-truncated documents with different mention detection).
 - Probing classifiers: GloVe-only network with distance features (58 UAS), randomly initialized BERT attention + GloVe (30 UAS).
 
+**Reproducibility:** Code is publicly available at https://github.com/clarkkev/attention-analysis. No random seeds are reported for the probing classifier training. Attention extraction is deterministic given the pre-trained model.
+
 ### Key Results
 
 **Individual attention heads on dependency relations (Table 1):**
@@ -190,8 +201,8 @@ Distances between all pairs of attention heads are computed using Jensen-Shannon
 | aux | 4-10 | 81.1 | 71.5 (offset +1) |
 | poss | 7-6 | **80.5** | 47.7 (offset +1) |
 | auxpass | 4-10 | **82.5** | 40.5 (offset +1) |
-| ccomp | 8-1 | 48.8 | 12.4 (offset -2) |
-| mark | 8-2 | 50.7 | 14.5 (offset +2) |
+| ccomp | 8-1 | **48.8** | 12.4 (offset -2) |
+| mark | 8-2 | **50.7** | 14.5 (offset +2) |
 | prt | 6-7 | **99.1** | 91.4 (offset -1) |
 
 - The table shows the 10 most common relations plus 5 others where attention heads do particularly well (Table 1 caption).

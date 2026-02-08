@@ -11,25 +11,35 @@ models_introduced: []
 models_evaluated: []
 key_claims:
   - id: C1
-    claim: "For any distribution with mutual information I(M) between past and future, the best l-th order Markov model achieves average KL error I(M)/l and l_1 error sqrt(I(M)/l) relative to the optimal predictor with full history"
-    evidence: "Proposition 1, Section 4"
+    claim: "For any distribution with mutual information I(M) between past and future, the best l-th order Markov model achieves average KL error I(M)/l and l_1 error sqrt(I(M)/(2l)) relative to the optimal predictor with full history"
+    evidence: "Proposition 1 and Corollary 2, Section 4"
     status: supported
+    scope: "any stationary stochastic process with bounded mutual information I(M)"
+    magnitude: "KL error = I(M)/l, l_1 error = sqrt(I(M)/(2l))"
   - id: C2
     claim: "For HMMs with n hidden states, a window of length O(log n / epsilon) suffices for average KL error epsilon, regardless of mixing time"
     evidence: "Corollary 1, Section 1"
     status: supported
+    scope: "HMMs with at most n hidden states, any mixing time"
+    magnitude: "window length O(log n / epsilon) for KL error epsilon"
   - id: C3
     claim: "The naive empirical Markov model (counting (l+1)-gram frequencies) achieves sqrt(epsilon) l_1 error for HMMs with n states using window length O(log n / epsilon) and d^{O(log n / epsilon)} samples"
     evidence: "Theorem 1, Section 2"
     status: supported
+    scope: "HMMs with n hidden states, alphabet size d, epsilon > 1/log^{0.25} n"
+    magnitude: "l_1 error sqrt(epsilon), sample complexity d^{O(log n / epsilon)}"
   - id: C4
     claim: "A window length of log n / epsilon is information-theoretically necessary for KL error epsilon on HMMs with n states"
     evidence: "Proposition 3, Section 7"
     status: supported
+    scope: "HMMs with n hidden states, 0 < epsilon < 1/4"
+    magnitude: "window length c log n / epsilon for KL, c log n / epsilon^2 for l_1 and zero-one"
   - id: C5
     claim: "Any computationally tractable algorithm requires d^{Omega(log n / epsilon)} samples for HMMs with n states and alphabet size d, assuming hardness of strongly refuting certain CSPs"
     evidence: "Theorem 2, Section 5"
     status: supported
+    scope: "HMMs with n hidden states, large alphabet size d, conditional on CSP hardness conjecture"
+    magnitude: "sample complexity d^{Omega(log n / epsilon)}"
 cross_references:
   - target: 2018-07-sharp-nearby-fuzzy-far-away
     type: formalizes
@@ -199,7 +209,7 @@ The paper explicitly frames its results as having a dual interpretation:
 
 ## Key Claims
 
-1. **C1:** For any distribution with mutual information `I(M)` between past and future, the best `l`-th order Markov model achieves average KL error `I(M)/l` and average `l_1` error `sqrt(I(M)/(2l))` relative to the Bayes-optimal predictor with full history (Proposition 1, Section 4).
+1. **C1:** For any distribution with mutual information `I(M)` between past and future, the best `l`-th order Markov model achieves average KL error `I(M)/l` and average `l_1` error `sqrt(I(M)/(2l))` relative to the Bayes-optimal predictor with full history (Proposition 1 and Corollary 2, Section 4).
 2. **C2:** For HMMs with `n` hidden states, `I(M) <= log n`, so a window of `O(log n / epsilon)` observations suffices for average KL error `epsilon`, independent of the mixing time (Corollary 1, Section 1).
 3. **C3:** The naive empirical `l`-th order Markov model -- counting `(l+1)`-gram frequencies -- achieves `sqrt(epsilon)` average `l_1` error for HMMs with `n` states using window length `O(log n / epsilon)` and sequence length `d^{O(log n / epsilon)}` (Theorem 1, Section 2).
 4. **C4:** The window length `c log n / epsilon` is information-theoretically necessary for KL error `epsilon` on HMMs with `n` states (Proposition 3, Section 7).

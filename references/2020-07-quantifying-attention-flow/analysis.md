@@ -8,24 +8,35 @@ categories: ["attention-analysis", "mechanistic-interpretability"]
 scope: ["encoder-only Transformers", "attention interpretation", "token attribution"]
 benchmarks_used: ["sst-2"]
 models_introduced: []
-models_evaluated: ["bert-base"]
+models_evaluated: ["bert-base", "distilbert"]
 key_claims:
   - id: C1
     claim: "Raw attention weights become unreliable indicators of input token importance in higher Transformer layers, with correlation to blank-out scores dropping from 0.69 at layer 1 to -0.11 at layer 3 in a 6-layer model"
     evidence: "Table 1, Section 2"
     status: supported
+    scope: "6-layer custom Transformer encoder, verb number prediction, 2000 test samples"
+    magnitude: "Spearman correlation drops from 0.69 (L1) to -0.11 (L3)"
   - id: C2
     claim: "Attention rollout improves token attribution by recursively multiplying residual-augmented attention matrices, reaching 0.71 correlation with blank-out at the final layer compared to 0.29 for raw attention"
     evidence: "Table 1, Table 2, Section 3-4"
     status: supported
+    scope: "6-layer custom Transformer encoder, verb number prediction, 2000 test samples"
+    magnitude: "0.71 vs 0.29 Spearman correlation with blank-out at final layer"
   - id: C3
     claim: "Attention flow using maximum flow algorithms provides the most reliable token attribution, reaching 0.70 correlation with blank-out by layer 3 and consistently outperforming rollout on input gradient correlation"
     evidence: "Tables 1-3, Figure 4, Section 4"
     status: supported
+    scope: "6-layer custom Transformer encoder and DistilBERT on SST-2, verb number prediction and sentiment analysis"
+    magnitude: "0.70 blank-out correlation at L3 (vs 0.51 rollout); 0.61 gradient correlation from L3 (vs 0.54 rollout at L6)"
   - id: C4
     claim: "Attention rollout and attention flow provide complementary views: rollout produces more focused patterns while flow produces more distributed patterns amortized across important tokens"
     evidence: "Figures 1-3, Section 4"
     status: supported
+  - id: C5
+    claim: "Both methods are task-agnostic and architecture-agnostic, requiring only attention weights as input and applicable post hoc to any self-attention architecture"
+    evidence: "Sections 2, 4, 5"
+    status: supported
+    scope: "Demonstrated on three models (custom Transformer, DistilBERT, BERT) and three tasks (verb prediction, sentiment analysis, pronoun resolution)"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -51,6 +62,8 @@ open_questions:
   - question: "Can effective attention weights (Brunner et al., 2020) replace raw attention in the attention graph for more accurate flow estimation?"
     addressed_by: null
   - question: "Can gradient-based attribution methods be combined with attention weights to improve information flow approximation?"
+    addressed_by: null
+  - question: "How much information flow is captured by attention weights alone vs. the value vectors and feed-forward transformations that are currently ignored?"
     addressed_by: null
 ---
 # Quantifying Attention Flow in Transformers
@@ -98,9 +111,9 @@ This A replaces the raw attention in both methods. The 0.5 weighting reflects eq
 
 **Multi-head handling.** The paper averages attention weights across all heads at each layer before computing rollout or flow. Appendix A.1 describes how to analyze individual heads: for head k at layer i, compute rollout as:
 
-> A~(i, k) = A(i, k) A_bar(i)
+> A~(i, k) = A(i, k) A~(i)
 
-where A_bar(i) is the rollout computed with averaged (single-head) attention up to layer i. This avoids the incorrect assumption that there is no mixing of information between heads (mixing occurs in the position-wise feed-forward network).
+where A~(i) is the attention rollout computed for layer i with the single-head (averaged) assumption. This avoids the incorrect assumption that there is no mixing of information between heads (mixing occurs in the position-wise feed-forward network).
 
 **Attention rollout.** Given a Transformer with L layers, attention rollout recursively multiplies the residual-augmented attention matrices from all layers below:
 
@@ -187,6 +200,14 @@ The main qualitative difference between the two methods (Section 4):
 - **Multi-head averaging.** Averaging attention across heads is a simplification. The individual-head analysis (Appendix A.1) is described but not extensively evaluated.
 - **Low correlations on DistilBERT/SST-2.** On DistilBERT fine-tuned for sentiment analysis, all three methods yield very low correlations with input gradients (0.09--0.14, Table 3), suggesting that for some model/task combinations, attention weights (even with rollout or flow correction) provide limited insight into token importance.
 - **Feed-forward network ignored.** The residual connection augmentation accounts for the self-attention residual path but does not model information flow through the position-wise feed-forward network, which also transforms and mixes information.
+
+#### Scope and Comparability
+
+- **What was not tested:** Decoder-only (autoregressive) Transformers, models larger than BERT-base, tasks beyond verb prediction / sentiment analysis / pronoun resolution. No evaluation on generation tasks or long-context settings.
+- **Primary model is non-standard.** The main quantitative results (Tables 1--2) use a custom 6-layer Transformer encoder with GPT-2 blocks (128 hidden size), not a standard pre-trained model. Results may not directly transfer to deeper or larger architectures.
+- **Small evaluation set for DistilBERT.** Table 3 uses only 100 test samples (vs. 2000 for the primary model), limiting statistical power for the SST-2 results.
+- **No statistical significance testing.** Results report mean and standard deviation of Spearman correlations across samples but do not test whether differences between methods are statistically significant.
+- **Comparability notes.** Other attention analysis papers (Clark et al., 2019; Kovaleva et al., 2019) use standard pre-trained BERT on NLU benchmarks, making direct comparison with this paper's custom model results non-trivial.
 
 ---
 

@@ -1,7 +1,7 @@
 # What Does BERT Look At? An Analysis of BERT's Attention
 
 **Authors:** Kevin Clark, Urvashi Khandelwal, Omer Levy, Christopher D. Manning
-**Affiliations:** Stanford University, Facebook AI Research
+**Affiliations:** Kevin Clark, Urvashi Khandelwal, Christopher D. Manning (Computer Science Department, Stanford University); Omer Levy (Facebook AI Research)
 
 ## Publication Status
 

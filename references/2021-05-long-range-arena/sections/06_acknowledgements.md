@@ -1,0 +1,3 @@
+# 6 Acknowledgements [p. 9]
+
+[p. 9] The authors thank the following colleagues: Krzysztof Choromanski, Richard Song, Tamas Sarlos for recommendations on Performer setups. David Dohan and Manzil Zaheer for help on the BigBird implementation. Anselm Levskaya for some useful reference code for Reformers. Orhan Firat for helpful pointers. Jiaxi Tang, Jai Gupta, Zhen Qin, Che Zheng, Zhe Zhao, Da-Cheng Juan, Thomas Unterthiner, Marc Najork, Aurko Roy, Kevin Murphy, Ashish Vaswani, Niki Parmar, Mohammad Taghi Saffar, Noah Fiedel and Peter J Liu, for general feedback and discussions. They would also like to thank Drew Linsley, who provided them with help and information for setting up the pathfinder benchmark.

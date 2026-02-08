@@ -1,7 +1,9 @@
 # Training Compute-Optimal Large Language Models
 
-**Authors:** Jordan Hoffmann, Sebastian Borgeaud, Arthur Mensch, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Tom Hennigan, Eric Noland, Katie Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Jack W. Rae, Oriol Vinyals, Laurent Sifre
+**Authors:** Jordan Hoffmann\*, Sebastian Borgeaud\*, Arthur Mensch\*, Elena Buchatskaya, Trevor Cai, Eliza Rutherford, Diego de Las Casas, Lisa Anne Hendricks, Johannes Welbl, Aidan Clark, Tom Hennigan, Eric Noland, Katie Millican, George van den Driessche, Bogdan Damoc, Aurelia Guy, Simon Osindero, Karen Simonyan, Erich Elsen, Jack W. Rae, Oriol Vinyals, Laurent Sifre\*
 **Affiliation:** DeepMind
+
+\*Equal contributions
 
 ## Publication Status
 
@@ -19,4 +21,6 @@ Cite the NeurIPS 2022 version:
 ## Links
 
 - arXiv: https://arxiv.org/abs/2203.15556
-- NeurIPS proceedings: https://proceedings.neurips.cc/paper_files/paper/2022/file/c1e2faff6f588870935f114ebe04a3e5-Paper-Conference.pdf
+- Proceedings: https://proceedings.neurips.cc/paper_files/paper/2022/hash/c1e2faff6f588870935f114ebe04a3e5-Abstract-Conference.html
+- OpenReview: https://openreview.net/forum?id=iBBcRUlOAPR
+- Blog post: https://deepmind.google/blog/an-empirical-analysis-of-compute-optimal-large-language-model-training/

@@ -1,7 +1,7 @@
 # Do Long-Range Language Models Actually Use Long-Range Context?
 
 **Authors:** Simeng Sun, Kalpesh Krishna, Andrew Mattarella-Micke, Mohit Iyyer
-**Affiliation:** University of Massachusetts Amherst
+**Affiliations:** Simeng Sun, Kalpesh Krishna, Mohit Iyyer (University of Massachusetts Amherst); Andrew Mattarella-Micke (Intuit AI)
 
 ## Publication Status
 

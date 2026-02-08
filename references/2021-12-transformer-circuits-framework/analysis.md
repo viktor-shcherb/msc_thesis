@@ -14,30 +14,44 @@ key_claims:
     claim: "Attention heads can be decomposed into two independent low-rank circuits: a QK circuit (W_Q^T W_K) determining attention patterns and an OV circuit (W_O W_V) determining what information is moved"
     evidence: "Attention Heads as Information Movement section, tensor product derivation"
     status: supported
+    scope: "attention-only transformers (no MLPs, no layer norm, no biases), decoder-only architecture"
+    magnitude: "qualitative — exact mathematical decomposition, not an approximation"
   - id: C2
     claim: "One-layer attention-only transformers are an ensemble of bigram and skip-trigram models, with skip-trigram tables directly readable from weights via W_E^T W_QK W_E (QK circuit) and W_U W_OV W_E (OV circuit)"
     evidence: "One-Layer Attention-Only Transformers section, path expansion"
     status: supported
+    scope: "one-layer attention-only transformers, ~50K vocabulary, d_head=64"
+    magnitude: "qualitative — complete analytical decomposition into interpretable terms"
   - id: C3
     claim: "Most attention heads in one-layer models are copying heads: 10 out of 12 heads in the analyzed model have significantly positive OV eigenvalues, consistent with copying behavior"
     evidence: "Detecting Copying Behavior section, eigenvalue histogram"
     status: supported
+    scope: "single one-layer model with 12 heads, d_head=64"
+    magnitude: "10 out of 12 heads (83%) show significantly positive OV eigenvalues"
   - id: C4
     claim: "Two-layer attention-only transformers use K-composition between a previous token head and induction heads to implement in-context pattern completion: [a][b]...[a] -> [b]"
     evidence: "Induction Heads section, composition diagram, random token experiments"
     status: supported
+    scope: "two-layer attention-only transformer, verified on both natural text and random repeated sequences"
+    magnitude: "qualitative — mechanism verified on completely random token sequences (off-distribution)"
   - id: C5
     claim: "Induction heads require at least two layers of attention and cannot be implemented by a single attention head"
     evidence: "Induction Heads section, mechanistic analysis of K-composition requirement"
     status: supported
+    scope: "attention-only transformers, standard softmax attention"
+    magnitude: "qualitative — proven by mechanistic argument (K-composition requires cross-layer interaction)"
   - id: C6
     claim: "V-composition (virtual attention heads) has a small marginal effect in the analyzed two-layer model, while K-composition is the dominant form of composition"
     evidence: "Term Importance Analysis section, ablation algorithm"
     status: supported
+    scope: "single two-layer attention-only model, ablation on language modeling loss"
+    magnitude: "V-composition (Order 2) contributes 0.3 nats vs. 5.2 nats for Order 1 terms"
   - id: C7
     claim: "The residual stream acts as a shared communication channel with no privileged basis; all components read from and write to it via linear projections, enabling clean additive decomposition"
     evidence: "Virtual Weights and the Residual Stream section"
     status: supported
+    scope: "general transformer architecture with residual connections"
+    magnitude: "qualitative — follows from linearity of projections and additive residual structure"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
@@ -171,10 +185,11 @@ The minimal mechanism creates a term Id ⊗ A^{h_{-1}} ⊗ W in the QK circuit, 
 - **Position encoding:** A mechanism similar to shortformer that does not place positional information into the residual stream (similar to rotary attention in this property).
 - **Analysis methods:** Eigenvalue decomposition of QK and OV circuits to classify head behavior; ablation studies using the term importance algorithm; Frobenius norm-based composition measurement; direct inspection of expanded weight matrices (QK and OV circuits in token space).
 - **Evaluation:** Language modeling loss (cross-entropy).
+- **Reproducibility:** No code or model weights are publicly released. Training corpus, learning rate, number of training steps, and hardware are not specified in the source material. Random seeds are not reported. The mathematical framework itself is reproducible from the equations, but the specific empirical observations (eigenvalue distributions, composition scores, ablation numbers) depend on unreleased model weights.
 
 ### Key Results
 
-**Copying behavior in one-layer models:**
+**Copying behavior in one-layer models** (single 12-head model with d_head=64, no variance across seeds reported — limited evidence for the specific 10/12 count):
 
 | Metric | Result |
 |---|---|
@@ -183,7 +198,7 @@ The minimal mechanism creates a term Id ⊗ A^{h_{-1}} ⊗ W in the QK circuit, 
 
 The analysis also reveals that attention heads implement diverse skip-trigrams beyond copying, including language-specific patterns (Python syntax, LaTeX commands, HTML entities, URL schemes, English phrases like "keep...at → bay"), and a class of heads handling tokenization edge cases (words split differently with/without preceding space).
 
-**Composition in two-layer models:**
+**Composition in two-layer models** (single two-layer model, composition diagram initially had a bug that was later corrected — limited evidence, single model):
 
 In the analyzed two-layer model, the composition analysis (after correction) shows:
 - **K-composition** is the dominant form, primarily between one previous token head in layer 1 and several induction heads in layer 2.
@@ -192,14 +207,14 @@ In the analyzed two-layer model, the composition analysis (after correction) sho
 - **Q-composition** is not significant in this particular model.
 - Most second-layer heads are not involved in substantive composition and function as additional skip-trigram heads.
 
-**Induction head verification:**
+**Induction head verification** (multiple lines of evidence in a single model — moderate-to-strong evidence for the mechanism, though limited to one model size/configuration):
 
 Induction heads are verified via multiple lines of evidence:
 - Attention patterns on natural text (Harry Potter) show off-diagonal lines corresponding to attending to previous occurrences of the current token.
 - On **completely random repeated token sequences**, induction heads correctly attend to the token following the previous copy (the strongest test, as no distributional statistics apply).
 - Both QK and OV eigenvalue summary statistics place all induction heads in the extreme positive corner: QK circuits show "same matching" (positive eigenvalues from K-composition term) and OV circuits show copying (positive eigenvalues).
 
-**Term importance by path order:**
+**Term importance by path order** (single model, single ablation procedure with frozen attention patterns — limited evidence):
 
 The ablation-based term importance analysis shows that second-order virtual attention head terms (V-composition) contribute minimally. The paper concludes that for understanding two-layer attention-only models, one should focus on individual attention head terms (especially second-layer heads) and the direct path, rather than virtual heads. This conclusion applies specifically to the OV circuit; it does not rule out the importance of Q- and K-composition, which are indeed crucial for induction heads.
 
@@ -214,6 +229,11 @@ The ablation-based term importance analysis shows that second-order virtual atte
 - **Eigenvalue summary statistic limitations.** The paper uses positive eigenvalues as evidence for copying behavior but acknowledges this is imperfect. Matrices with all positive eigenvalues can still map some individual tokens to decreasing their own logits due to non-orthogonal eigenvectors. The paper states they are "not confident that the eigenvalue summary statistic... is the best possible summary statistic for detecting 'copying' or 'matching' matrices."
 - **Enormous expanded weight matrices.** Even for one-layer models, the expanded OV and QK matrices have ~2.5 billion entries (50,000 x 50,000). The paper describes the result as a "compressed Chinese room" where algorithmic mystery is stripped away but the model is too large to hold in one's head. Further work on summarization techniques is needed.
 - **No direct applicability to encoder or bidirectional models.** All analysis uses autoregressive, decoder-only transformers. The paper briefly speculates about how induction heads might manifest in bidirectional models but does not analyze them.
+
+#### Scope and Comparability
+
+- **What was not tested:** Standard pretrained models (GPT-2, BERT, GPT-3) are not analyzed; all experiments use custom-trained attention-only transformers. Models with MLP layers (which constitute ~2/3 of standard transformer parameters) are excluded. Models beyond 2 layers are not studied. Encoder-only and encoder-decoder architectures are not addressed. Non-English data is not discussed. No models larger than ~50K vocabulary are analyzed. No comparison with standard interpretability methods (probing, attention rollout with MLP contributions, gradient-based attribution) is provided.
+- **Comparability notes:** The attention-only transformer is a non-standard architecture that removes MLPs, biases, and layer normalization — results may not transfer directly to standard transformers. The paper's composition measurements use Frobenius norm ratios corrected against random baselines, which differs from alternative composition metrics in subsequent work. The ablation procedure freezes attention patterns (removing nonlinearity) and measures loss in nats, which is not directly comparable to perplexity-based evaluations. The "previous token head" and "induction head" terminology is introduced here and adopted by subsequent work (e.g., Olsson et al., 2022), but the exact definitions are specific to attention-only models and may require adaptation for models with MLPs that can also shift positional information.
 
 ---
 
@@ -247,19 +267,19 @@ The ablation-based term importance analysis shows that second-order virtual atte
 
 ## Key Claims
 
-1. **Attention heads implement two independent circuits.** The QK circuit (W_Q^T W_K) determines the attention pattern and the OV circuit (W_O W_V) determines the effect of attending. These are separable: the QK circuit is a bilinear form over residual stream vectors, while the OV circuit is a linear map (Attention Heads as Information Movement section). **Status: supported.**
+1. **Attention heads implement two independent circuits.** The QK circuit (W_Q^T W_K) determines the attention pattern and the OV circuit (W_O W_V) determines the effect of attending. These are separable: the QK circuit is a bilinear form over residual stream vectors, while the OV circuit is a linear map (Attention Heads as Information Movement section). This is a mathematical identity that holds for all attention-only transformers by construction (strong evidence — analytical proof, not empirical). **Status: supported.**
 
-2. **One-layer attention-only transformers implement skip-trigrams.** The path expansion decomposes a one-layer model into a direct path (bigrams via W_U W_E) and per-head skip-trigram terms (A^h ⊗ W_U W^h_OV W_E), with QK and OV circuits directly readable from weights as [n_vocab, n_vocab] matrices (One-Layer section, path expansion). **Status: supported.**
+2. **One-layer attention-only transformers implement skip-trigrams.** The path expansion decomposes a one-layer model into a direct path (bigrams via W_U W_E) and per-head skip-trigram terms (A^h ⊗ W_U W^h_OV W_E), with QK and OV circuits directly readable from weights as [n_vocab, n_vocab] matrices (One-Layer section, path expansion). Analytical result verified by direct weight inspection on a single 12-head model (strong evidence for mathematical claim; single model for empirical patterns). **Status: supported.**
 
-3. **Most one-layer attention heads are copying heads.** 10 out of 12 heads in the analyzed model have significantly positive eigenvalues in the OV circuit, consistent with copying behavior where attending to a token increases that token's logit (Detecting Copying Behavior section, eigenvalue histogram). **Status: supported.**
+3. **Most one-layer attention heads are copying heads.** 10 out of 12 heads in the analyzed model have significantly positive eigenvalues in the OV circuit, consistent with copying behavior where attending to a token increases that token's logit (Detecting Copying Behavior section, eigenvalue histogram). Single model configuration, no variance across seeds or model sizes reported (limited evidence — one model, one training run). **Status: supported.**
 
-4. **Induction heads in two-layer models implement in-context pattern completion via K-composition.** A previous token head in layer 1 composes with induction heads in layer 2 through K-composition: keys encode "what token preceded me," queries encode "what is the current token," implementing [a][b]...[a] → [b]. Verified on completely random repeated sequences (Induction Heads section, random token experiments). **Status: supported.**
+4. **Induction heads in two-layer models implement in-context pattern completion via K-composition.** A previous token head in layer 1 composes with induction heads in layer 2 through K-composition: keys encode "what token preceded me," queries encode "what is the current token," implementing [a][b]...[a] → [b]. Verified on completely random repeated sequences (Induction Heads section, random token experiments). Multiple lines of evidence: natural text attention patterns, random token sequences, composition score analysis, QK/OV eigenvalue analysis (strong evidence for this model). **Status: supported.**
 
-5. **Induction heads require at least two layers of attention.** The induction algorithm depends on K-composition between two heads across layers. No single head can simultaneously shift keys by one position and match them to the current token (Induction Heads section, mechanistic analysis). **Status: supported.**
+5. **Induction heads require at least two layers of attention.** The induction algorithm depends on K-composition between two heads across layers. No single head can simultaneously shift keys by one position and match them to the current token (Induction Heads section, mechanistic analysis). Analytical argument from the structure of K-composition (strong evidence — mechanistic proof for attention-only models). **Status: supported.**
 
-6. **V-composition has small marginal effect in the analyzed two-layer model.** The term importance ablation shows that virtual attention head terms (second-order paths through V-composition) contribute minimally to loss reduction, while individual head terms (especially second-layer) dominate. K-composition is the important form of composition (Term Importance Analysis section). **Status: supported.**
+6. **V-composition has small marginal effect in the analyzed two-layer model.** The term importance ablation shows that virtual attention head terms (second-order paths through V-composition) contribute minimally to loss reduction (0.3 nats vs. 5.2 nats for Order 1), while individual head terms (especially second-layer) dominate. K-composition is the important form of composition (Term Importance Analysis section). Single model, single ablation procedure with frozen attention patterns (limited evidence — one model, one evaluation method). **Status: supported.**
 
-7. **The residual stream is a linear communication channel with no privileged basis.** All transformer components communicate through the residual stream via linear read/write operations. The stream is the sum of all prior outputs and the original embedding, enabling path decomposition. One could rotate it arbitrarily without changing model behavior (Virtual Weights and the Residual Stream section). **Status: supported.**
+7. **The residual stream is a linear communication channel with no privileged basis.** All transformer components communicate through the residual stream via linear read/write operations. The stream is the sum of all prior outputs and the original embedding, enabling path decomposition. One could rotate it arbitrarily without changing model behavior (Virtual Weights and the Residual Stream section). Analytical property of the architecture (strong evidence — follows from linear algebra of residual connections). **Status: supported.**
 
 ---
 

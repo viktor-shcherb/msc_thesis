@@ -1,0 +1,13 @@
+# 1 Introduction [p. 1-2]
+
+[p. 1] Computer programs use three fundamental mechanisms: elementary operations (e.g., arithmetic), logical flow control (branching), and external memory that can be written to and read from during computation (Von Neumann, 1945). Despite the success of modern machine learning in modelling complicated data, it has largely neglected the use of logical flow control and external memory.
+
+RNNs stand out for their ability to learn and carry out complicated transformations of data over extended periods of time. RNNs are known to be Turing-Complete (Siegelmann and Sontag, 1995), and therefore have the capacity to simulate arbitrary procedures *if* properly wired. However, what is possible in principle is not always simple in practice. The authors therefore enrich standard recurrent networks to simplify the solution of algorithmic tasks, primarily via a large, addressable memory. By analogy to Turing's enrichment of finite-state machines by an infinite memory tape, they dub their device a "Neural Turing Machine" (NTM).
+
+> "Unlike a Turing machine, an NTM is a differentiable computer that can be trained by gradient descent, yielding a practical mechanism for learning programs." [p. 2]
+
+[p. 2] In human cognition, the process most similar to algorithmic operation is "working memory." Working memory is understood to mean a capacity for short-term storage of information and its rule-based manipulation (Baddeley et al., 2009). In computational terms, the rules are simple programs and the stored information constitutes the arguments of these programs. An NTM therefore resembles a working memory system designed to solve tasks that require the application of approximate rules to "rapidly-created variables." Rapidly-created variables (Hadley, 2009) are data quickly bound to memory slots, analogous to putting numbers inside registers in a conventional computer (Minsky, 1967).
+
+An NTM bears close resemblance to models of working memory since the NTM architecture uses an attentional process to read from and write to memory selectively. In contrast to most models of working memory, the NTM architecture can *learn* to use its working memory instead of deploying a fixed set of procedures over symbolic data.
+
+The paper's organisation: brief review of germane research on working memory in psychology, linguistics, and neuroscience, along with related research in AI and neural networks; then the basic contribution (a memory architecture and attentional controller for tasks requiring induction and execution of simple programs); then a battery of problems and results; concluding by summarising the strengths of the architecture.

@@ -1,7 +1,7 @@
 # Transformer Feed-Forward Layers Are Key-Value Memories
 
 **Authors:** Mor Geva, Roei Schuster, Jonathan Berant, Omer Levy
-**Affiliations:** Blavatnik School of Computer Science, Tel-Aviv University; Allen Institute for Artificial Intelligence; Cornell Tech
+**Affiliations:** Mor Geva (Blavatnik School of Computer Science, Tel-Aviv University; Allen Institute for Artificial Intelligence), Roei Schuster (Blavatnik School of Computer Science, Tel-Aviv University; Cornell Tech), Jonathan Berant (Blavatnik School of Computer Science, Tel-Aviv University; Allen Institute for Artificial Intelligence), Omer Levy (Blavatnik School of Computer Science, Tel-Aviv University)
 
 ## Publication Status
 
@@ -20,4 +20,5 @@ Cite the EMNLP 2021 version:
 
 - arXiv: https://arxiv.org/abs/2012.14913
 - ACL Anthology: https://aclanthology.org/2021.emnlp-main.446/
+- DOI: https://doi.org/10.18653/v1/2021.emnlp-main.446
 - Code: https://github.com/mega002/ff-layers

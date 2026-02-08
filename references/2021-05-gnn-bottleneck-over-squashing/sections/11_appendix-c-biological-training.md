@@ -1,0 +1,3 @@
+# C Biological Benchmarks -- Training Details [p. 15]
+
+[p. 15] The authors used the implementation of Errica et al. (2020) who performed a fair and thorough comparison between GNNs, by splitting each dataset to 10-folds; then, for each GNN type they select a configuration among a grid of 72 configurations according to the validation set; finally, the best configuration for each fold is trained three additional times, early stopped using the validation set, and evaluated on the test set. The final reported result is the average of all 30 test runs (10-folds$\times$3). The final standard deviation is computed among the average results of each of the ten folds.

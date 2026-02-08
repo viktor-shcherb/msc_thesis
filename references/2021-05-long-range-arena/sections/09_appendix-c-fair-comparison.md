@@ -1,0 +1,3 @@
+# C Recommendations for Fair Comparison [p. 16]
+
+[p. 16] The authors welcome re-evaluation of their models on any task. However, they consider some hyperparameters to be **immutable** to ensure fair comparison with all models. In the case of proposing new models, the LRA table in the paper can be copied as it is as long as (1) the model size remains unchanged, (2) no pretraining is conducted, (3) no alterations to the fundamental setups (e.g., changing char level to word level or adding spatial information to the image task). More details will be provided at https://github.com/google-research/long-range-arena.

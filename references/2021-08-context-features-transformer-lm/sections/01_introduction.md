@@ -1,0 +1,18 @@
+# 1 Introduction [p. 1-2]
+
+[p. 1] Recent years have seen significant improvement in the predictive accuracy of neural language models (LMs), owing to improvements in model architecture (especially transformers; Vaswani et al. 2017) and training infrastructure (Wolf et al., 2020). The most striking change, relative to both recurrent neural LMs (Mikolov et al., 2010) and count-based models (Kneser and Ney, 1995), is the length of context these models can effectively condition on. Count-based LMs in production speech recognition and machine translation systems typically used 10-20 tokens at a maximum (e.g., Brown, 2011), recurrent LMs have an effective context size of 200 (Khandelwal et al., 2018), and the predictive accuracy of transformer LMs appears to improve when conditioning on as many as a thousand previous tokens (Beltagy et al., 2020). A significant amount of recent work has focused on making use of even longer contexts computationally feasible (Rae et al., 2019; Wang et al., 2020; Child et al., 2019; Dai et al., 2019; Kitaev et al., 2020).
+
+[p. 1] Despite empirical evidence that long contexts are helpful, little is understood about *why*. The paper argues it is important to understand *what contextual information contributes to accurate prediction* in current models. The paper uses the V-information framework of Xu et al. (2020), discussed in Section 2, which provides a formal framework for reasoning about how much *usable information* a computationally constrained predictor (like a neural LM) can extract from an input. The experiments measure the amount of usable information added when increasing LM context size, then attempt to pinpoint the *source* of this information by ablating features of the added context (via controlled shuffling and word deletion) and measuring the resulting loss of model predictive power.
+
+[p. 1] The work is closely related to an earlier study by Khandelwal et al. (2018), which measured changes in a pre-trained LSTM LM when context words were permuted and deleted at evaluation time. However, neural language models are known to be highly sensitive to distributional shifts, and in particular might be unable to use information from long-range context but still be adversely affected when the structure of that context changes at evaluation time. Directly measuring usable information makes it possible to clearly distinguish accuracy decreases that result from *loss of information* and decreases that result from *out-of-distribution inputs*.
+
+## Key findings previewed
+
+[p. 1-2] The experiments reveal surprising facts about the use of long- and mid-range context in transformers:
+- Increasing context from 256 to 768 tokens is beneficial (decreasing perplexity by roughly 4%), but many destructive transformations of this context (including transformations that cause large changes in the paradigm of Khandelwal et al. 2018) remove essentially no usable information.
+- For current models, the primary carriers of information in long-range context are content words and local co-occurrence statistics: deleting function words and shuffling within local windows both have very little effect on models' predictive power.
+- Context matters, but not all features of context matter equally; as discussed in Section 5, these results motivate future language modeling research focused on alternative context representations rather than simply more tokens.
+
+**Contribution type:** The paper frames itself as an empirical investigation using a formal measurement framework (V-information) to understand what contextual features transformers actually use.
+
+**Footnote 1** [p. 1]: Code for all experiments is available at https://github.com/lingo-mit/context-ablations.

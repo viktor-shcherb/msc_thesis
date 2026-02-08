@@ -1,0 +1,5 @@
+# 5 Conclusion [p. 12]
+
+[p. 12]
+
+The authors introduce S4, a sequence model that uses a new parameterization for the state space model's continuous-time, recurrent, and convolutional views to efficiently model LRDs in a principled manner. Results across established benchmarks evaluating a diverse range of data modalities and model capabilities suggest that S4 has the potential to be an effective general sequence modeling solution.

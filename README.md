@@ -55,11 +55,9 @@ references/
 
 Each `analysis.md` file includes YAML front matter with structured metadata (categories, key claims, cross-references, benchmarks, models). The shared ontology of controlled vocabularies is in `references/metadata.yaml`.
 
-Full guidelines for writing `source.md` and `analysis.md` files, maintaining metadata, and the YAML front matter schema are in `references/GUIDELINES.md`.
-
 ### Searching references
 
-`references/search.py` queries the YAML front matter across all analysis files:
+`references/search.py` queries the YAML front matter across all analysis files. Requires PyYAML (`pip install pyyaml`).
 
 ```
 python3 references/search.py category context-extension
@@ -74,15 +72,9 @@ python3 references/search.py info 2024-05-yarn-context-extension
 python3 references/search.py related 2024-05-yarn-context-extension
 ```
 
-Requires PyYAML (`pip install pyyaml`).
-
 ### Adding a new reference
 
-1. Create a subdirectory: `references/YYYY-MM-short-name/`
-2. Add the paper PDF, `source.md`, `analysis.md`, and `cite.bib` following `references/GUIDELINES.md`.
-3. Add YAML front matter to `analysis.md` using identifiers from `references/metadata.yaml`. Add new identifiers to the ontology if needed.
-4. Update cross-references in related papers' front matter.
-5. Run `make references.bib` to regenerate the combined file.
+Run the `add_reference` prompt pipeline (see `prompts/add_reference/README.md`). The pipeline handles directory creation, PDF download, metadata, reading, and analysis automatically. See "Prompt system" below for how it works.
 
 ### Regenerating references.bib
 
@@ -90,21 +82,39 @@ Requires PyYAML (`pip install pyyaml`).
 make references.bib
 ```
 
-This runs:
-
-```
-cat references/_venues.bib references/*/cite.bib > references.bib
-```
+This runs: `cat references/_venues.bib references/*/cite.bib > references.bib`
 
 ## Meta-analyses
 
-Cross-paper synthesis documents live in `meta-analysis/`, each in its own subdirectory:
+Cross-paper synthesis documents live in `meta-analysis/`. Guidelines for scoping, structuring, and maintaining meta-analyses are in `meta-analysis/GUIDELINES.md`.
+
+## Prompt system
+
+Agent prompts live in `prompts/`. The main workflow is `add_reference`, which orchestrates four subagent stages to go from a paper title or URL to a complete reference directory with analysis.
+
+### How it works
 
 ```
-meta-analysis/
-├── GUIDELINES.md               # Full guidelines for writing meta-analyses
-└── short-descriptive-name/
-    └── analysis.md             # The synthesis document
+init_reference → read_paper OR read_sources → write_analysis → cross-reference update
 ```
 
-A meta-analysis draws from multiple per-paper analyses in `references/` to answer a specific research question. Guidelines for scoping, structuring, and maintaining meta-analyses are in `meta-analysis/GUIDELINES.md`.
+1. **init_reference** creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
+2. **read_paper** reads the PDF in overlapping 6-page windows, writing structured notes to `sections/`. For non-standard contributions (blogs, repos, Reddit), **read_sources** fetches web content into `sources/` instead
+3. **write_analysis** synthesizes the notes into `analysis.md` with YAML front matter, all 9 required sections, and 13 style rules
+4. The main agent then updates cross-references in existing analyses
+
+Every subagent has a **verification mode**: if its output files already exist, it verifies them against ground truth (the PDF or live sources) and rewrites anything that falls short. Errors caught during verification are logged to `prompts/add_reference/.errors/` (gitignored) for prompt improvement.
+
+### Where to find what
+
+| Topic | Location |
+|---|---|
+| Full pipeline + decision tree + batch mode | `prompts/add_reference/README.md` |
+| `source.md` structure + `cite.bib` rules | `prompts/add_reference/init_reference/prompt.md` |
+| PDF reading procedure + extraction rules | `prompts/add_reference/read_paper/prompt.md` |
+| Non-standard source fetching | `prompts/add_reference/read_sources/prompt.md` |
+| `analysis.md` structure + YAML schema + 13 style rules | `prompts/add_reference/write_analysis/prompt.md` |
+| Controlled vocabularies (categories, benchmarks, models) | `references/metadata.yaml` |
+| Cross-reference types + ontology maintenance | `prompts/add_reference/README.md` § "Ontology maintenance" |
+| Meta-analysis guidelines | `meta-analysis/GUIDELINES.md` |
+| Verification error logs (gitignored) | `prompts/add_reference/.errors/<stage>/<slug>.md` |
