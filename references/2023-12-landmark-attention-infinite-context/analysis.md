@@ -83,6 +83,9 @@ cross_references:
   - target: 2020-04-compressive-transformer-pg19
     type: uses-benchmark
     detail: "Uses PG-19 (introduced by Rae et al., 2020) for language modelling perplexity evaluation"
+  - target: 2024-10-ruler-context-size
+    type: extended-by
+    detail: "RULER extends the passkey retrieval task format and reuses the noise sentence format from landmark attention as one of its haystack options in the NIAH retrieval category"
 open_questions:
   - question: "Can positional encoding extrapolation be fully solved so landmark attention uses exact rather than approximate positions for distant blocks?"
     addressed_by: null

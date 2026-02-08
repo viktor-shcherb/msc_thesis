@@ -2,15 +2,16 @@
 
 **Title:** Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters
 
-**Authors:** Charlie Snell (equal advising, UC Berkeley), Jaehoon Lee (Google DeepMind), Kelvin Xu (Google DeepMind), Aviral Kumar (Google DeepMind)
-- Work done during an internship at Google DeepMind
+**Authors:** Charlie Snell, Jaehoon Lee, Kelvin Xu (♣equal advising), Aviral Kumar (♣equal advising)
+- Charlie Snell: UC Berkeley (♦work done during an internship at Google DeepMind)
+- Jaehoon Lee: Google DeepMind
+- Kelvin Xu: Google DeepMind
+- Aviral Kumar: Google DeepMind
 - Corresponding author: csnell22@berkeley.edu
 
 **Affiliations:** UC Berkeley, Google DeepMind
 
-**Venue:** arXiv preprint (arXiv:2408.03314v1, cs.LG)
-
-**Date:** 6 Aug 2024
+**Venue:** ICLR 2025 (Oral); arXiv:2408.03314v1, cs.LG, 6 Aug 2024
 
 ## Abstract
 

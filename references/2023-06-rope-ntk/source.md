@@ -22,8 +22,11 @@ If citing the formalized version, cite YaRN (Peng et al., ICLR 2024).
 ## Related Contributions by Same Author
 
 - **NTK-by-parts interpolation** (July 2023): https://github.com/jquesnelle/scaled-rope/pull/1
-- **Dynamic NTK** by emozilla/Jeffrey Quesnelle (June 2023): Reddit post, r/LocalLLaMA
+- **Dynamic NTK** by emozilla (June 2023): https://www.reddit.com/r/LocalLLaMA/comments/14mrgpr/dynamically_scaled_rope_further_increases/
 
 ## Links
 
 - Reddit post: https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/
+- NTK-by-parts PR: https://github.com/jquesnelle/scaled-rope/pull/1
+- EleutherAI blog (covers NTK-aware): https://blog.eleuther.ai/yarn/
+- Dynamic NTK Reddit post (emozilla): https://www.reddit.com/r/LocalLLaMA/comments/14mrgpr/dynamically_scaled_rope_further_increases/

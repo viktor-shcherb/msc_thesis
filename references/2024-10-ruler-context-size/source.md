@@ -1,6 +1,6 @@
 # RULER: What's the Real Context Size of Your Long-Context Language Models?
 
-**Authors:** Cheng-Ping Hsieh, Simeng Sun, Samuel Kriman, Shantanu Acharya, Dima Rekesh, Fei Jia, Yang Zhang, Boris Ginsburg
+**Authors:** Cheng-Ping Hsieh*, Simeng Sun*, Samuel Kriman, Shantanu Acharya, Dima Rekesh, Fei Jia, Yang Zhang, Boris Ginsburg (*equal contribution)
 **Affiliation:** NVIDIA
 
 ## Publication Status

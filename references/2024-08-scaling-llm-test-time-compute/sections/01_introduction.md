@@ -69,10 +69,10 @@ The figure has four panels:
 - Accuracy ranges from roughly 20% to above 45%
 
 **Top-right: "Comparing Test-time and Pretraining Compute in a FLOPs Matched Evaluation" (Revisions)**
-- X-axis: Ratio of Inference Tokens to Pretraining Tokens (<<1, ~1, >>1)
+- X-axis: Ratio of Inference Tokens to Pretraining Tokens (<<1, ~=1, >>1)
 - Y-axis: Relative Improvement in Accuracy From Test-time Compute (%)
-- Three bar groups: Easy Questions, Medium Questions, Hard Questions
-- Values shown: For <<1 ratio: +31.8% (easy), +21.6% (medium); for ~1 ratio: +16.1% (easy), +11.8% (medium), -1.8% (hard); for >>1 ratio: +5.0% (easy), +5.4% (medium), -37.2% (hard)
+- Three bar groups: Easy Questions (green), Medium Questions (orange), Hard Questions (blue)
+- Values shown: For <<1 ratio: +27.6% (easy), +21.6% (medium); for ~=1 ratio: +16.7% (easy), +11.8% (medium), -11.9% (hard); for >>1 ratio: +5.4% (easy), +3.5% (medium), -37.2% (hard)
 - When Y << X (inference tokens << pretraining tokens), test-time compute is often preferable to additional pretraining. As the ratio increases, test-time compute remains preferable on easy questions. On harder questions, pretraining is preferable.
 
 **Bottom-left: "Test-time Search Against a PRM Verifier — Compute Optimal Search"**
@@ -83,8 +83,8 @@ The figure has four panels:
 - Accuracy ranges from roughly 10% to above 45%
 
 **Bottom-right: "Comparing Test-time and Pretraining Compute in a FLOPs Matched Evaluation" (PRM Search)**
-- X-axis: Ratio of Inference Tokens to Pretraining Tokens (<<1, ~1, >>1)
+- X-axis: Ratio of Inference Tokens to Pretraining Tokens (<<1, ~=1, >>1)
 - Y-axis: Relative Improvement in Accuracy From Test-time Compute (%)
 - Three bar groups: Easy Questions (green), Medium Questions (orange), Hard Questions (blue)
-- Values shown: For <<1 ratio: +15.1% (easy), +6.6% (medium); for ~1 ratio: +2.2% (easy), +2.2% (medium), -18.4% (hard); for >>1 ratio: +2.0% (easy), -55.3% (medium), -55.9% (hard) [unclear: some bar values in the <<1 and ~1 groups are difficult to read precisely from the figure]
+- Values shown: For <<1 ratio: +19.1% (easy), +2.2% (medium), +2.0% (hard); for ~=1 ratio: -5.6% (easy), -35.6% (medium), -30.6% (hard); for >>1 ratio: +0.0% (easy), -35.3% (medium), -52.9% (hard)
 - Shows a similar trend to the revisions panels with test-time compute being preferable at low inference-to-pretraining token ratios, but the benefits are smaller overall compared to the revision setting

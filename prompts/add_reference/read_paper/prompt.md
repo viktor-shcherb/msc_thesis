@@ -84,6 +84,17 @@ and their full text is not needed for your current pages.
 
 Read the PDF at PDF_PATH with the `pages` parameter set to "PAGE_START-PAGE_END".
 
+## Step 2.5: Count and inventory
+
+Before extracting content, create a quick inventory of what appears on your pages:
+
+1. **Count figures:** Scan through and count. How many? _____
+2. **Count tables:** How many? _____
+3. **Count numbered equations:** How many? _____
+4. **List section headings:** What sections begin or continue on these pages?
+
+Write these counts down in a scratch note. Before finishing Step 4, you will verify you created entries for all of them.
+
 ## Step 3: Identify sections
 
 Determine which paper sections (Introduction, Method, Experiments, etc.)
@@ -145,8 +156,13 @@ For every section, capture **all** of the following that appear:
 
 ### Claims and arguments
 - Paraphrase key claims tightly but preserve precision.
+- **Always include scope and magnitude for quantitative claims:**
+  - ❌ BAD: "The model improves performance"
+  - ✅ GOOD: "The model improves performance by 3.2% on GLUE [p. 8, Table 4]"
+  - Capture: *how much*, *on what*, *compared to what*, *where stated*
 - For critical definitions or phrasing, quote verbatim:
   `> "exact quote" [p. 7]`
+- Preserve ALL hedging language ("we believe", "suggests", "approximately", "roughly").
 - Note what is stated as a contribution vs. observation vs. hypothesis.
 
 ### Equations
@@ -162,23 +178,28 @@ For every section, capture **all** of the following that appear:
   inequality direction. A single wrong symbol can change a theorem's meaning.
 
 ### Figures
-- For each figure: **Figure N** (p. X): `"caption text"`
-- Describe what the figure shows — axes, trends, key data points.
-- Note which claims the figure supports.
-- If a figure has readable quantitative data, extract the values.
-- **Every figure that appears on the pages you read MUST have a full Figure
-  entry.** A passing text reference like "see Figure 4" is NOT sufficient —
-  you must also create the standalone entry with number, page, caption, and
-  description. This is a recurring error: agents reference figures in prose
-  but never create the structured entry.
+- **For EACH figure visible on your pages, create a standalone structured entry:**
+  ```markdown
+  **Figure N** (p. X): "exact caption text from PDF"
+
+  Description: [bar chart / scatter plot / architecture diagram / heatmap / etc.]
+  - Key elements: [what is actually shown - axes, labels, components]
+  - Notable patterns: [trends, comparisons, or specific data points if readable]
+  - Supports claim: [which finding from the text this figure illustrates]
+  ```
+- **A text reference like "see Figure 4" is NOT sufficient** — you must also create the standalone entry with number, page, caption, and description.
+- If a figure has readable quantitative data (e.g., bar heights, plot points), extract the values.
+- **Count check:** If the PDF shows 3 figures on your pages, your notes must have 3 structured Figure entries.
 
 ### Tables
+- Before writing ANY table, locate it visually in the PDF and count its rows and columns.
 - Reproduce **every table** as a Markdown table with exact numbers.
+- **Row-by-row verification:** After writing each row, glance back at the PDF to confirm the numbers match.
+- If a cell value is unreadable, write `[unclear: blurry]` or `[unclear: cut-off]` — NEVER estimate or fill gaps.
 - Include: table number, caption, units, footnotes.
-- Do not omit rows or columns. If a table has >20 rows, include all main
-  results and note what was truncated.
-- **If a table appears on the pages you read, reproduce it NOW.** Do not
-  defer it — see Rule 8 below.
+- Do not omit rows or columns. If a table has >20 rows, include all main results and note what was truncated.
+- **Final check:** Count rows and columns in your Markdown. They must match the PDF exactly.
+- **If a table appears on the pages you read, reproduce it NOW.** Do not defer it — see Rule 8 below.
 
 ### Experimental details
 - Models: names, parameter counts, architecture details
@@ -186,6 +207,24 @@ For every section, capture **all** of the following that appear:
 - Training: optimizer, learning rate, batch size, steps/epochs, hardware, time
 - Evaluation: metrics, decoding strategy, number of runs, confidence intervals
 - Baselines: what, from where, how comparable
+
+**Extraction template for experimental details:**
+
+For each experiment/model/dataset mentioned, extract in this order:
+1. **What** (model/dataset name)
+2. **Size** (parameters, tokens, examples)
+3. **Source** (citation or URL if provided)
+4. **Key numbers** (metrics, training time, hardware)
+5. **Page reference** where each detail appears
+
+Example:
+```
+GPT-3 175B [p. 12]
+- Parameters: 175 billion
+- Training data: 300B tokens (Common Crawl, WebText, Books, Wikipedia)
+- Hardware: V100 GPUs
+- Training cost: ~$4.6M in compute [p. 14]
+```
 
 ### In-text citations
 - **Use the paper's own citation format** throughout the notes. If the paper
@@ -212,13 +251,12 @@ For every section, capture **all** of the following that appear:
 7. **Update 00_overview.md** if you discover new section headings not yet
    listed. **This is mandatory for every window**, not just the first one.
    Every window must check and update the section headings list.
-8. **NEVER defer content.** Do not write placeholders like `[continues on
-   later pages]`, `[table appears on a later page]`, `[Section continues
-   on later pages]`, or similar deferred-content markers. If content is
-   visible on the pages you are reading, extract it NOW. If a table or
-   figure spans across your window boundary, extract the portion visible to
-   you. A later window will append the rest. Deferred markers are
-   systematically never revisited and result in permanent gaps.
+8. **NEVER defer content — extract NOW or mark [unclear].**
+   - ❌ Forbidden: `[continues on later pages]`, `[table appears later]`, `[to be completed]`
+   - ✅ If content is visible NOW: extract it NOW
+   - ✅ If unreadable: `[unclear: reason]`
+   - ✅ If cut off at window boundary: extract the visible portion; next window appends
+   - **Why this matters:** Deferred markers are never revisited. They create permanent gaps.
 9. **Preserve hedges and precise language.** When the paper says "We believe"
    or "This suggests", keep those qualifiers. Do not upgrade tentative claims
    to definitive ones. Similarly, preserve exact phrasing for key findings
@@ -233,6 +271,21 @@ For every section, capture **all** of the following that appear:
 11. **Proofread for text corruption.** After writing, scan for duplicate words
     ("needs, requires", "samples samples"), missing special characters (£, é,
     ü), and garbled text from PDF extraction. Fix any you find.
+
+---
+
+## Step 5: Completeness verification
+
+Before finishing, check against your inventory from Step 2.5:
+
+- [ ] Figure count matches: I found ___ figures in PDF, created ___ Figure entries ✓
+- [ ] Table count matches: I found ___ tables in PDF, created ___ table entries ✓
+- [ ] Equation count matches: I found ___ numbered equations, reproduced ___ ✓
+- [ ] All section headings from these pages have corresponding section files ✓
+- [ ] No placeholder text remains ("[to be added]", "[continues]", "[see later]") ✓
+- [ ] For 3 random numbers in tables: verified against PDF ✓
+
+If any checkbox fails, return to Step 4 and add the missing content.
 
 ---
 

@@ -106,6 +106,12 @@ Check that no directory with this slug already exists in `references/`.
 mkdir -p references/<slug>
 ```
 
+If this is a standard reference (has a PDF), also create the sections directory:
+
+```bash
+mkdir -p references/<slug>/sections
+```
+
 ---
 
 ## Step 4: Download the PDF

@@ -1,0 +1,3 @@
+# Conclusions [p. 6]
+
+We present a taxonomy of factors that make long-context tasks more challenging compared to short ones. This is in contrast with the existing literature that refers only to the length of the input as the hallmark of long context, and as a result ends up conflating tasks of different characteristic when assessing the ability of models to understand longer text. We reviewed works on evaluation in a long-context setting and found that the most challenging setting, in which the information needed is of large scope and is highly dispersed within the input, is under-explored. Finally, we suggested some leads for future work to tackle this imbalance towards a more informative long context evaluation.
