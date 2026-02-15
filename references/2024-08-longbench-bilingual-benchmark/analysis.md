@@ -77,6 +77,9 @@ cross_references:
   - target: 2025-07-longbench-v2
     type: extended-by
     detail: "LongBench v2 replaces extractive questions with harder human-annotated multiple-choice questions requiring deep reasoning, extends length coverage to 2M words"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET extends beyond LongBench's limited context lengths and adds controllable length evaluation with more diverse task categories"
   - target: 2026-01-longbench-pro
     type: extended-by
     detail: "LongBench Pro is the direct successor with broader task coverage, longer contexts, and multi-dimensional categorization"
@@ -89,6 +92,12 @@ cross_references:
   - target: 2025-07-lv-eval-long-context-benchmark
     type: concurrent
     detail: "LV-Eval uses MultiFieldQA datasets from LongBench, extends evaluation to 256k words with five controlled length levels, and adds knowledge-leakage mitigation via keyword replacement"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify LongBench tasks (MultiFieldQA, PassageCount, PassageRetrieval) across multiple quadrants of their scope-dispersion taxonomy"
+  - target: 2025-04-longgenbench-long-form-generation
+    type: complementary
+    detail: "LongGenBench evaluates long-output generation (16K-32K tokens), complementing LongBench's focus on long-input understanding; both address different aspects of long-context capability"
 open_questions:
   - question: "Do LongBench results predict performance on tasks with contexts beyond 40K tokens?"
     addressed_by: 2026-01-longbench-pro

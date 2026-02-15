@@ -86,6 +86,9 @@ cross_references:
   - target: 2022-06-switch-transformers-moe
     type: extends
     detail: "DeepSeekMoE extends Switch Transformer-style routing with fine-grained expert segmentation, shared experts, and multi-level balance losses"
+  - target: 2024-12-deepseek-v3-technical-report
+    type: extended-by
+    detail: "DeepSeek-V3 builds on V2's MLA and DeepSeekMoE architecture, scaling to 671B parameters with auxiliary-loss-free load balancing, FP8 mixed precision training, and Multi-Token Prediction"
 open_questions:
   - question: "How does MLA perform on tasks requiring retrieval from very long contexts beyond NIAH, such as multi-hop reasoning at 128K?"
     addressed_by: null

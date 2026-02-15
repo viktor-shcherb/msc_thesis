@@ -1,0 +1,74 @@
+\section{Bias Reduction Is Necessary but Not Sufficient}
+\label{sec:bias-necessary-not-sufficient}
+
+The training dynamics of SmolLM3-3B (Section~\ref{sec:training-dynamics-results})
+reveal the central interpretive finding of this thesis: positional bias reduction
+and effective context utilization are related but not equivalent. This section
+develops the implications.
+
+\subsection{The Dissociation}
+
+During long-context extension, bias strength collapses 10$\times$ through
+$\alpha_K$ flattening (Table~\ref{tab:smollm-trajectory}). This collapse is
+mechanistically specific: the key position gradient flattens while position
+correlation $|r_k^{(a)}|$ remains above 0.90. Keys still encode position with
+high fidelity, but the encoding becomes more uniform---positions are
+distinguished without being preferentially weighted.
+
+The collapse recovers near-position plasticity
+($\text{AP}_{\text{first\,20\%}}$: 0.552 $\to$ 0.588), returning it to
+early stage~1 levels. Locally, bias reduction works: removing the positional
+term from the score difference restores content-driven key selection at nearby
+positions.
+
+However, at 48K--64K positions, plasticity is 0.43---far below the 0.57 the
+model achieved at 3.5K--4K during pre-training at comparable bias levels.
+Despite a 10$\times$ bias collapse, $\text{AP}_{\text{drop}}$ \emph{triples}
+from $\sim$0.06 to $\sim$0.16 (Figure~\ref{fig:smollm-plasticity-trajectory}).
+A factor beyond positional bias---plausibly content signal decay---constrains
+distant-position flexibility.
+
+\subsection{Content Signal Decay}
+
+The excess $\text{AP}_{\text{drop}}$ after bias collapse
+($\sim$0.16 $-$ 0.06 $=$ 0.10) reflects the content component of the score
+difference losing variance at distant positions. After the positional term is
+nearly zeroed, even minimal residual bias dominates if the content signal is
+weak.
+
+Two candidate mechanisms may drive this content signal decay:
+
+\begin{itemize}
+    \item \textbf{RoPE rotation accumulation.} The rotation planes in the
+    complement subspace progressively decorrelate distant keys from the query,
+    reducing the content-signal variance in the score difference. This would be
+    a structural property of RoPE, not a training artifact---and would affect
+    all RoPE-based models regardless of how thoroughly bias is reduced during
+    training.
+
+    \item \textbf{Attention sink competition.} Early-position tokens accumulate
+    disproportionate attention weight through the attention sink
+    phenomenon~\cite{2024-05-attention-sinks-streaming,
+    2025-04-attention-sink-emerges}. This concentration reduces the effective
+    attention budget available for distant-position content, even when the
+    per-head bias mechanism is weakened.
+\end{itemize}
+
+We do not resolve which mechanism dominates---this remains an open question
+(Section~\ref{sec:future-work}).
+
+\subsection{Cross-Model Confirmation}
+
+SmolLM3 after long-context extension ($\text{AP}_{\text{drop}} \approx 0.16$)
+matches Qwen-3 models (0.16--0.19)---both undergo standard LC training at
+comparable scales. Ministral-3 achieves $\text{AP}_{\text{drop}} \approx 0.07$
+at comparable bias levels over a 4$\times$ longer context window (256K vs.\
+64K). Whatever Ministral-3's training recipe accomplishes, its low
+$\text{AP}_{\text{drop}}$ is consistent with maintaining content signal strength
+at distance---not just reducing bias.
+
+This suggests that current LC extension methods, which focus on making position
+encodings generalize to longer sequences (RoPE scaling, NTK-aware
+interpolation~\cite{2023-06-rope-ntk}, YaRN~\cite{2024-05-yarn-context-extension}),
+primarily address the bias component of ECL degradation. The content-decay
+component may require complementary strategies.

@@ -8,28 +8,38 @@ categories: ["benchmarking", "in-context-learning", "long-context-evaluation", "
 scope: ["in-context learning with many demonstrations", "extreme-label classification up to 174 classes", "context lengths 1K to 50K tokens"]
 benchmarks_used: ["longicl-bench"]
 models_introduced: []
-models_evaluated: ["gpt-4", "gemini-1.5-pro", "mistral-7b", "llama-2-7b", "qwen-series"]
+models_evaluated: ["gpt-4", "gpt-4o", "gemini-1.5-pro", "mistral-7b", "llama-2-7b", "qwen-series", "chatglm3-6b-32k", "yi-6b", "gemma-7b", "mamba-2.8b", "rwkv-3b"]
 key_claims:
   - id: C1
     claim: "All LLMs achieve near-zero performance on Discovery (174 classes, 10K-50K tokens) except Gemini-1.5-Pro at 14% accuracy, while a fine-tuned BERT model achieves 87.4%"
     evidence: "Table 6, Section 3.3"
     status: supported
+    scope: "Discovery dataset (174 classes), 10K-50K tokens, 15 models evaluated including 4 API-based"
+    magnitude: "Best LLM 14.0% (Gemini-1.5-Pro 1R) vs. 87.4% fine-tuned SoTA; all other LLMs near 0%"
   - id: C2
     claim: "Most open-source models benefit from more demonstrations up to intermediate context lengths (7K-14K tokens), then performance plateaus or declines"
     evidence: "Tables 3-6, Figure 1, Section 3.3"
     status: supported
+    scope: "Open-source ~7B models on BANKING77, TacRED, Few-NERD, DialogRE; base (non-instruction-tuned) weights"
+    magnitude: "E.g., LLaMA-2-7B-32K on BANKING77: 30.2% (2K) to 77.2% (14K); Mistral peaks at 67.8% (9K) then declines to 64.0% (14K)"
   - id: C3
     claim: "Grouping same-label demonstrations together causes universal performance degradation, with drops up to 46.5% for Mistral-7B and 20.3% for GPT4-turbo on TacRED at 10K tokens"
     evidence: "Table 10, Section 4.2, Figure 4"
     status: supported
+    scope: "TacRED 3 rounds (~10K tokens), 12 models tested"
+    magnitude: "Mistral -46.5%, Gemini-1.5-Pro -22.3%, GPT4-turbo -20.3%, Qwen -12.2%; ChatGLM3 most resilient at -3.3%"
   - id: C4
     claim: "Transformer-based models consistently outperform non-Transformer alternatives (RWKV-5-World, Mamba-2.8B), which achieve near-zero performance on most tasks despite theoretical unlimited context support"
     evidence: "Tables 3-6, Section 3.3"
     status: supported
+    scope: "RWKV-5-World (3B) and Mamba-2.8B across all 6 datasets and all context lengths"
+    magnitude: "Near-zero on most tasks; e.g., Mamba-2.8B scores 0 on 5/6 datasets across all rounds"
   - id: C5
     claim: "Only GPT4-turbo consistently improves with additional demonstrations across all context lengths and datasets evaluated"
     evidence: "Tables 3-5, Figure 1, Section 3.3"
     status: supported
+    scope: "BANKING77, TacRED, DialogRE (2K-32K tokens); GPT4-turbo vs. 14 other models"
+    magnitude: "BANKING77: 73.5% (2K) to 84.4% (14K); TacRED: 74.4% (4K) to 84.2% (18K); DialogRE: 42.9% (8K) to 57.7% (32K)"
 cross_references:
   - target: 2024-02-lost-in-the-middle
     type: extends
@@ -247,14 +257,20 @@ Inspired by the lost-in-the-middle phenomenon (Liu et al., 2023), the authors an
 | Model | Scattered | Grouped | Delta |
 |---|---|---|---|
 | Mistral-7B-v0.2 | 51.6 | 5.1 | **-46.5** |
-| GPT4-turbo | 79.5 | 59.2 | **-20.3** |
 | Gemini-1.5-Pro | 79.6 | 57.3 | **-22.3** |
+| GPT4-turbo | 79.5 | 59.2 | **-20.3** |
 | Qwen-1.5-7B | 45.2 | 33.0 | -12.2 |
 | InternLM2-7B | 15.5 | 4.8 | -9.7 |
 | Yi-6B-200K | 8.0 | 0 | -8.0 |
+| Long-LLaMA-code-7B | 4.1 | 0 | -4.1 |
 | ChatGLM3-6B-32K | 38.9 | 35.6 | -3.3 |
+| Gemma-7B-base | 0 | 0 | 0 |
+| LLaMA-2-7B-LongLora | 0 | 0 | 0 |
+| Mamba-2.8B | 0 | 0 | 0 |
+| LLaMA-2-7B-32K | 0.4 | 3.0 | **+2.6** |
+| RWKV-5-World | 1.0 | 3.6 | **+2.6** |
 
-- **Grouping causes universal performance degradation.** Even GPT4-turbo and Gemini-1.5-Pro drop by 20.3 and 22.3 percentage points respectively.
+- **Grouping causes near-universal performance degradation.** Even GPT4-turbo and Gemini-1.5-Pro drop by 20.3 and 22.3 percentage points respectively. Notable exceptions: LLaMA-2-7B-32K and RWKV-5-World show small improvements (+2.6 each) with grouping, though from very low baselines (0.4 and 1.0 F1 respectively) (Table 10).
 - Models like Mistral and InternLM2 show extreme sensitivity, correctly predicting only labels positioned at the end of the prompt in the grouped setting, indicating strong **recency bias** (Figure 4, Section 4.2).
 - ChatGLM3-6B-32K is the most resilient open-source model with only a 3.3 percentage point drop.
 
@@ -267,7 +283,7 @@ Inspired by the lost-in-the-middle phenomenon (Liu et al., 2023), the authors an
 
 ## Limitations and Failure Modes
 
-1. **Single evaluation paradigm.** LongICLBench encompasses only one type of evaluation: extreme-label classification with long in-context learning. Other tasks requiring full-input comprehension (e.g., multi-document reasoning, long-horizon planning) are not covered (Appendix A.6).
+1. **Single evaluation paradigm.** LongICLBench encompasses only one type of evaluation: extreme-label classification with long in-context learning. Other tasks requiring full-input comprehension (e.g., multi-document reasoning, long-horizon planning) are not covered (Section 5).
 
 2. **Base models only for open-source.** All open-source models are evaluated using base (pre-instruction-tuning) weights (Section 3.2). Instruction-tuned versions may perform differently on classification tasks.
 
@@ -275,7 +291,12 @@ Inspired by the lost-in-the-middle phenomenon (Liu et al., 2023), the authors an
 
 4. **No analysis of failure modes.** The paper documents near-zero performance on Discovery but does not analyze why models fail (e.g., whether they output invalid labels, random labels, or systematically biased predictions).
 
-5. **Confounded difficulty dimensions.** Task difficulty increases simultaneously along label-space size, context length, and label granularity, making it impossible to isolate which factor drives performance degradation. [Inference: not stated explicitly.]
+5. **[Inferred] Confounded difficulty dimensions.** Task difficulty increases simultaneously along label-space size, context length, and label granularity, making it impossible to isolate which factor drives performance degradation.
+
+#### Scope and Comparability
+
+- **What was not tested:** No instruction-tuned open-source models were evaluated (all use base weights, Section 3.2). No open-source models larger than ~7B parameters were tested. No evaluation beyond 50K tokens despite several models claiming 100K--10M context support. No non-English datasets included. No chain-of-thought or other prompting strategies explored beyond the standard ICL template (Table 9). No evaluation of retrieval-augmented approaches as a comparison point.
+- **Comparability notes:** Unlike benchmarks such as LongBench (averaging ~6K words) or InfiniteBench (averaging 200K tokens), LongICLBench measures a fundamentally different capability (label-space comprehension vs. information retrieval). The SoTA baselines reported for each dataset (e.g., RoBERTa + ICDA for BANKING77, DeepStruct for TacRED) are fully fine-tuned models, making the comparison with ICL approaches asymmetric by design. The RWKV-5-World model size differs between Table 2 (3B) and Tables 3--6 (7B listed in Param column), introducing ambiguity in the paper's own reporting.
 
 ---
 
@@ -309,7 +330,7 @@ Inspired by the lost-in-the-middle phenomenon (Liu et al., 2023), the authors an
 
 2. **C2: Intermediate context length optimum.** Most open-source models benefit from more demonstrations up to intermediate lengths (7K--14K tokens), then plateau or decline. After 3 rounds on BANKING77, limited performance gain is achieved by adding more examples (Tables 3--6, Figure 1, Section 3.3). Status: **supported**.
 
-3. **C3: Grouping degrades performance universally.** Placing same-label demonstrations adjacent causes drops of 46.5% (Mistral), 22.3% (Gemini-1.5-Pro), and 20.3% (GPT4-turbo) on TacRED 3R (~10K tokens). Some models only predict labels from the end of the prompt in the grouped setting (Table 10, Figure 4, Section 4.2). Status: **supported**.
+3. **C3: Grouping degrades performance for all models with non-trivial baselines.** Placing same-label demonstrations adjacent causes drops of 46.5% (Mistral), 22.3% (Gemini-1.5-Pro), and 20.3% (GPT4-turbo) on TacRED 3R (~10K tokens). Two models with near-zero baselines (LLaMA-2-7B-32K at 0.4, RWKV-5-World at 1.0) show small improvements (+2.6 each), but all models with meaningful scattered performance degrade. Some models only predict labels from the end of the prompt in the grouped setting (Table 10, Figure 4, Section 4.2). Status: **supported**.
 
 4. **C4: Transformer superiority over non-Transformer architectures.** RWKV-5-World and Mamba-2.8B achieve near-zero performance on most tasks, despite unlimited theoretical context support. Transformer-based models consistently outperform them across all datasets (Tables 3--6, Section 3.3). Status: **supported**.
 

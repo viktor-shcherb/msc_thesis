@@ -1,7 +1,7 @@
 # Retrieval Head Mechanistically Explains Long-Context Factuality
 
 **Authors:** Wenhao Wu, Yizhong Wang, Guangxuan Xiao, Hao Peng, Yao Fu
-**Affiliations:** Peking University, University of Washington, Massachusetts Institute of Technology, University of Illinois Urbana-Champaign, University of Edinburgh
+**Affiliations:** Wenhao Wu (Peking University), Yizhong Wang (University of Washington), Guangxuan Xiao (MIT), Hao Peng (UIUC), Yao Fu (University of Edinburgh)
 
 ## Publication Status
 
@@ -20,4 +20,5 @@ Cite the ICLR 2025 version:
 
 - arXiv: https://arxiv.org/abs/2404.15574
 - OpenReview: https://openreview.net/forum?id=EytBpUGB1Z
+- ICLR 2025 Oral: https://iclr.cc/virtual/2025/oral/31890
 - Code: https://github.com/nightdessert/Retrieval_Head

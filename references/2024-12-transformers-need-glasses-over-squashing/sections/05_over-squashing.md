@@ -1,0 +1,23 @@
+# 5 Over-squashing in Language Tasks [p. 8–10]
+
+In this Section, we study a more general phenomenon related to representational collapse—over-squashing. In particular, we are interested in analysing how information from the input sequence affects the information contained within the representation of the last token in the final layer—the representation ultimately used for next-token prediction. For this reason, we study the quantity ∂y_n/∂v^(0)_i which measures how sensitive is the final token to an input token at position i.
+
+In graph neural network theory, the decay of such a partial derivative is often associated with the 'squashing' of information, leading to the phenomenon of over-squashing [29,8,11], a problem related to the well-known vanishing gradients problem in RNNs [14,5,11]. The over-squashing analysis we carry out in this work is particularly challenging due to the flexible nature of the attention mechanism and the many components that are part of decoder-only Transformers. Consequently, we make two simplifying assumptions in our analysis: (i) We summarise the effect of layer normalisation via a constant β_i for the i-th layer norm component, and (ii) the attention weights are treated as independent of the input. Such simplifications are not strictly necessary for our analysis, but they greatly simplify the resulting bound we derive and do not detract from the two key takeaways: **(1) the sensitivity to an input token depends on its position in the sequence and (2) the sensitivity to an input token depends on the attention weights**. The result is summarised in Theorem 5.1. The full statement is reported in the Appendix (Theorem B.5).
+
+## Theorem 5.1 (Over-squashing in Transformers)
+
+Consider an input sequence v^(0)_1,...,v^(0)_n. Let C > 0 be some constant and ᾱ^(ℓ)_{i,j} = α^(ℓ)_{i,j} / (β^2 + δ_{i,j}), then:
+
+||∂y_n/∂v^(0)_i|| ≤ C ∑_{k_1≥i} ... ∑_{k_L≥k_{L-1}} ᾱ^(L-1)_{n,k_L} ∏^{L-1}_{ℓ=2} ᾱ^(ℓ-1)_{k_ℓ,k_{ℓ-1}} ᾱ^(0)_{k_1,i}    (1)
+
+Theorem 5.1 provides intuition on how information propagates in a decoder-only Transformer. In particular, there is a topological aspect present in the bound which is directly controlled by the attention mechanism. More concretely, **the sensitivity depends on the sum of the weighted paths between the token i at the input and the final layer**. In other words, for tokens coming sooner in the sequence, there will be more opportunity for their information to be preserved. This is clear for instance for the last token, which will only be preserved by attention mechanism if the attention n→n is large at every layer L, i.e. there is only one path. The paths instead grow very quickly for tokens coming sooner in the sequence. A related observation, in terms of path counting, was also made for deep RNNs [13]. We note that such a bound explains the better performance when copying elements at the start of the sequence in Figure 2 (a), why hints help in Figure 2 (b), and why repeating the final elements within the sequence also helps in Figure 2 (c).
+
+This analysis leads to an interesting limiting case described in Proposition 5.2, that shows a type of exponential vanishing that can occur in some degenerate cases in which y_n depends only on the starting input token v^(0)_1. Fortunately, there are many mechanisms which prevent this from happening, but believe this to be an interesting limiting case which is a direct consequence of the topology of the causal attention mechanism. Further, it provides an interesting connection between the spectral theory of directed graphs and causal attention mechanisms. We report the formal statement in the Appendix (Proposition B.8).
+
+## Proposition 5.2 (Informal)
+
+Under certain assumptions on the effect of the normalisation and on the attention weights, in the limit of layers L→∞ the output representation will only depend on the first input token.
+
+## U-shape effect
+
+Theorem 5.1 in part also helps to explain the empirically observed **U-shape effect**—the observation that LLMs seem to perform better at retrieval tasks when the information to be retrieved is located either near the start or the end of the sequence. In fact, due to the topology of the causal mechanism, we find from Theorem 5.1 that tokens at the start of the sequence have more opportunity for the information to be maintained at the end. The final tokens being also easier instead can be explained from the recency bias that is learnt by the attention mechanism during training. In auto-regressive next-token prediction, it is in fact reasonable to assume that tokens that are closer to the end will be more important and this is likely a bias that is learnt during training by the LLM.

@@ -1,11 +1,26 @@
-% English Abstract
-% Write your abstract here (typically 150-300 words)
+Large language models advertise context windows of 128K tokens or more, yet
+their effective context length---the range over which they reliably use
+information---often falls far short. Behavioral benchmarks detect this gap but
+cannot explain it. We develop a mechanistic framework that traces long-context
+degradation to the geometry of query and key representations inside attention
+heads.
 
-% The abstract should cover:
-% - Context and motivation
-% - Problem statement
-% - Approach/methodology
-% - Key results
-% - Conclusions
+Our method captures post-RoPE query and key vectors and applies three
+complementary analyses. PCA decomposition reveals that position encoding
+dominates variance structure across heads. A planar rotation model isolates the
+asymmetric positional drift direction and yields a scalar bias strength per
+head. Attention plasticity then measures the functional consequence: the
+probability that a random query flips the preference ordering of two keys. We
+prove that plasticity decays with query position under linear positional drift,
+and derive a Gaussian closed form that decomposes the decay into positional and
+content components.
 
-[Write your abstract here. The abstract should provide a concise summary of your thesis, including the problem addressed, the methodology used, the main results, and the conclusions drawn.]
+We analyze 13 models from three families (Ministral-3, Qwen-3, Llama-3.2) and
+track 10 training checkpoints of SmolLM3-3B through pre-training and
+long-context extension. Plasticity drop---the degradation from early to late
+context positions---separates model families in the same order as
+LongBench-Pro scores: Ministral ($\sim$0.07) outperforms Qwen ($\sim$0.17)
+outperforms Llama (0.23). Training dynamics reveal that RoPE frequency
+rescaling collapses positional bias but does not prevent plasticity decay at
+distant positions, indicating that bias reduction is necessary but not
+sufficient for effective long context.

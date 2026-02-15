@@ -10,7 +10,7 @@ Uses Python module patching to inject capture hooks into transformer models with
 
 Three sampling strategies ensure reproducible, configurable capture rates:
 
-#### Log-Uniform Sampler (Default)
+#### Log-Uniform Sampler
 - Groups tokens by log₂(position) buckets
 - Samples uniformly within each bucket
 - Base rate controls overall capture percentage
@@ -25,13 +25,15 @@ Three sampling strategies ensure reproducible, configurable capture rates:
 
 #### All Sampler
 - Captures every token with no subsampling
-- Bucket ID = 0 for all tokens
+- Bucket ID = floor(position / bucket_size)
 
-### 3. Deduplication
+### 3. CPU-Side Sampling
 
-- Maintains in-memory cache of `(example_id, position)` pairs per layer/head/kind
-- Prevents duplicate captures across runs
-- Enables incremental data collection
+All sampling and position selection happens on CPU to avoid GPU synchronization:
+- Position masks generated on CPU (instant `nonzero()`)
+- Only small index tensors transferred to GPU asynchronously
+- Vectors gathered for all active heads at once as a dense `(n_heads, K, dim)` tensor
+- Single async GPU→CPU copy per (layer, kind) per batch
 
 ### 4. Bucket-Based Organization
 
@@ -39,18 +41,24 @@ Vectors are stored with bucket IDs reflecting temporal position pattern:
 - Enables queries like "all vectors from the first 128 tokens"
 - Supports geometric position range queries
 
-### 5. Thread-Safe Writing
+### 5. In-Memory Accumulation
 
-- Background worker thread with queue-based batching
-- Isolates disk I/O from capture compute
-- Prevents inference slowdown
+- All captures accumulate in RAM during inference — no disk writes until the end
+- Data stored per (layer, kind) with shared positions/buckets across heads
+- Parquet files written in one shot after inference completes
+- Sampling ensures dataset sizes stay small enough for in-memory accumulation
+
+### 6. Backbone-Only Forward Pass
+
+- Calls `model.model()` (transformer backbone) instead of `model()`, skipping the lm_head
+- Passes `use_cache=False` to avoid KV cache accumulation
+- Drops `attention_mask` from inputs to prevent O(n²) 4D causal mask expansion (right-side padding with causal attention is sufficient)
 
 ## Determinism Implementation
 
-Samplers use fixed seeds based on:
+Samplers use a shared seed per capture call based on:
 - `example_id`
 - `layer_idx`
-- `head_idx`
 - `vector_kind` (query or key)
 
-Uses SplitMix64 hash mixing and XOR combination for determinism. The exact same tokens are sampled across runs—critical for reproducible research datasets.
+A single position mask is generated and shared across all heads within a (layer, kind) pair. This ensures identical positions are sampled for every head, which is correct since positions don't vary by head.

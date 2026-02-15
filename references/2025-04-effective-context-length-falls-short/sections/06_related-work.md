@@ -1,0 +1,11 @@
+# 5 Related Work [p. 10]
+
+[p. 10]
+
+## Long-Context Scaling of LLMs [p. 10]
+
+Modeling long text has always been a challenging problem. With the development of large language models (LLMs), researchers have begun to explore ways to extend these models to handle longer contexts from various perspectives. (1) Efficient Architectures: Jiang et al. (2024); Fu et al. (2024a); Ding et al. (2023); Song et al. (2023); Yang et al. (2024); Zhu et al. (2024b) demonstrate that the training and inference overhead of long-context LLMs can be substantially optimized by sparse attention. Another crucial architecture is state space models (Gu & Dao, 2023; Yuan et al., 2024; Lieber et al., 2024). (2) Continual Training with Long Data: Efforts have been made to continually train LLMs to extend their effective lengths using high-quality long sequences (Fu et al., 2024b; Zhu et al., 2024a; Wu et al., 2024; Gao et al., 2024). (3) LLMs with Infinite Contexts: Recent work has shown that LLMs can be scaled to infinite, as evidenced by models such as StreamingLLM and InfLLM (Xiao et al., 2023; 2024; Han et al., 2023; Zhang et al., 2024a; Cai et al., 2024; Lin et al., 2024a; Dong et al., 2024). However, these methods typically cannot maintain a full KV cache, resulting in weakened long-context capabilities.
+
+## Length Extrapolation [p. 10]
+
+Training to extend the model context length incurs significant overhead. Recent works focus on length extrapolation, which trains models with short sequences to infer longer ones, as a means to address this issue (Press et al., 2022; Raffel et al., 2023; Han et al., 2024). An et al. (2024a); Jin et al. (2024); Su (2023); Ma et al. (2024g) believe that the model's inability to generalize to longer contexts is caused by positions being out-of-distribution. They achieved effective extrapolation by repeating trained positions, thereby maintaining low perplexity for exceedingly long contexts. On the other hand, Zhu et al. (2023) randomly places large position indices within the training window in the training and infer longer sequences. For RoPE-based LLMs, Peng et al. (2023); Men et al. (2024); Zhong et al. (2024); Wang et al. (2024b) reduce the long-range attenuation effect of RoPE by amplifying the base frequency, thereby bringing the remote token closer.

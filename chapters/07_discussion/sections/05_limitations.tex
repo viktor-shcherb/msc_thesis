@@ -1,0 +1,74 @@
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Observational design.}
+All analyses are observational: we measure correlations between mechanistic
+metrics and behavioral performance, not causal effects. Claiming that low
+plasticity \emph{causes} ECL failure would require interventions---ablating
+low-plasticity heads and measuring retrieval accuracy degradation. We make
+associative claims only.
+
+\paragraph{Single capture dataset.}
+All analyses are computed over a fixed set of 500 LongBench-Pro examples at
+128K+ length. The stability of plasticity profiles across document types
+(code, dialogue, structured data) is untested. The profiles may partly reflect
+dataset-specific statistics rather than purely architectural properties.
+
+\paragraph{Three model families.}
+Eleven models from three families (Ministral-3, Qwen-3, Llama-3.2) is a
+limited sample. The findings may not generalize to architecturally different
+models such as mixture-of-experts models~\cite{2024-05-deepseek-v2-moe,
+2024-12-deepseek-v3-technical-report}, models with linear
+attention~\cite{2024-05-mamba-selective-state-spaces,
+2024-10-rwkv-eagle-finch-matrix-states}, or models at substantially larger
+scales. The training dynamics story relies on a single model's
+trajectory (SmolLM3-3B).
+
+\paragraph{Pairwise ranking, not softmax weights.}
+Plasticity evaluates attention as a reranking mechanism: it measures whether
+query content determines the pairwise ordering of keys. Since any total
+ordering is determined by its pairwise comparisons, corrupted pairwise
+orderings imply a corrupted global ranking. However, plasticity does not
+directly measure softmax weight concentration. A head could produce correct
+pairwise orderings yet still spread attention too thinly across many keys, or
+conversely produce incorrect orderings that are masked by softmax saturation.
+The metric captures ranking quality, not weight allocation.
+
+\paragraph{Linear drift and Gaussian assumptions.}
+The plasticity decay theorem (Theorem~\ref{thm:plasticity-decay}) and the
+Gaussian closed form (Equations~\ref{eq:gaussian-mean}--\ref{eq:plasticity-gaussian})
+assume that positional drift is linear and that score differences are
+approximately Gaussian. Both are empirically supported---linear fits achieve
+high $R^2$ on the drift axis, and Q-Q plots of score differences show
+approximate normality---but they are approximations. Non-linear positional
+structure (e.g., from RoPE's rotation planes in the complement subspace) is
+not captured by the linear model and may contribute to plasticity decay
+through mechanisms the theorem does not describe. The Gaussian assumption
+may also break down for heads with strongly non-Gaussian content
+distributions, though the central limit theorem provides some robustness
+when aggregating over many key pairs.
+
+\paragraph{Per-head independence.}
+We analyze each attention head independently. Per-head plasticity does not
+capture cross-layer interactions: a low-plasticity early head feeding into a
+high-plasticity later head may not limit model-level ECL. Circuit-level
+analysis~\cite{2021-12-transformer-circuits-framework,
+2022-03-in-context-learning-induction-heads} would be needed to understand how
+individual head profiles compose into model-level behavior.
+
+\paragraph{Base vs.\ instruct model confound.}
+Mechanistic metrics are computed on base (non-instruct) model weights, while
+benchmark scores come from instruct-tuned variants of the same architectures.
+Instruction tuning could alter the attention geometry we measure, in which case
+the base-model metrics may not fully correspond to the instruct-model behavior
+on benchmarks. The correlation between plasticity drop and benchmark ordering
+is therefore an association between base-model geometry and instruct-model
+performance, not a direct measurement of the mechanism underlying the benchmark
+scores.
+
+\paragraph{GQA key sharing.}
+In GQA models, multiple query heads share the same key head. We analyze each
+(query head, shared key head) pair independently but do not study whether
+query heads within a GQA group develop coordinated or divergent plasticity
+profiles. Coordination within GQA groups could amplify or mitigate the effects
+we observe at the individual head level.

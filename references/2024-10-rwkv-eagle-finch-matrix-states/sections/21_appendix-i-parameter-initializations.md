@@ -1,6 +1,6 @@
 # Appendix I: Parameter Initializations [p. 38–40]
 
-[p. 38] Throughout this section, we use l to denote the layer index (layer l = 0 accepts input embeddings and layer l = L−1 produces output), and i the dimension index (i = 0, 1, ⋯, D−1). We set r₀ = i/(L-1) and r₁ = 1 − i/L as two parameters for simplicity.
+[p. 38] Throughout this section, we use l to denote the layer index (layer l = 0 accepts input embeddings and layer l = L−1 produces output), and i the dimension index (i = 0, 1, ⋯, D−1). We set r₀ = l/(L-1) and r₁ = 1 − l/L as two parameters for simplicity.
 
 [p. 38] The initialization of Eagle is provided as follows:
 

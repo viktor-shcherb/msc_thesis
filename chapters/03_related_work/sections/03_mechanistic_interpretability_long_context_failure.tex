@@ -1,0 +1,85 @@
+\section{Mechanistic Interpretability for Long-Context Failure}
+
+Mechanistic long-context analysis builds on the transformer-circuits program:
+model behavior is treated as computation implemented by identifiable internal
+subnetworks, and mechanism claims are tested by intervention rather than
+inferred from benchmark score trends alone
+\cite{2021-12-transformer-circuits-framework,2022-03-in-context-learning-induction-heads}.
+Within that framing, evidence is strongest when studies progress from
+observational signatures, to targeted perturbations, to confound-controlled
+evaluation.
+% Verification (mechanistic framing): check methodological claims in Transformer
+% Circuits (2021 framework) and Induction Heads (2022) for localization +
+% intervention-based interpretability.
+
+At the observational level, recent studies identify stable positional/topological
+signatures. \citeauthor{2025-04-attention-sink-emerges} report attention sinks
+across model scales from 14M to 13B, including random-token sink rates of
+70.29\%--91.23\%, and show sink emergence across PE families (NoPE, ALiBi,
+RoPE) \cite{2025-04-attention-sink-emerges}. Complementary theory shows how
+causal masking alone can amplify early-position influence with depth: cumulative
+context probability converges exponentially toward the first token under the
+paper's assumptions \cite{2025-07-position-bias-transformers}. Over-squashing
+analysis gives a related topological account, where earlier tokens have
+combinatorially more information pathways to the final prediction token than
+mid/late tokens \cite{2024-12-transformers-need-glasses-over-squashing}.
+% Verification (observational evidence): confirm sink magnitudes in Gu et al.
+% Table/Figures (2410.10781), first-token convergence theorem in Wu et al.
+% (2502.01951, Thm 4.1), and path-asymmetry result in Barbero et al.
+% (2406.04267, Thm 5.1).
+
+Interventional work then tests whether these components are causally relevant.
+Retrieval-head studies report that only 3--6\% of heads exceed retrieval-score
+thresholds across eight model configurations, and masking about 5\% of top
+retrieval heads (K=50) drops NIAH scores below 50 while random-head masking
+remains above 80 in reported settings
+\cite{2025-04-retrieval-head-long-context-factuality}. On extractive QA, the
+same study reports F1 falling from 56.7 to 32.3 when masking 100 retrieval
+heads, versus 55.4 for masking 100 random heads
+\cite{2025-04-retrieval-head-long-context-factuality}. Position-bias
+interventions provide complementary causal evidence outside standardized ECL
+benchmarks: PINE reports +3.7 to +11.7 points on the RewardBench reasoning
+subset across tested configurations (e.g., Llama-3-70B: 78.9 to 87.6) while
+providing a proof of inter-document position invariance for its transformed
+attention procedure \cite{2025-04-pine-eliminating-position-bias}. A lighter
+intervention that scales one positional hidden-state channel reports gains up
+to +9.3 points on NaturalQuestions and +15.2 on KV retrieval with
+near-unchanged MMLU in reported settings
+\cite{2025-07-position-bias-single-dimension-scaling}. These results are best
+read as transfer evidence for mechanism controllability rather than direct ECL
+measurement.
+% Verification (intervention magnitudes): confirm retrieval-head percentages and
+% masking deltas in Wu et al. (2404.15574, Fig. 3/7/8), RewardBench deltas and
+% theorem statements in PINE (2407.01100, Table 1 + Sec. 3.3), and channel-
+% scaling gains in Yu et al. (2406.02536, Table 1/3).
+
+Mechanistic analyses of positional encoding behavior add complementary evidence.
+RoPE-focused circuit analysis reports frequency specialization: high-frequency
+bands support positional heads (for example, diagonal and previous-token
+patterns), while low-frequency bands carry semantic channels that are less
+stable at very long ranges \cite{2025-04-round-and-round-rope}. In parallel,
+position-frequency analysis links long-context failure to training exposure
+imbalance: for one reported corpus analysis at $L=2048$, indices up to 1024
+account for over 80\% of occurrences while indices at 1536+ are below 5\%;
+their inference-time index-shifting intervention raises average 4-needle NIAH
+from 67.8 to 85.7 across seven models
+\cite{2025-04-effective-context-length-falls-short}.
+% Verification (PE mechanism claims): validate high-/low-frequency role evidence
+% in RoPE analysis (2410.06205, Sec. 4-6) and position-frequency + STRING
+% numbers in An et al. (2410.18745, Fig. 1 + Table 1).
+
+Current evidence also has clear limits relevant to this thesis gap. Several
+mechanistic results are setup-constrained (for example, downstream intervention
+tests often on one primary model, attention-sink causal ablations scaled to 1B,
+or higher inference overhead for some methods such as PINE)
+\cite{2025-04-retrieval-head-long-context-factuality,2025-04-attention-sink-emerges,2025-04-pine-eliminating-position-bias}.
+Moreover, confound-controlled benchmark studies show that mechanism-informed
+improvements must still survive robustness checks: NoLiMa reports 11/13 models
+below 50\% of base score at 32K, and controlled length-isolation experiments
+report 13.9\%--85\% degradation at 30K despite perfect retrieval in their tested
+settings \cite{2025-07-nolima-long-context-evaluation,2025-11-context-length-hurts-performance}.
+
+For this thesis, the methodological implication is explicit: long-context
+mechanism claims are most credible when observational signatures, targeted
+interventions, and confound-controlled evaluation converge on the same
+explanation.

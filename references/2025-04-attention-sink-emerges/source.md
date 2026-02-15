@@ -1,7 +1,9 @@
 # When Attention Sink Emerges in Language Models: An Empirical View
 
-**Authors:** Xiangming Gu, Tianyu Pang, Chao Du, Qian Liu, Fengzhuo Zhang, Cunxiao Du, Ye Wang, Min Lin
-**Affiliations:** Sea AI Lab (SAIL), National University of Singapore
+**Authors:** Xiangming Gu*, Tianyu Pang, Chao Du, Qian Liu, Fengzhuo Zhang, Cunxiao Du, Ye Wang, Min Lin
+**Affiliations:** Xiangming Gu (Sea AI Lab, Singapore / National University of Singapore*), Tianyu Pang (Sea AI Lab, Singapore), Chao Du (Sea AI Lab, Singapore), Qian Liu (Sea AI Lab, Singapore), Fengzhuo Zhang (Sea AI Lab, Singapore / National University of Singapore), Cunxiao Du (Sea AI Lab, Singapore), Ye Wang (National University of Singapore), Min Lin (Sea AI Lab, Singapore)
+
+*Work done during Xiangming Gu's internship at Sea AI Lab. Correspondence to Tianyu Pang and Ye Wang.
 
 ## Publication Status
 

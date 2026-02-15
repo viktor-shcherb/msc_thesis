@@ -1,0 +1,236 @@
+\section{Attention Plasticity}
+\label{sec:attention-plasticity}
+
+The rotation model quantifies the bias mechanism---how much position enters the
+attention score and through what geometric pathway. But bias magnitude alone does
+not determine whether position dominates content. A head with large bias
+strength may still attend flexibly if the content signal is strong enough to
+overcome the positional preference. Attention plasticity measures the functional
+consequence: does position actually constrain which key wins?
+
+Attention can be viewed as a content-based reranking mechanism: the dot-product
+scores $q^\top k_i$ induce a ranking over keys, and softmax converts this
+ranking into a weight distribution. Effective long-context processing requires
+that this ranking reflect content relevance rather than positional proximity.
+Any total ordering is fully determined by its pairwise comparisons---if
+position corrupts pairwise key orderings, the global ranking is necessarily
+corrupted. Pairwise comparison is therefore the natural unit for evaluating
+ranking quality.
+
+Fix an attention head and a prefix $x_{1:n}$. The keys $k_i$ for $i \leq n$
+are deterministic functions of the prefix---they are fixed once the context is
+given. Now consider a query at position $t > n$. The query $q_t$ depends on
+future tokens beyond the prefix, drawn from the workload distribution
+$\mathcal{D}$. From the perspective of the prefix, $q_t$ is a random variable.
+
+This asymmetry is fundamental: keys carry the context to retrieve from; queries
+carry the question being asked. Plasticity measures whether the model's ranking
+of keys depends on the question (content-driven) or is predetermined by
+position.
+
+\subsection{Definitions}
+
+\begin{definition}[Pairwise preference]
+\label{def:pairwise-preference}
+For a fixed prefix $x_{1:n}$, a query position $t > n$, and a pair of key
+indices $(i, j)$ with $i < j \leq n$, the \emph{pairwise preference
+probability} is:
+%
+\begin{equation}
+p_{n,t}(x_{1:n}, i, j) = \Pr_{q_t}\!\left[q_t^\top k_i > q_t^\top k_j\right]
+\label{eq:pairwise-preference}
+\end{equation}
+%
+where the probability is taken over the random query $q_t$.
+\end{definition}
+
+When $p \approx 0.5$, the content of the query determines which key
+wins---different queries retrieve different information from the same context.
+When $p \approx 0$ or $p \approx 1$, the outcome is determined by the key
+positions, independent of the query.
+
+\begin{definition}[Pairwise plasticity]
+\label{def:pairwise-plasticity}
+For a fixed prefix and key pair, the \emph{pairwise plasticity} is the scaled
+Bernoulli variance of the preference indicator:
+%
+\begin{equation}
+\text{PP}_{n,t}(x_{1:n}, i, j) = 4 \cdot p \cdot (1 - p)
+\label{eq:pairwise-plasticity}
+\end{equation}
+%
+where $p = p_{n,t}(x_{1:n}, i, j)$.
+\end{definition}
+
+Pairwise plasticity achieves its maximum of 1 when $p = 0.5$ (the key
+ordering is maximally query-dependent) and approaches 0 when $p \to 0$ or
+$p \to 1$ (the ordering is rigid regardless of the query).
+
+\begin{definition}[Attention plasticity]
+\label{def:attention-plasticity}
+The \emph{attention plasticity} at query position $t$ is:
+%
+\begin{equation}
+\text{AP}_t = \mathbb{E}\!\left[\text{PP}_{N,t}(X_{1:N}, I, J)\right]
+\label{eq:attention-plasticity}
+\end{equation}
+%
+where the expectation is over: (i)~a random prefix length $N$ uniform in
+$\{1, \ldots, t-1\}$, (ii)~a random prefix $X_{1:N}$ from $\mathcal{D}$, and
+(iii)~a random key pair $(I, J)$ uniform over admissible pairs.
+\end{definition}
+
+$\text{AP}_t \in [0, 1]$ depends only on the query position $t$ for a fixed
+attention head and workload. The function $t \mapsto \text{AP}_t$ is the
+\emph{plasticity profile} of the head.
+
+\subsection{Positional-Semantic Decomposition}
+\label{sec:householder-decomposition}
+
+To compute $\text{AP}_t$ in closed form, we decompose query vectors using a
+Householder reflection that aligns the positional drift direction with the first
+coordinate axis.
+
+Let $\beta \in \mathbb{R}^d$ be the vector of linear regression slopes from
+regressing query vectors onto their positions:
+$\beta_j = \operatorname{Cov}(q_j, t) / \operatorname{Var}(t)$. The Householder
+matrix
+%
+\begin{equation}
+H = I - \frac{2\, u u^\top}{\|u\|^2},
+\qquad u = \hat{\beta} - e_1,
+\qquad \hat{\beta} = \frac{\beta}{\|\beta\|}
+\label{eq:householder}
+\end{equation}
+%
+maps $\hat{\beta}$ to the first standard basis vector $e_1$. Since $H$ is
+orthogonal ($H^\top H = I$), applying it to both query and key vectors preserves
+all dot products: $q^\top k = (Hq)^\top (Hk)$.
+
+In the rotated basis, the query decomposes as:
+%
+\begin{itemize}
+    \item \textbf{Coordinate 1 (positional)}: $q_1^{\text{rot}} = \alpha_{\text{pos}} +
+    \beta_{\text{pos}} \cdot t + \varepsilon$, where $\varepsilon$ captures
+    residual positional variation with variance $\sigma_{\text{pos}}^2$. All
+    linear position covariance is concentrated in this coordinate.
+    \item \textbf{Coordinates $2, \ldots, d$ (semantic)}: position-decorrelated
+    components carrying content information. Their distribution depends on the
+    query position bucket $b$: mean $\mu_b$ and covariance $\Sigma_b$.
+\end{itemize}
+
+This decomposition is distinct from the rotation in
+Section~\ref{sec:planar-rotation-model}. The planar rotation constructs a
+$\{a, b\}$ plane from the combined Q+K pool for geometric characterization. The
+Householder reflection here uses query-only drift for the theoretical framework.
+Both are orthogonal transformations preserving $q^\top k$; they serve different
+purposes.
+
+\subsection{Gaussian Closed Form}
+
+Under the positional-semantic decomposition, the score difference
+$D = q_t^\top(k_i - k_j)$ for a key pair with difference vector
+$\delta = k_i^{\text{rot}} - k_j^{\text{rot}}$ in the rotated basis is
+approximately Gaussian. In practice, positions are bucketed and each bucket is
+represented by its midpoint $\tau_q$ (Section~\ref{sec:bucketing}); the
+continuous-position variable $t$ in the decomposition above is replaced by
+$\tau_q$. The parameters are:
+%
+\begin{align}
+\mu &= \delta_1 \cdot (\alpha_{\text{pos}} + \beta_{\text{pos}} \cdot \tau_q)
+     + \delta_{2:d}^\top \mu_b
+\label{eq:gaussian-mean} \\
+v &= \delta_1^2 \cdot \sigma_{\text{pos}}^2
+   + \delta_{2:d}^\top \operatorname{diag}(\sigma_b^2) \, \delta_{2:d}
+\label{eq:gaussian-var}
+\end{align}
+%
+where $\tau_q$ is the query bucket position, $\alpha_{\text{pos}}$ and
+$\beta_{\text{pos}}$ are the intercept and slope of the positional coordinate,
+$\sigma_{\text{pos}}^2$ is the residual positional variance, and $\mu_b$,
+$\sigma_b^2$ are the bucket-specific semantic mean and diagonal variance.
+
+The key preference probability and pairwise plasticity then follow from the
+Gaussian CDF:
+%
+\begin{align}
+p &= \Phi\!\left(\frac{\mu}{\sqrt{v}}\right)
+\label{eq:preference-gaussian} \\[4pt]
+\text{PP} &= 4 \cdot \Phi\!\left(\frac{\mu}{\sqrt{v}}\right) \cdot
+\left(1 - \Phi\!\left(\frac{\mu}{\sqrt{v}}\right)\right)
+\label{eq:plasticity-gaussian}
+\end{align}
+%
+where $\Phi$ is the standard normal CDF. The ratio $\mu / \sqrt{v}$ is the
+signal-to-noise ratio of the score difference. When keys differ in position
+($\delta_1 \neq 0$) and the query position $\tau_q$ grows, the positional term
+in $\mu$ grows linearly (via $\beta_{\text{pos}} \cdot \tau_q$) while $v$
+remains bounded. This drives $p$ away from $0.5$ and plasticity toward zero.
+
+\subsection{Plasticity Decay}
+
+The Gaussian closed form reveals a fundamental asymmetry: the positional
+contribution to the mean $\mu$ grows linearly with query position $\tau_q$,
+while the variance $v$ is position-independent. As the query moves further into
+the context, the positional signal increasingly dominates the content signal.
+
+\begin{theorem}[Plasticity decay bound]
+\label{thm:plasticity-decay}
+Under the positional-semantic model with non-zero positional drift
+($\beta_{\text{pos}} \neq 0$):
+%
+\begin{equation}
+\text{AP}_t \leq \text{AP}_\infty + C \cdot \exp(-c \cdot t^2)
+\label{eq:decay-bound}
+\end{equation}
+%
+for constants $C, c > 0$ depending on the model parameters. If all key pairs
+have distinct positional coordinates, $\text{AP}_t \to 0$ as $t \to \infty$.
+\end{theorem}
+
+In words: attention plasticity inevitably decays with query position whenever
+the query distribution exhibits linear positional drift---which all examined
+models do. The rate of decay depends on the model's specific bias strength
+and content signal strength, making the \emph{shape} of the decay profile
+diagnostic of the model's long-context capability. The formal proof, which
+relies on sub-Gaussian concentration of the score difference, is deferred to
+Appendix~\ref{app:supplementary}.
+
+\subsection{Bucketing and Aggregation}
+\label{sec:bucketing}
+
+\paragraph{Per-query-position plasticity.}
+The primary computation is per-query-bucket: for each query position bucket $j$
+with representative position $\tau_j$, pool all eligible keys from earlier
+buckets, sample key pairs, compute the Gaussian closed form
+(Equations~\ref{eq:gaussian-mean}--\ref{eq:plasticity-gaussian}), and average.
+This produces $\text{AP}$ as a function of query position---the plasticity
+profile.
+
+\paragraph{2D heatmaps.}
+Each sampled key pair also produces a 2D coordinate: the inter-key distance
+$|t_{k_i} - t_{k_j}|$ and the query-to-key-midpoint distance
+$\tau_q - \tfrac{1}{2}(t_{k_i} + t_{k_j})$. Binning plasticity by these two
+distances reveals structure invisible in the 1D position profile: keys close
+together but far from the query yield high plasticity (content determines the
+winner), while keys far apart with one near the query yield low plasticity
+(position dominates).
+
+\paragraph{Aggregate metrics.}
+We report four summary statistics per head, aggregated to model level:
+%
+\begin{itemize}
+    \item $\text{AP}_{\text{overall}}$: bucket-size-weighted mean across query
+    position buckets.
+    \item $\text{AP}_{\text{first\,20\%}}$: mean plasticity for query positions
+    in the first 20\% of context.
+    \item $\text{AP}_{\text{last\,20\%}}$: mean plasticity for query positions
+    in the last 20\% of context.
+    \item $\text{AP}_{\text{drop}} = \text{AP}_{\text{first\,20\%}} -
+    \text{AP}_{\text{last\,20\%}}$: the plasticity degradation across context.
+\end{itemize}
+%
+$\text{AP}_{\text{drop}}$ is the key diagnostic metric. A model with low
+$\text{AP}_{\text{drop}}$ maintains flexible attention at distant positions; a
+model with high $\text{AP}_{\text{drop}}$ loses the ability to perform
+content-driven retrieval as context length grows.

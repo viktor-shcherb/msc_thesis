@@ -116,6 +116,9 @@ cross_references:
   - target: 2025-04-retrieval-head-long-context-factuality
     type: complementary
     detail: "Wu et al. show that when retrieval heads fail to locate relevant information in long context, they default to attending to attention sink tokens, mechanistically linking the attention sink phenomenon to retrieval failure and hallucination"
+  - target: 2025-04-effective-context-length-falls-short
+    type: complementary
+    detail: "Attention sinks at position 0 are consistent with position 0 having the highest frequency in the left-skewed position distribution identified by An et al.; both papers address position-dependent performance phenomena"
 open_questions:
   - question: "Are attention sinks a side effect of SoftMax normalization or do they serve a functional computational role in the residual stream?"
     addressed_by: 2025-04-attention-sink-emerges

@@ -4,35 +4,37 @@
 
 **Title:** Eagle and Finch: RWKV with Matrix-Valued States and Dynamic Recurrence
 
-**Authors:** Bo Peng (equal first author), Daniel Goldstein (equal first author), Quentin Anthony, Alon Albalak, Eric Alcaide, Stella Biderman, Eugene Cheah, Xingjian Du, Teddy Ferdinan, Haowen Hou, Przemysław Kazienko, Kranthi Kiran GV, Jan Kocoń, Bartłomiej Koptyra, Satyapriya Krishna, Ronald McClelland Jr., Jiaju Lin, Niklas Muennighoff, Fares Obeid, Atsushi Saito, Guangyu Song, Haoqin Tu, Cahya Wirawan, Stanisław Woźniak, Ruichong Zhang, Bingchen Zhao, Qihang Zhao, Peng Zhou, Jian Zhu, Rui-Jie Zhu
+**Authors:** Bo Peng^{1,2,*}, Daniel Goldstein^{2,3,*}, Quentin Anthony^{2,4,23,*}, Alon Albalak^{2,5,9}, Eric Alcaide^{2,7,6,8}, Stella Biderman^{2,6}, Eugene Cheah^{1,2,3}, Xingjian Du^1, Teddy Ferdinan^9, Haowen Hou^{10}, Przemysław Kazienko^9, Kranthi Kiran GV^{2,11}, Jan Kocoń^9, Bartłomiej Koptyra^9, Satyapriya Krishna^7, Ronald McClelland Jr.^{2,12}, Jiaju Lin^{24}, Niklas Muennighoff^{11}, Fares Obeid^2, Atsushi Saito^{2,13}, Guangyu Song^{2,23}, Haoqin Tu^{16,17}, Cahya Wirawan^{2,16}, Stanisław Woźniak^9, Ruichong Zhang^{19}, Bingchen Zhao^{20}, Qihang Zhao^{21}, Peng Zhou^{21}, Jian Zhu^{22}, Rui-Jie Zhu^{17}
+
+^* Equal first authorship. Others listed alphabetically.
 
 **Affiliations:**
-- RWKV Project (under Linux Foundation AI & Data)
-- EleutherAI
-- Recursal AI
-- Ohio State University
-- University of California, Santa Barbara
-- SynthLabs
-- Charm Therapeutics
-- Dalle Molle Institute for Artificial Intelligence Research
-- Wrocław Tech
-- Guangdong Laboratory of Artificial Intelligence and Digital Economy (SZ)
-- New York University
-- Harvard University
-- Ronsor Labs
-- Nextremer Co. Ltd.
-- University of Chinese Academy of Sciences
-- University of California, Santa Cruz
-- AI-Research.ltd
-- Tsinghua University
-- University of Edinburgh
-- LuxiTech Co. Ltd.
-- University of British Columbia
-- Zyphra
-- Pennsylvania State University
-- Tano Labs
+1. RWKV Project (under Linux Foundation AI & Data)
+2. EleutherAI
+3. Recursal AI
+4. Ohio State University
+5. University of California, Santa Barbara
+6. SynthLabs
+7. Charm Therapeutics
+8. Dalle Molle Institute for Artificial Intelligence Research
+9. Wrocław Tech
+10. Guangdong Laboratory of Artificial Intelligence and Digital Economy (SZ)
+11. New York University
+12. Harvard University
+13. Ronsor Labs
+14. Nextremer Co. Ltd.
+15. University of Chinese Academy of Sciences
+16. University of California, Santa Cruz
+17. AI-Research.id
+18. Tsinghua University
+19. University of Edinburgh
+20. LuxiTech Co. Ltd.
+21. University of British Columbia
+22. Zyphra
+23. Pennsylvania State University
+24. Tano Labs
 
-**Venue/Date:** arXiv:2404.05892v4 [cs.CL], 26 Sep 2024
+**Venue/Date:** Conference on Language Modeling (COLM), October 7–9, 2024, Philadelphia; arXiv:2404.05892v4 [cs.CL], 26 Sep 2024
 
 **Code/Models:**
 - Models: https://huggingface.co/RWKV

@@ -77,6 +77,9 @@ cross_references:
   - target: 2025-04-longgenbench-long-form-generation
     type: complementary
     detail: "LongGenBench evaluates long-form generation quality (output-side), complementing LRA's focus on efficient input processing; both are synthetic benchmarks for long-sequence capabilities"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify LRA tasks across their scope-dispersion taxonomy: classification tasks as high-dispersion low-scope, Long ListOps as high-scope high-dispersion (reasoning)"
 open_questions:
   - question: "Do LRA results on synthetic and byte-level tasks predict model performance on natural language long-context tasks?"
     addressed_by: null

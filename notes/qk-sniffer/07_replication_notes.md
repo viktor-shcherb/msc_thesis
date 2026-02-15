@@ -12,24 +12,25 @@ The system works by inserting local model files into Python's `sys.modules` befo
 
 Modern models use Rotary Positional Embeddings (RoPE) with `cache_position` tracking during generation. The `compute_positions()` utility handles cache resizing/expansion to match query/key shapes.
 
-### 3. Deduplication is Incremental
-
-- Position caches are loaded from existing Parquets on saver startup
-- Enables safe re-runs without duplicates
-- Position cache key is `(example_id, position)` regardless of layer/head
-
-### 4. Determinism is Enforced
+### 3. Determinism is Enforced
 
 Samplers use fixed seeds based on:
-- `(example_id, layer_idx, head_idx, vector_kind)`
+- `(example_id, layer_idx, vector_kind)`
 
-This ensures exact same tokens are sampled across runs—critical for reproducible research datasets.
+A single position mask is generated and shared across all heads within a (layer, kind) pair. This ensures identical positions are sampled for every head, which is correct since positions don't vary by head.
 
-### 5. Thread Safety for Performance
+### 4. In-Memory Accumulation
 
-- Background writer thread decouples capture from disk I/O
-- Queue buffers up to `queue_size` batches before blocking capture
-- Flushes in bulk at `write_batch_size` intervals
+- All captures accumulate in RAM during inference — no disk writes until the end
+- Data stored per (layer, kind) with shared positions/buckets across heads
+- Vectors stored as dense `(n_heads, K, dim)` tensors
+- Parquet files written in one shot after inference completes via `write_config_data()`
+
+### 5. Backbone-Only Forward Pass
+
+- Calls `model.model()` (transformer backbone) instead of `model()`, skipping the lm_head
+- `use_cache=False` avoids KV cache accumulation
+- `attention_mask` dropped to prevent O(n²) 4D causal mask expansion
 
 ### 6. Configuration Flexibility
 
@@ -37,15 +38,15 @@ Every major parameter is exposed:
 - batch_size, max_length
 - sampler type, base_rate, min_bucket_size
 - layers, heads filters
+- head_sampling (random subset of query heads)
+- full_attention_only, capture_pre_rope
 
-Allows experiments from "capture everything" to "sample 1% of long-context tokens."
+### 7. Hub Integration (Branch-per-Model)
 
-### 7. Hub Integration is Transparent
-
-- System pulls the repo if it exists
-- Syncs captures in-place
+- System pulls the repo if it exists (on the model's branch via `hf_branch`)
+- Writes Parquet files in-place
 - Pushes back with a single commit
-- `.sniff_snapshot.json` file tracks repo SHA to avoid redundant pulls
+- Each model gets its own branch, keeping the main branch clean
 
 ### 8. Dataset Card Auto-Generation
 
@@ -53,14 +54,15 @@ README front matter is regenerated every run:
 - Keeps `configs` and `models` lists in sync with actual Parquet files
 - Enables immediate use via `load_dataset()`
 
+## Infrastructure
+
+- **GPU**: NVIDIA B200 rented on Vast.ai
+- **Source code**: https://github.com/viktor-shcherb/qk-sniffer
+
 ## Running the Tool
 
 ```bash
-# Basic usage
-python sniff.py --config configs/my_config.yaml
-
-# With environment setup
-PYTHONPATH=. python sniff.py --config configs/qwen3.yaml
+sniff-qk --config configs/attention-plasticity/qwen3-8b.yaml
 ```
 
 ## Loading Captured Data
@@ -68,8 +70,12 @@ PYTHONPATH=. python sniff.py --config configs/qwen3.yaml
 ```python
 from datasets import load_dataset
 
-# Load specific layer/head/vector type
-ds = load_dataset("viktoroo/sniffed-qk", "l00h00q")
+# Load specific layer/head/vector type from a specific model branch
+ds = load_dataset(
+    "viktoroo/sniffed-qk",
+    "l00h00q",
+    revision="qwen3-8b-longbench-pro-128k-plus",
+)
 
 # Access vectors
 for row in ds["train"]:

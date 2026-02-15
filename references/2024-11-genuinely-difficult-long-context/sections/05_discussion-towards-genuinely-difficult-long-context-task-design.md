@@ -1,4 +1,4 @@
-# Discussion: Towards Genuinely Difficult Long-Context Task Design [p. 4–5]
+# Discussion: Towards Genuinely Difficult Long-Context Task Design [p. 5]
 
 ## Challenges
 
@@ -6,7 +6,7 @@ Designing meaningful long-context tasks amidst rapid model progress is profoundl
 
 ## Future work
 
-The goals laid forward in this work are clear: For more durable and robust measurements of long-context capabilities, we must design tasks that explicitly target both the dispersion and scope capabilities of models. How can this be achieved? As mentioned, one possible avenue is to rely more on tasks that require domain expertise, such as legal documents (Bruno and Roth, 2022), financial reports (Reddy et al., 2024), biomedical publications (Stylianou et al., 2021), and so on. In specialized domains, it is common that dispersion will be naturally higher (Zhao et al., 2023). Tasks that involve implicit aggregations over structured data, such as table manipulation (Caciularu et al., 2024), are possible avenues for increasing both scope and dispersion synthetically by leveraging the data structure. In this work, we argue that an explicit vocabulary for such properties of difficulty is what can enable more informed long-context task design in the future.
+The goals laid forward in this work are clear: For more durable and robust measurements of long-context capabilities, we must design tasks that explicitly target both the dispersion and scope capabilities of models. How can this be achieved? As mentioned, one possible avenue is to rely more on tasks that require domain expertise, such as legal documents (Bruno and Roth, 2022), financial reports (Reddy et al., 2024), biomedical publications (Stylianou et al., 2021), and so on. In specialized domains, it is common that dispersion will be naturally higher (Zhao et al., 2022). Tasks that involve implicit aggregations over structured data, such as table manipulation (Caciularu et al., 2024), are possible avenues for increasing both scope and dispersion synthetically by leveraging the data structure. In this work, we argue that an explicit vocabulary for such properties of difficulty is what can enable more informed long-context task design in the future.
 
 ## Retrieval is still interesting
 
@@ -16,11 +16,7 @@ Although we argue that small scope and low dispersion tasks are the least indica
 
 This paper only talks about long context inputs that serve as inputs to a task. The long context of course can have other purposes as well, like containing many in-context examples (Bertsch et al., 2024) or containing other modalities and structures (Jiang et al., 2023).
 
-## Acknowledgments
-
-The authors would like to thank Gabriel Stanovsky for the fruitful discussions. This work has been funded by the Israel Science Foundation, grant number 23/670, for which we are grateful.
-
 ---
 
-¹www.readinglength.com/book/isbn-0198980805
+¹www.readinglength.com/book/isbn-0190909005
 ²www.readinglength.com/book/isbn-0140268863

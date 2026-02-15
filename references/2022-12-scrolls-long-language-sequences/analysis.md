@@ -71,6 +71,9 @@ cross_references:
   - target: 2024-06-ada-leval-length-adaptable-benchmark
     type: complementary
     detail: "Ada-LEval addresses SCROLLS's fixed-length limitation and lack of ultra-long settings with length-adaptable tasks"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. cite SCROLLS as an example of benchmarks that group tasks primarily by input length, motivating the need for a scope-dispersion taxonomy"
 open_questions:
   - question: "Can model-based evaluation replace or complement ROUGE for long-text summarization?"
     addressed_by: null

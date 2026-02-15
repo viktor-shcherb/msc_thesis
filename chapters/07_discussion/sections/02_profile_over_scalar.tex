@@ -1,0 +1,44 @@
+\section{Why the Profile Matters More Than the Scalar}
+\label{sec:profile-over-scalar}
+
+Aggregate plasticity ($\text{AP}_{\text{overall}}$) fails as a cross-family
+predictor of long-context performance. The positional degradation
+pattern---$\text{AP}_{\text{drop}}$---succeeds. This distinction has practical
+implications for model evaluation.
+
+\paragraph{The Ministral-3B diagnostic.}
+Ministral-3-3B is the diagnostic outlier
+(Figure~\ref{fig:apdrop-vs-lbp}): it has the highest aggregate plasticity
+(0.622) among all 7 models with LongBench-Pro scores, yet scores only 30.18.
+Its plasticity profile is nearly flat ($\text{AP}_{\text{drop}} = 0.072$,
+comparable to the 14B variant), indicating strong context preservation. The
+low benchmark score reflects limited base capability at 3B scale---the model's
+knowledge and reasoning ability, not its attention mechanics, is the
+bottleneck.
+
+\paragraph{Decomposing benchmark performance.}
+Long-context benchmark performance depends on two factors: \emph{base model
+capability} (knowledge, reasoning, instruction following) and \emph{context
+preservation} (maintaining attention flexibility at distance). Aggregate
+plasticity approximates the second factor, but since context preservation
+varies less than base capability across model scales, the aggregate is
+dominated by the noisier capability term in cross-family comparisons.
+
+$\text{AP}_{\text{drop}}$ isolates context preservation more cleanly. By
+measuring the \emph{slope} of plasticity decline rather than the absolute
+level, it is robust to differences in base capability. Within a family
+(controlled architecture and training recipe), both $\text{AP}_{\text{drop}}$
+and LBP move together---larger Qwen-3 models degrade less and score higher.
+Across families, $\text{AP}_{\text{drop}}$ separates families by context
+preservation strategy while remaining agnostic to base capability.
+
+\paragraph{Practical implication.}
+When evaluating a model for long-context deployment, aggregate benchmark
+scores conflate context preservation with base capability. A model with low
+aggregate LBP but flat $\text{AP}_{\text{drop}}$ is
+\emph{capability-limited}---it preserves context well but lacks the knowledge
+or reasoning ability to exploit it. A model with high aggregate LBP but
+steep $\text{AP}_{\text{drop}}$ is \emph{context-limited}---it performs well
+on average but may fail unpredictably on inputs requiring information from
+distant positions. Per-position plasticity profiles provide a more targeted
+diagnostic than aggregate scores for distinguishing these failure modes.

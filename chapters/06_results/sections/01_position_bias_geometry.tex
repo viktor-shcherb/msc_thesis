@@ -1,0 +1,99 @@
+\section{Position Bias Geometry}
+\label{sec:position-bias-geometry}
+
+This section addresses RQ1: \emph{how does position information manifest in the
+geometry of attention heads?} PCA reveals that position is the dominant source
+of Q/K variance. The rotation model then corrects a confound in PCA's axes and
+isolates the parametric form of positional bias.
+
+\subsection{PCA Reveals Positional Dominance}
+
+Across all 11 primary models, the first principal component of the combined Q+K
+point cloud captures $\sim$34\% of total variance (PC1 captures $\sim$8\%;
+subsequent components decline further). Of total Q+K variance, 23--32\% in
+queries and 9--20\% in keys is linear in token position (varying by family),
+indicating that positional encoding is the single largest structural feature in
+these representations.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-pca/01_pc_roles/figure.png}
+\caption{Position correlation on principal components across 11 models. PC0
+carries the dominant positional signal (23--32\% of query variance and 9--20\%
+of key variance is linear in position), while subsequent components contribute
+minimal position information.}
+\label{fig:pc-roles}
+\end{figure}
+
+On PC0, queries show stronger position correlation than keys
+($|r_q^{(0)}| \approx 0.80$ vs $|r_k^{(0)}| \approx 0.49$). This apparent
+asymmetry---suggesting queries encode position more than keys---will be
+corrected in the next subsection.
+
+The head taxonomy based on PC0 correlations classifies 26.6\% of heads as
+position-dominated, 14.2\% as Q-positional, 3.8\% as content-focused, and
+55.4\% as mixed. Most heads carry some positional structure; purely
+content-focused heads are rare. Families cluster distinctly in $(r_q, r_k)$
+space (Figure~\ref{fig:rq-rk-scatter} in Appendix~\ref{app:supplementary}):
+Llama heads concentrate in the top-right (both correlations high), small Qwen
+models appear Q-positional, and Ministral heads occupy a moderate region. This
+clustering suggests that positional bias geometry is family-determined rather
+than scale-determined.
+
+PCA's dominant component conflates two sources of structure: positional encoding
+and Q/K identity separation. The high $r_q$ on PC0 partly reflects the Q
+cluster centroid aligning with the position gradient direction, not a genuine
+asymmetry in position encoding strength
+(Section~\ref{sec:pca-confound}). To disentangle these, we apply the
+rotation model with axes targeted at specific geometric quantities.
+
+\subsection{Rotation Isolates the Bias Mechanism}
+
+The drift axis $a$ is constructed to maximize position covariance
+(Section~\ref{sec:planar-rotation-model}), so high position correlation on this
+axis is by design. The non-trivial finding is how the signal distributes between
+Q and K: the PCA asymmetry reverses, with
+$|r_k^{(a)}| \approx 0.87 > |r_q^{(a)}| \approx 0.74$. Keys encode position
+more strongly than queries on the mechanistically relevant axis. This is a
+substantive correction: it changes which vector carries the position signal and
+is consistent with RoPE's role in encoding key positions for attention
+scoring~\cite{2024-01-roformer-rope}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-rotation/02_rq_rk_drift_bars/figure.png}
+\caption{Position correlation on the drift axis $a$ across 11 models. Keys
+(red) consistently show stronger position correlation than queries
+(blue)---the reverse of the PCA finding in Figure~\ref{fig:pc-roles}. The
+reversal occurs because PCA's first component conflates Q/K identity with
+positional encoding.}
+\label{fig:rq-rk-drift}
+\end{figure}
+
+The $\{a, b\}$ plane captures 30--43\% of variance across models (comparable to
+PCA's top two components) but with guaranteed semantic meaning: axis $a$ carries
+all linear position covariance, axis $b$ accounts for the Q/K centroid offset.
+
+Positional bias takes a precise parametric form: $\text{bias\_strength} =
+\mu_Q^a \times \alpha_K$ (Equation~\ref{eq:bias-strength}). This scalar
+measures how the query cluster's position on the drift axis amplifies the key
+position gradient. Across all 3{,}239 analyzed heads, 99.0\% show positive
+bias strength---a near-universal recency bias favoring keys at nearer positions
+across the examined models.
+Only 31 heads exhibit primacy bias (Figure~\ref{fig:bias-strength-dist} in
+Appendix~\ref{app:supplementary}). Mean bias strength is $3.0 \times 10^{-4}$
+for all three Ministral-3 scales, $0.8$--$1.0 \times 10^{-3}$ for Qwen-3, and
+$6.0$--$7.0 \times 10^{-4}$ for Llama-3.2---tight within families, confirming
+that the mechanism is architecture-determined.
+
+A Simpson's paradox appears in the relationship between bias strength and Q/K
+separation strength: the overall correlation is $+0.48$, but within the Llama
+family it reverses to $-0.65$ (Figure~\ref{fig:bias-vs-separation} in
+Appendix~\ref{app:supplementary}). Families have genuinely different
+bias-separation trade-offs that are masked by pooling across architectures.
+
+Rotation quantifies the bias mechanism---how much positional preference enters
+each head's attention score. But a large bias does not necessarily constrain
+attention: if the content signal is strong, the query can still select
+semantically relevant keys regardless of position. The next section tests
+whether positional bias functionally dominates content.

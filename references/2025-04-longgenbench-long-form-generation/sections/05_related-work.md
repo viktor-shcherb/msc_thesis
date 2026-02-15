@@ -1,0 +1,13 @@
+# 5 Related Work [p. 10]
+
+## Instruction Following [p. 10]
+
+Recent advances in instruction tuning models (Ouyang et al., 2022; Rafailov et al., 2024; OpenAI, 2022; Taori et al., 2023; Chiang et al., 2023) have underscored the need for scalable evaluation methods. LLMs positioned as evaluators, showing better alignment with human judgments than traditional metrics like BLEU (Papineni et al., 2002). However, LLM evaluations suffer from biases, such as preferring verbosity and exhibiting order preference for verbose outputs (Wang et al., 2024; Pezeshkpour & Hruschka, 2023; Zheng et al., 2023). To mitigate these biases, meta-evaluation benchmarks like FairEval, MT-Bench, and LLMEval² (Wang et al., 2024; Zheng et al., 2023; Zhang et al., 2023) have been proposed. While recent studies have focused on improving LLM evaluations with diverse strategies (Zheng et al., 2023; Li et al., 2023; Zhang et al., 2023; Chan et al., 2023), they typically do not address longer context lengths [p. 10].
+
+## Long-context Benchmarks and Tasks [p. 10]
+
+Existing benchmarks focus on models handling long inputs. For instance, ZeroSCROLLS (Shaham et al., 2023) and LongBench (Bai et al., 2023) tackle tasks like long-document QA and query-based summarization. Synthetic benchmarks, like NeedleBench (Li et al., 2024) and Ruler (Hsieh et al., 2024), offer better control over variables such as sequence length and complexity. NeedleBench introduces the Ancestral Trace Challenge (ATC), while Ruler evaluates models across tasks like NIAH and multi-hop tracing. However, these benchmarks largely focus on input comprehension and do not assess long-form text generation, which is the primary focus of LongGenBench [p. 10].
+
+## Long-form Text Generation [p. 10]
+
+Research in long-form generation spans applications like story generation (Fan et al., 2019c; Xu et al., 2020; Kang & Hovy, 2020), sustained conversation (Xu et al., 2022), and comprehensive QA (Fan et al., 2019a; Dasigi et al., 2021; Stelmakh et al., 2022; Lee et al., 2023). However, existing models and evaluation methods (Liu et al., 2023; Chiang & Lee, 2023; Liu et al., 2024) often face challenges in maintaining quality over long outputs, often being limited by shorter text lengths (typically under 2000 tokens) (Shen et al., 2023). Recent work (Tan et al., 2024) seeks to improve evaluation criteria, but the gap between model capabilities and benchmark text lengths remains. In contrast, LongGenBench evaluates models on their ability to handle much longer sequences, with tasks requiring adherence to instructions over extended outputs (16K+ tokens) [p. 10].

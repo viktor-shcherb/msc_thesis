@@ -1,0 +1,157 @@
+\section{Planar Rotation Model}
+\label{sec:planar-rotation-model}
+
+To resolve the confound identified in Section~\ref{sec:pca-confound}, we
+construct a 2D plane in each head's embedding space with axes that have
+guaranteed semantic meaning: one captures all linear position covariance, the
+other captures maximum Q/K separation. The mechanistically important axis is the
+first (yielding a parametric bias term); the second serves a bookkeeping role,
+removing the Q/K centroid offset so that the remaining $(d-2)$-dimensional
+complement cleanly contains content signal and symmetric RoPE structure.
+
+\subsection{Axis $a$: Drift Direction}
+
+The drift direction $a$ is the unit vector in $\mathbb{R}^d$ that maximizes
+linear covariance between its projection and token position:
+%
+\begin{equation}
+a = \arg\max_{\|u\| = 1} \operatorname{Cov}(u^\top x,\, t)
+\label{eq:drift-direction}
+\end{equation}
+%
+where $x$ ranges over the combined pool of Q and K vectors and $t$ is the
+corresponding token position. The closed-form solution is:
+%
+\begin{equation}
+a = \frac{\operatorname{Cov}(x, t)}{\|\operatorname{Cov}(x, t)\|}
+\label{eq:drift-direction-solution}
+\end{equation}
+%
+where $\operatorname{Cov}(x, t) \in \mathbb{R}^d$ is the vector of covariances
+between each embedding dimension and position.
+% Verification (drift direction uniqueness): verify that the direction
+% maximizing Cov(u^T x, t) subject to ||u||=1 is the normalized covariance
+% vector by Cauchy--Schwarz; all orthogonal directions have zero covariance
+% by construction.
+
+By construction, \emph{all} directions orthogonal to $a$ have exactly zero
+linear position covariance with the combined Q+K pool. This makes $a$ the
+unique direction where position ``lives'' linearly in the combined
+representation.
+
+Because Q and K may encode position at different rates, using the combined pool
+captures the shared positional direction---the one that enters the dot product
+$q^\top k$. Separate Q-only or K-only drift directions would miss this shared
+structure.
+
+\paragraph{Axis $b$: Separation Direction.}
+The separation direction $b$ is the unit vector orthogonal to $a$ that
+maximizes the Q/K centroid separation:
+%
+\begin{equation}
+b = \arg\max_{\substack{\|u\| = 1 \\ u \perp a}}
+    (\mu_Q - \mu_K)^\top u
+\label{eq:separation-direction}
+\end{equation}
+%
+where $\mu_Q$ and $\mu_K$ are the centroids of query and key vectors
+respectively. The solution projects the centroid difference onto the complement
+of $a$ and normalizes:
+%
+\begin{equation}
+b = \frac{(\mu_Q - \mu_K) - [(\mu_Q - \mu_K)^\top a]\, a}
+         {\|(\mu_Q - \mu_K) - [(\mu_Q - \mu_K)^\top a]\, a\|}
+\label{eq:separation-direction-solution}
+\end{equation}
+
+\subsection{The $\{a, b\}$ Plane}
+\label{sec:ab-plane}
+
+Together, $a$ and $b$ span a 2D plane in $\mathbb{R}^d$. Projecting all Q and K
+vectors onto this plane reveals two geometric roles:
+%
+\begin{itemize}
+    \item \textbf{Along $a$ (horizontal)}: tokens at different positions spread
+    out, creating a position gradient. The \emph{key drift slope} $\alpha_K$
+    measures the linear regression coefficient of key projections onto $a$
+    against token position. The \emph{query centroid} $\mu_Q^a$ is the mean
+    query projection onto $a$. This axis carries the mechanistically important
+    asymmetric positional bias.
+    \item \textbf{Along $b$ (vertical)}: the Q and K clusters separate, with
+    centroids at different heights. Since $b \perp a$, this axis has zero
+    position covariance and does not contribute to positional bias. Its
+    contribution to the attention score $q_b \cdot k_b$ is approximately
+    constant across keys at different positions and therefore cancels in
+    softmax. Axis $b$ serves primarily to account for the Q/K centroid offset
+    that confounds PCA (Section~\ref{sec:pca-confound}) and to enable 2D
+    visualization of the head geometry.
+\end{itemize}
+
+\subsection{Bias Strength}
+\label{sec:bias-strength}
+
+The positional contribution of axis $a$ to the attention score is quantified by
+the \emph{bias strength}:
+%
+\begin{equation}
+\text{bias\_strength} = \mu_Q^a \times \alpha_K
+\label{eq:bias-strength}
+\end{equation}
+%
+This scalar measures how much the Q cluster's position on the drift axis
+amplifies the K position gradient. When $\text{bias\_strength} > 0$, nearer
+keys (smaller position values) receive higher attention
+scores---a recency bias~\cite{2024-02-lost-in-the-middle}.
+
+The derivation follows from the dot-product decomposition on axis $a$. The
+projection of the attention score onto the drift direction is $q_a \cdot k_a$,
+where $q_a = q^\top a$ and $k_a = k^\top a$. The mean key projection at
+position $t_k$ is approximately
+$\bar{k}_a(t_k) \approx \alpha_K \cdot t_k + \text{intercept}$, and the mean
+query projection is approximately $\mu_Q^a$. Therefore, the mean positional
+contribution to the score grows linearly with key position at rate
+$\mu_Q^a \times \alpha_K$.
+
+Bias strength is one scalar per head. It captures a specific geometric
+mechanism---the interaction between the Q centroid position on the drift axis
+and the K position gradient along that axis---that produces a systematic
+preference for keys at certain absolute positions regardless of content.
+
+\paragraph{Complement Space.}
+The $(d-2)$-dimensional subspace orthogonal to $\{a, b\}$ contains two types
+of structure:
+%
+\begin{itemize}
+    \item \textbf{RoPE rotation planes}: pairs of dimensions where position
+    encodes as a rotation angle~\cite{2024-01-roformer-rope}. In these planes,
+    Q and K follow circular arcs parameterized by position. The symmetric
+    rotation structure contributes \emph{relative}-position information to
+    $q^\top k$ but not the asymmetric absolute-position drift captured by axis
+    $a$.
+    \item \textbf{Content dimensions}: dimensions carrying semantic signal
+    with zero positional encoding.
+\end{itemize}
+%
+Axis $a$ is where \emph{asymmetric} positional bias lives---the mechanism that
+favors keys at certain absolute positions regardless of content. Axis $b$
+accounts for the Q/K centroid offset but does not contribute to key selection
+(Section~\ref{sec:ab-plane}). The complement is where content signal and
+\emph{symmetric} relative-position structure reside. This separation is exact
+by construction.
+
+\subsection{Relationship to PCA}
+
+Both PCA and the rotation model are orthogonal transformations of the same Q/K
+vectors that preserve the dot product $q^\top k$ exactly. They optimize
+different objectives: PCA maximizes explained variance, while the rotation
+targets position covariance (axis $a$) and Q/K separation (axis $b$).
+
+A key empirical reversal illustrates the difference: on PCA's first component,
+$|r_q^{(0)}| > |r_k^{(0)}|$ (queries appear more positional), whereas on axis
+$a$, $|r_k^{(a)}| > |r_q^{(a)}|$ (keys encode position more strongly). The
+reversal occurs because PC0 conflates the Q/K centroid offset with position
+encoding---the large Q-K cluster separation inflates the apparent
+query-position correlation. Axis $a$ isolates position by construction,
+revealing that keys are the primary carriers of the position gradient,
+consistent with the role of RoPE in encoding key positions for attention
+scoring~\cite{2024-01-roformer-rope}.

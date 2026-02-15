@@ -84,6 +84,9 @@ cross_references:
   - target: 2026-01-longbench-pro
     type: complementary
     detail: "Cites this paper as foundational work on the gap between advertised and effective context length"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET extends the lost-in-the-middle analysis to 128K tokens across multiple models and finds that middle-position performance is not always worse than start-of-context"
   - target: 2019-08-bert-attention-analysis
     type: complementary
     detail: "Clark et al. identify positional attention biases in BERT (next/previous token specialization), foreshadowing the context utilization biases documented here"
@@ -147,6 +150,9 @@ cross_references:
   - target: 2024-10-ruler-context-size
     type: complementary
     detail: "RULER acknowledges lacking position-within-context controlling as a limitation, explicitly referencing Lost in the Middle; RULER evaluates multi-task long-context performance without depth-level analysis"
+  - target: 2025-04-effective-context-length-falls-short
+    type: complementary
+    detail: "Both identify position-dependent performance degradation; An et al. attribute it to undertrained position frequencies from the left-skewed pretraining distribution rather than attention bias, and propose STRING to mitigate it"
 open_questions:
   - question: "Is the U-shaped curve a fundamental property of Transformer attention or an artifact of training data distributions and task design?"
     addressed_by: 2024-08-found-in-the-middle

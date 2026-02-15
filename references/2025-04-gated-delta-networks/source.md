@@ -1,7 +1,10 @@
 # Gated Delta Networks: Improving Mamba2 with Delta Rule
 
-**Authors:** Songlin Yang, Jan Kautz, Ali Hatamizadeh
-**Affiliations:** MIT CSAIL, NVIDIA
+**Authors:** Songlin Yang *, Jan Kautz, Ali Hatamizadeh ^
+**Affiliations:** Songlin Yang (MIT CSAIL), Jan Kautz (NVIDIA), Ali Hatamizadeh (NVIDIA)
+
+\* Equation contribution. Work done during SY's internship at NVIDIA.
+^ Corresponding author.
 
 ## Publication Status
 
@@ -19,6 +22,6 @@ Cite the ICLR 2025 version:
 ## Links
 
 - arXiv: https://arxiv.org/abs/2412.06464
-- OpenReview: https://openreview.net/forum?id=XJGxMEzslP
+- OpenReview: https://openreview.net/forum?id=r8H7xhYPwz
 - Code: https://github.com/NVlabs/GatedDeltaNet
 - Flash Linear Attention (generalized delta rule): https://github.com/fla-org/flash-linear-attention/tree/main/fla/ops/generalized_delta_rule

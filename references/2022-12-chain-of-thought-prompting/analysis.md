@@ -65,6 +65,12 @@ cross_references:
   - target: 2024-08-scaling-llm-test-time-compute
     type: extended-by
     detail: "Builds on chain-of-thought as a mechanism for using test-time compute, studying how to optimally scale test-time computation for math reasoning"
+  - target: 2024-12-lost-in-the-middle-in-between
+    type: complementary
+    detail: "Tests CoT prompting as a mitigation for positional bias in multi-hop QA, finding it helps instruction-tuned models (2-6 pp gain) but harms non-instruction-tuned models"
+  - target: 2026-01-longbench-pro
+    type: complementary
+    detail: "LongBench Pro operationalizes non-thinking vs thinking prompt templates at long context scale and finds large gains mainly for models with native reasoning training"
 open_questions:
   - question: "Does chain of thought emulate actual reasoning, or is it a surface-level pattern that mimics reasoning?"
     addressed_by: null

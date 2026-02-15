@@ -1,0 +1,7 @@
+# Conclusion [p. 10]
+
+In summary, our research explores the capability of LLMs on long in-context learning tasks, particularly in extreme-label classification scenarios. We curate a dataset LongICLBench consisting of long in-context learning tasks with different difficulty levels of context length. Through our study, we have discovered that LLMs demonstrate dramatic performance degradation when it comes to more difficult tasks. Our exploratory experiments further highlight the impact of the distribution of examples within prompts on model performance. We hope LongICLBench and our findings contribute to the ongoing efforts to enhance LLMs' understanding of long contexts [p. 10].
+
+## Broader Impact Statement [p. 10]
+
+The development of long LLMs evaluation benchmarks and the corresponding insights can boost the development of long-context techniques, which can revolutionize fields requiring deep contextual understanding, such as legal analysis, long-form journalism, long-form content generation, and comprehensive academic summarization. However, there are potential risks associated with the deployment of such powerful models. Enhanced long-context capabilities could be misused for generating misinformation, especially in political or social contexts, where nuanced long-form content can have significant influence. There is also the risk of dependency on automated systems in critical decision-making processes, which could lead to over-reliance on technology at the expense of human judgment [p. 10].

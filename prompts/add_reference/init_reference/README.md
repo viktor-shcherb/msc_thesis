@@ -15,7 +15,7 @@ Initialize a new reference directory with metadata files.
 
 ## Invocation
 
-Spawn a `general-purpose` subagent (**model: sonnet**) with this prompt:
+Spawn a subagent (**model: opus**) with this prompt:
 
 ```
 Read prompts/add_reference/init_reference/prompt.md and follow those

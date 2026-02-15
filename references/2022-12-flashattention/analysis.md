@@ -95,6 +95,12 @@ cross_references:
   - target: 2025-04-differential-transformer
     type: complementary
     detail: "DIFF Transformer provides a FlashAttention-compatible implementation of its differential attention mechanism, leveraging FlashAttention's IO-aware tiling for efficient training and inference"
+  - target: 2024-10-rwkv-eagle-finch-matrix-states
+    type: complementary
+    detail: "Finch (RWKV-6) benchmarks its custom CUDA kernel against FlashAttention-2, achieving ~4.2x faster training at 16K sequence length with 28% less memory"
+  - target: 2024-03-mistral-7b-v0.2
+    type: complementary
+    detail: "Mistral 7B v0.2 uses FlashAttention for efficient inference with its extended 32K full-attention context window"
 open_questions:
   - question: "How can FlashAttention be extended to multi-GPU settings with efficient inter-GPU communication?"
     addressed_by: 2024-05-ring-attention-near-infinite-context

@@ -78,6 +78,9 @@ cross_references:
   - target: 2024-08-flenqa-input-length-reasoning
     type: complementary
     detail: "Both isolate true reasoning from confounds in long-context evaluation; FlenQA controls for input length while NoLiMa removes literal cues, revealing complementary dimensions of LLM weakness"
+  - target: 2024-12-lost-in-the-middle-in-between
+    type: complementary
+    detail: "Baker et al. provide complementary evidence that inter-document distance is an additional factor in multi-hop degradation; NoLiMa confirms that in two-hop scenarios without literal cues, context length dominates over position"
 open_questions:
   - question: "Can architectural improvements beyond standard attention address the latent association retrieval challenge in long contexts without literal cues?"
     addressed_by: null

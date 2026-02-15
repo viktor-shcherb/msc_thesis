@@ -66,6 +66,9 @@ cross_references:
   - target: 2024-12-babilong-long-context-reasoning
     type: complementary
     detail: "BABILong extends to 10M tokens with reasoning focus; ∞Bench provides realistic multi-domain tasks at 100K+"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET directly compares against InfiniteBench, showing that improved prompting and model-based evaluation yield more reliable rankings than InfiniteBench's ROUGE-based metrics"
   - target: 2025-07-nolima-long-context-evaluation
     type: complementary
     detail: "NoLiMa identifies InfiniteBench QA as having the highest literal overlap measured (ROUGE-1 = 0.966); NoLiMa provides a complementary low-overlap evaluation (ROUGE-1 = 0.069)"

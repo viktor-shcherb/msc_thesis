@@ -22,7 +22,7 @@ source PDF after all reading windows have completed.
 
 ## Invocation
 
-Spawn a single `general-purpose` subagent (**model: opus**) with this prompt:
+Spawn a subagent (**model: opus**) with this prompt:
 
 ```
 Read prompts/add_reference/verify_reading/prompt.md and follow those

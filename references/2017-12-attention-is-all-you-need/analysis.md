@@ -148,6 +148,27 @@ cross_references:
   - target: 2025-09-apertus-open-compliant-llms
     type: extended-by
     detail: "Apertus builds a dense decoder-only Transformer at 8B and 70B scale with GQA, RoPE, RMSNorm, xIELU activation, and QK-Norm modifications"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. cite the Transformer as the foundational architecture whose extrapolation capabilities drive the push towards longer contexts"
+  - target: 2024-10-rwkv-eagle-finch-matrix-states
+    type: complementary
+    detail: "Eagle and Finch (RWKV-5/6) propose RNN-based alternatives to Transformer attention with matrix-valued recurrent states, achieving competitive benchmark performance with O(1) per-token inference"
+  - target: 2024-12-deepseek-v3-technical-report
+    type: extended-by
+    detail: "DeepSeek-V3 uses the Transformer architecture with Multi-head Latent Attention (MLA) replacing standard MHA, reducing KV cache via low-rank compression while achieving frontier performance at 671B parameters"
+  - target: 2024-12-flashattention-3
+    type: extended-by
+    detail: "FlashAttention-3 provides a highly optimized exact attention implementation for Hopper GPUs, reaching 75% utilization through warp-specialization, GEMM-softmax pipelining, and FP8 support"
+  - target: 2025-03-gemma-3-technical-report
+    type: extended-by
+    detail: "Gemma 3 uses a decoder-only Transformer with GQA, RoPE, RMSNorm, and novel 5:1 local-global attention interleaving for KV cache efficiency"
+  - target: 2025-04-gated-delta-networks
+    type: complementary
+    detail: "Gated DeltaNet replaces softmax attention with a gated delta rule linear recurrence; hybrid variants combine it with sliding window attention for improved retrieval"
+  - target: 2026-01-ministral-3-cascade-distillation
+    type: extended-by
+    detail: "Ministral 3 builds a dense decoder-only Transformer family (3B/8B/14B) with GQA, RoPE, SwiGLU, and RMSNorm, then derives efficient descendants via cascade distillation"
 open_questions:
   - question: "Why do sinusoidal and learned positional encodings produce nearly identical results?"
     addressed_by: null

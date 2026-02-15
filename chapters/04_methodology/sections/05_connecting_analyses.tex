@@ -1,0 +1,62 @@
+\section{Connecting the Three Analyses}
+\label{sec:connecting-analyses}
+
+The three analyses are not successive levels of abstraction. They are three
+complementary questions about the same Q/K geometry, each providing information
+the others cannot. Table~\ref{tab:analysis-summary} summarizes the framework.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Summary of the three-analysis framework. Each analysis operates on the
+same captured Q/K vectors and answers a distinct question about the head's
+embedding geometry.}
+\label{tab:analysis-summary}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Analysis & Computes & Question & Key metric \\
+\midrule
+PCA & Variance decomposition, & How is Q/K variance & $r_q$, $r_k$ on PC0; \\
+    & position correlation    & distributed?        & head taxonomy \\
+\addlinespace
+Rotation & Targeted axis & What is the parametric & bias\_strength \\
+         & projections, drift slopes & form of positional bias? & $= \mu_Q^a \times \alpha_K$ \\
+\addlinespace
+Plasticity & $\Pr$(random query & Does positional bias & $\text{AP}_{\text{drop}}$ \\
+           & flips key ordering) & dominate content? & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two aspects of the inter-analysis relationships deserve emphasis.
+
+\paragraph{Two related orthogonal transformations.}
+The rotation analysis (Section~\ref{sec:planar-rotation-model}) and the
+plasticity framework (Section~\ref{sec:attention-plasticity}) both use
+orthogonal transformations that preserve $q^\top k$, but they differ in
+construction and purpose. The rotation constructs axes from the combined Q+K
+pool---axis $a$ for shared positional drift, axis $b$ for Q/K
+separation---and provides geometric characterization of the bias mechanism. The
+plasticity framework uses a query-only Householder reflection---coordinate~1
+for query positional drift---to enable the formal decay theorem and Gaussian
+closed form. On the drift axis, both transformations isolate position
+covariance, and the resulting projections are closely related. The rotation
+additionally constructs axis $b$ (Q/K separation), which the plasticity
+framework does not need.
+
+\paragraph{Logical progression.}
+The analyses address progressively deeper questions. PCA discovers that position
+structure exists and is pervasive. The rotation isolates and parameterizes the
+bias mechanism, yielding bias strength as a scalar summary. Plasticity tests
+whether the bias functionally constrains attention, accounting for the content
+signal that may compensate.
+
+When plasticity is low, the rotation analysis tells us \emph{why} (large bias
+strength). When bias strength is large, plasticity tells us \emph{whether it
+matters} (whether content can compensate). This complementarity motivates
+reporting all three analyses: a head may have large bias strength yet high
+plasticity (content dominates despite the bias), or small bias strength yet low
+plasticity (content signal is too weak to drive flexible retrieval even with
+minimal positional preference). The results in
+Chapter~\ref{chap:results} demonstrate both patterns across the model families
+in our study.

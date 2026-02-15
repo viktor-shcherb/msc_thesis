@@ -39,7 +39,7 @@ All three models maintain relatively stable loss around 2.4-2.6 up to position ~
 
 ### Table 5: Bamboo Benchmark Results [p. 13]
 
-| Model | meetingqa Acc.↑ | paperqa Acc.↑ | meetingpred Acc.↑ | showspred Acc.↑ | reportsumsort Acc.↑ | showssort Acc.↑ | senhallu F1↑ | abshallu F1↑ | altqa Acc.↑ | Avg.↓ |
+| Model | meetingqa Acc.↑ | paperqa Acc.↑ | meetingpred Acc.↑ | showspred Acc.↑ | reportsumsort Acc.↑ | showssort Acc.↑ | senhallu F1↑ | abshallu F1↑ | altqa Acc.↑ | Avg.↑ |
 |-------|-----------------|---------------|-------------------|-----------------|---------------------|-----------------|--------------|--------------|-------------|-------|
 | Pythia-1.4b | 15.0% | 4.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 2.1% |
 | Mamba-1.4b | 15.0% | 2.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 2.0% | 0.0% | 2.1% |
@@ -47,7 +47,7 @@ All three models maintain relatively stable loss around 2.4-2.6 up to position ~
 | Finch-1.6b | 19.0% | 22.0% | 1.0% | 8.0% | 0.0% | 0.0% | 10.7% | 17.3% | 2.5% | 8.9% |
 | Pythia-2.8b | 16.0% | 4.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 2.2% |
 | Mamba-2.8b | 11.0% | 4.0% | 0.0% | 3.0% | 0.0% | 0.0% | 0.0% | 3.9% | 0.0% | 2.4% |
-| Mamba-2.8b-Hermes | 27.0% | 25.0% | 0.0% | 9.0% | 0.0% | 0.0% | 19.7% | 26.4% | 0.0 | 11.9% |
+| Mamba-2.8b-Hermes | 27.0% | 25.0% | 0.0% | 9.0% | 0.0% | 0.0% | 19.7% | 26.4% | 0.0% | 11.9% |
 | Eagle-3b | 16.0% | 14.0% | 0.0% | 4.0% | 0.0% | 0.0% | 25.0% | 29.2% | 1.0% | 9.9% |
 | Finch-3b | 20.0% | 26.0% | 4.0% | 7.0% | 0.0% | 0.0% | 14.4% | 23.6% | 6.5% | 11.3% |
 | Pythia-6.9b | 19.0% | 7.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 0.0% | 3.3% |

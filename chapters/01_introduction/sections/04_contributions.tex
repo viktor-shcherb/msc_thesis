@@ -1,0 +1,29 @@
+\section{Contributions}
+
+This thesis makes the following contributions:
+
+\begin{enumerate}
+    \item \textbf{A geometric framework for attention head analysis.} We
+    develop three complementary analyses---PCA decomposition, planar rotation
+    model, and attention plasticity---that operate on the same captured
+    post-RoPE query and key vectors. PCA provides a model-agnostic structural
+    fingerprint. The rotation model isolates the positional drift direction and
+    parameterizes bias strength. Attention plasticity measures the functional
+    consequence of that bias.
+
+    \item \textbf{A formal characterization of plasticity decay.} We prove that
+    attention plasticity decays with query position under linear positional
+    drift and derive a Gaussian closed form that decomposes the decay into
+    positional and content components (Theorem~\ref{thm:plasticity-decay}).
+
+    \item \textbf{Cross-model empirical validation.} We analyze 13 models from
+    three families and show that plasticity drop---the degradation from early to
+    late context positions---separates model families in the same order as
+    LongBench-Pro benchmark scores~\cite{2026-01-longbench-pro}.
+
+    \item \textbf{Training dynamics analysis.} We track 10 checkpoints of
+    SmolLM3-3B~\cite{2025-07-smollm3-long-context-reasoner} through pre-training and long-context extension, showing that
+    RoPE frequency rescaling collapses positional bias but does not prevent
+    plasticity decay at distant positions. This demonstrates that bias reduction
+    is necessary but not sufficient for effective long context.
+\end{enumerate}

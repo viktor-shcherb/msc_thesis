@@ -98,7 +98,7 @@ Agent prompts live in `prompts/`. The main workflow is `add_reference`, a Sonnet
 init_reference → read_paper OR read_sources → verify_reading → write_analysis (incl. cross-reference update)
 ```
 
-1. **init_reference** (sonnet) creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
+1. **init_reference** (opus) creates the directory, downloads the PDF, writes `source.md` and `cite.bib`
 2. **read_paper** (sonnet) reads the PDF in overlapping 6-page windows, writing structured notes to `sections/`. For non-standard contributions (blogs, repos, Reddit), **read_sources** (sonnet) fetches web content into `sources/` instead
 3. **verify_reading** (opus) checks all section files against the full PDF for completeness, accuracy, reference consistency, and section coverage. Can selectively re-read specific page ranges for critical issues
 4. **write_analysis** (opus) synthesizes the notes into `analysis.md` with YAML front matter, all 9 required sections, and 13 style rules. Also updates reciprocal cross-references, claim interactions, and open questions in existing papers

@@ -1,0 +1,20 @@
+\section{Research Questions}
+
+We pursue three research questions, each addressed by a corresponding analysis:
+
+\begin{description}
+    \item[RQ1.] \emph{How does position information manifest in the geometry of
+    attention heads?} We apply PCA to post-RoPE query and key vectors and a
+    targeted planar rotation to isolate the positional drift axis, yielding a
+    parametric bias strength per head.
+
+    \item[RQ2.] \emph{Does positional bias functionally constrain attention?}
+    We define attention plasticity---the probability that a random query flips
+    the preference ordering of two keys---and prove that it decays with query
+    position under linear positional drift.
+
+    \item[RQ3.] \emph{Do plasticity profiles correspond to behavioral
+    long-context performance?} We correlate plasticity profiles with LongBench-Pro~\cite{2026-01-longbench-pro} and RULER~\cite{2024-10-ruler-context-size}
+    benchmark scores across model families, and track how plasticity evolves
+    during training through SmolLM3 checkpoints~\cite{2025-07-smollm3-long-context-reasoner}.
+\end{description}

@@ -1,0 +1,42 @@
+\section{Future Work}
+\label{sec:future-work}
+
+\paragraph{Interventional validation.}
+The natural next step is to ablate or modify low-plasticity heads and measure
+the effect on downstream retrieval accuracy. If high-plasticity heads are
+necessary for long-context performance, ablating them should degrade
+performance selectively at distant positions. Conversely, clamping
+$\text{bias\_strength}$ to zero in specific heads should improve
+distant-position plasticity if the bias mechanism is causal.
+
+\paragraph{Characterizing content signal decay.}
+The residual $\text{AP}_{\text{drop}}$ after bias collapse is attributed to
+content signal decay, but the precise mechanism is uncharacterized. Candidate
+explanations include RoPE rotation accumulation in the complement subspace,
+attention sink competition from early-position tokens, and representational
+drift where content features themselves become less informative at distant
+positions. Distinguishing these requires controlled experiments varying RoPE
+parameters, context length, and initial-token presence.
+
+\paragraph{Broader model coverage.}
+The framework should be extended to architecturally diverse models:
+mixture-of-experts models~\cite{2024-05-deepseek-v2-moe,
+2024-12-deepseek-v3-technical-report} where expert routing may interact with
+plasticity; state-space models~\cite{2024-05-mamba-selective-state-spaces,
+2024-10-rwkv-eagle-finch-matrix-states} as a comparison class without
+explicit attention; and larger scales (70B+) to test whether the plasticity
+profile changes qualitatively.
+
+\paragraph{Per-length benchmark validation.}
+Obtaining per-length LongBench-Pro scores for the remaining 6 matched models
+would enable per-position correlation analysis across families, not just for
+Ministral-3-14B. RULER analysis~\cite{2024-10-ruler-context-size} with
+per-length scores would test whether plasticity predicts the catastrophic
+performance cliff that some models exhibit beyond their effective context
+length.
+
+\paragraph{Temporal extension.}
+Applying the analysis to other models with open intermediate checkpoints
+would test whether the three-phase pattern (bias growth, bias collapse,
+content decay persistence) is universal or specific to SmolLM3's training
+recipe.

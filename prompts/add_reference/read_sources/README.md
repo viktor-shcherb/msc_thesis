@@ -22,7 +22,7 @@ Read non-standard source content (web pages, repos, threads) into
 
 ## Invocation
 
-Spawn a single `general-purpose` subagent (**model: sonnet**) with this prompt:
+Spawn a subagent (**model: sonnet**) with this prompt:
 
 ```
 Read prompts/add_reference/read_sources/prompt.md and follow those

@@ -1,0 +1,96 @@
+\section{Training Dynamics Study}
+\label{sec:training-dynamics-study}
+
+While the cross-model study provides a snapshot of Q/K geometry across different
+architectures and scales, it cannot reveal how this geometry develops during
+training. The training dynamics study traces a single
+model---SmolLM3-3B---across 10 checkpoints spanning pre-training through
+long-context extension~\cite{2025-07-smollm3-long-context-reasoner}.
+
+\subsection{Why SmolLM3}
+
+Open intermediate checkpoints are uncommon: most labs release only final
+weights. SmolLM3-3B provides several properties that make it uniquely suited for
+a training dynamics study:
+
+\begin{itemize}
+    \item \textbf{Open checkpoints.} Ten checkpoints are publicly available
+    across three pre-training stages and two long-context extension phases,
+    stored as separate branches in the HuggingFace repository.
+    \item \textbf{Clear phase transitions.} Training progresses from a 4K
+    context window through 32K to 64K, with corresponding RoPE base frequency
+    ($\theta$) increases from 50K to 2M to 5M. Each transition provides a
+    natural experiment for observing how context extension reshapes the Q/K
+    geometry.
+    \item \textbf{NoPE layer pattern.} Every fourth layer (9 of 36) uses no
+    positional encoding, while the remaining 27 layers apply RoPE. This
+    architectural feature enables direct comparison of plasticity in
+    position-aware versus position-agnostic layers within the same model.
+    \item \textbf{Comparable scale.} At 3B parameters, SmolLM3 is
+    scale-matched to Ministral-3-3B and Llama-3.2-3B from the cross-model
+    study (though architecturally distinct), enabling cross-study comparison
+    at matched parameter count.
+\end{itemize}
+
+\subsection{Checkpoint Selection}
+
+Table~\ref{tab:smollm3-checkpoints} lists the 10 selected checkpoints. The
+first six span pre-training stages 1--3, all with a 4K context window and
+$\theta = 50{,}000$. Stage~1 is sampled at four points (early, $\sim$1/3,
+$\sim$2/3, and end) to capture the main pre-training trajectory. Stages~2 and 3
+are represented by their final checkpoints, capturing the effects of data mix
+changes and annealing respectively.
+% Verification (SmolLM3 training stages): verify stage boundaries and training
+% step counts from HuggingFaceTB/SmolLM3-3B-checkpoints branch names.
+
+The remaining four checkpoints cover long-context extension in two phases:
+4K$\to$32K and 32K$\to$64K. Each phase is sampled at onset (4K additional
+steps) and convergence (20K additional steps), capturing both the initial
+disruption and eventual adaptation of the Q/K geometry under context scaling.
+
+\begin{table}[t]
+\centering
+\small
+\caption{SmolLM3-3B training checkpoints. Pre-training stages 1--3 share a 4K
+context window; long-context (LC) extension progressively increases context
+length and RoPE base frequency $\theta$. Step counts for LC phases indicate
+additional steps within that phase.}
+\label{tab:smollm3-checkpoints}
+\begin{tabular}{@{}clrrl@{}}
+\toprule
+\# & Phase & Steps & Context & RoPE $\theta$ \\
+\midrule
+1  & Pre-train stage 1 (early)       & 40K   & 4K  & 50K \\
+2  & Pre-train stage 1 ($\sim$1/3)   & 1.2M  & 4K  & 50K \\
+3  & Pre-train stage 1 ($\sim$2/3)   & 2.4M  & 4K  & 50K \\
+4  & Pre-train stage 1 (end)         & 3.44M & 4K  & 50K \\
+5  & Pre-train stage 2               & 4.2M  & 4K  & 50K \\
+6  & Pre-train stage 3 (annealing)   & 4.72M & 4K  & 50K \\
+\midrule
+7  & LC 4K$\to$32K (onset)           & +4K   & 32K & 2M \\
+8  & LC 4K$\to$32K (converged)       & +20K  & 32K & 2M \\
+9  & LC 32K$\to$64K (onset)          & +4K   & 64K & 5M \\
+10 & LC 32K$\to$64K (final)          & +20K  & 64K & 5M \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Architecture and Capture Differences}
+
+SmolLM3-3B uses 36 layers with grouped-query attention (16 query heads, 4
+key-value heads) and a head dimension of
+128~\cite{2025-07-smollm3-long-context-reasoner}. The NoPE pattern assigns no
+positional encoding to layers 3, 7, 11, 15, 19, 23, 27, 31, and 35
+(0-indexed); the remaining 27 layers apply RoPE. All layers use full
+attention---no sliding window is present in any checkpoint configuration.
+% Verification (SmolLM3 architecture): verify 36 layers, 16Q/4KV heads,
+% head_dim 128, and NoPE layer indices from HuggingFaceTB/SmolLM3-3B
+% config.json (no_rope_layers field).
+
+The SmolLM3 checkpoints require several configuration adjustments relative to
+the cross-model captures. The tokenizer maximum length matches each
+checkpoint's context window (4K, 32K, or 64K rather than 128K), and the
+position-sampling bucket size scales proportionally (256, 2{,}048, or 4{,}096
+rather than 8{,}192), maintaining a consistent 16-bucket granularity across all
+stages. The tokenizer is loaded from the main SmolLM3-3B repository rather than
+the checkpoint branches, which do not include tokenizer files.

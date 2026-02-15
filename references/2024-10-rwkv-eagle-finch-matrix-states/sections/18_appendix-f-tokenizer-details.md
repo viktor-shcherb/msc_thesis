@@ -23,6 +23,8 @@
 
 [p. 35] We test the tokenizer along with Llama2 tokenizer, GPT2's cl50k_base and GPT4's cl100k_base on five different languages and programming code. For the five natural languages, we select the first 3GB of data from the CulturaX (Nguyen et al., 2023) dataset, and we use StarCoder (Li et al., 2023b) for code. The efficiency is measured with the number of tokens and the average character length per token. A tokenizer is considered more efficient if it tokenizes a document in less tokens or having longer average character length per token.
 
+[p. 36] The results are presented in Table 12. Generally, our tokenizer is as efficient as GPT4's cl100k_base tokenizer, and surpasses it on three non-European languages, despite having a smaller vocabulary size (65,536 vs 100,256).
+
 ### Table 12: Tokenization Efficiency Comparison [p. 36]
 
 | Language | English | | Chinese | | Arabic | |

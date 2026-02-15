@@ -62,6 +62,9 @@ cross_references:
   - target: 2024-08-flenqa-input-length-reasoning
     type: complementary
     detail: "FlenQA extends the irrelevant-context analysis by showing that degradation occurs even with duplicate (relevant-only) padding, isolating length from distraction"
+  - target: 2024-12-lost-in-the-middle-in-between
+    type: complementary
+    detail: "Both study how LLMs handle irrelevant context; this paper focuses on distractor content in math reasoning, while Baker et al. focus on positional effects of relevant documents in multi-hop QA"
 open_questions:
   - question: "How does distractibility manifest in model families beyond the GPT-3 family (e.g., open-weight models, instruction-tuned models trained with different methods)?"
     addressed_by: null

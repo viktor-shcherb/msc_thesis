@@ -27,7 +27,7 @@ Also required:
 
 ## Invocation
 
-Spawn a single `general-purpose` subagent (**model: opus**) with this prompt:
+Spawn a subagent (**model: opus**) with this prompt:
 
 ```
 Read prompts/add_reference/write_analysis/prompt.md and follow those

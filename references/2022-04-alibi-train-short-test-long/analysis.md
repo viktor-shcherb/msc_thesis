@@ -86,6 +86,9 @@ cross_references:
   - target: 2025-04-pine-eliminating-position-bias
     type: complementary
     detail: "PINE's mechanistic analysis identifies ALiBi-style PE-induced distance penalties as one of two causes of position bias; PINE eliminates this bias through importance-based position re-assignment"
+  - target: 2024-05-pose-positional-skip-wise-training
+    type: complementary
+    detail: "PoSE is a train-short fine-tuning protocol for RoPE models, whereas ALiBi bakes extrapolation bias into the attention mechanism without post-hoc adaptation"
 open_questions:
   - question: "Does ALiBi's recency bias limit its effectiveness on tasks requiring long-range retrieval?"
     addressed_by: 2024-02-lost-in-the-middle

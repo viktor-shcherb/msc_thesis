@@ -112,6 +112,9 @@ cross_references:
   - target: 2025-12-ttt-e2e-long-context
     type: complementary
     detail: "TTT-E2E uses sliding-window attention as its base architecture and adds test-time training on MLP weights for long-range context compression, achieving constant latency and full-attention-level scaling up to 128K"
+  - target: 2024-12-flashattention-3
+    type: complementary
+    detail: "FlashAttention-3 provides efficient exact attention on Hopper GPUs at 75% utilization; makes exact attention more competitive at moderate sequence lengths where Longformer's sparse attention would otherwise be preferred"
 open_questions:
   - question: "Can pretraining objectives beyond MLM further improve Longformer and LED?"
     addressed_by: null

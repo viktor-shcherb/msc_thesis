@@ -1,7 +1,9 @@
 # Eliminating Position Bias of Language Models: A Mechanistic Approach
 
 **Authors:** Ziqi Wang, Hanlin Zhang, Xiner Li, Kuan-Hao Huang, Chi Han, Shuiwang Ji, Sham M. Kakade, Hao Peng, Heng Ji
-**Affiliations:** University of Illinois Urbana-Champaign, Harvard University, Texas A&M University
+**Affiliations:** Ziqi Wang, Kuan-Hao Huang, Chi Han, Hao Peng, Heng Ji (University of Illinois Urbana-Champaign); Hanlin Zhang, Sham M. Kakade (Harvard University); Xiner Li, Shuiwang Ji (Texas A&M University); Kuan-Hao Huang (also Texas A&M University)
+
+Correspondence: ziqiw9@illinois.edu
 
 ## Publication Status
 
@@ -20,4 +22,5 @@ Cite the ICLR 2025 version:
 
 - arXiv: https://arxiv.org/abs/2407.01100
 - OpenReview: https://openreview.net/forum?id=fvkElsJOsN
+- ICLR 2025 page: https://iclr.cc/virtual/2025/poster/28841
 - Code: https://github.com/wzq016/PINE

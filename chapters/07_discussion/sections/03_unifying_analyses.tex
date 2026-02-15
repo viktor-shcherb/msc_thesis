@@ -1,0 +1,68 @@
+\section{Unifying the Three Analyses}
+\label{sec:unifying-analyses}
+
+PCA, rotation, and plasticity are not three independent studies---they form a
+coherent pipeline where each step resolves a question left open by the
+previous one.
+
+\subsection{The Progression}
+
+PCA discovers that 9--32\% of Q/K variance is linear in token position
+and that heads cluster by family in $(r_q, r_k)$ space. But its axes
+confound position with Q/K identity (Section~\ref{sec:pca-confound}), and
+it cannot determine whether the observed positional variance
+functionally constrains attention.
+
+The rotation model resolves the first problem by constructing axes with
+guaranteed semantic meaning: axis $a$ carries all linear position covariance,
+axis $b$ accounts for the Q/K centroid offset. This corrects PCA's apparent
+$r_q > r_k$ asymmetry (Figure~\ref{fig:rq-rk-drift}) and provides a parametric decomposition:
+$\text{bias\_strength} = \mu_Q^a \times \alpha_K$
+(Equation~\ref{eq:bias-strength}). But bias magnitude does not equal bias
+impact---a head with large bias could still attend flexibly if the content
+signal is strong.
+
+Plasticity resolves the second problem by measuring the competition directly:
+given a random query and two keys, does the positional term or the content
+term determine which key receives higher attention? The plasticity metric
+converts geometric structure into functional consequence.
+
+\subsection{The Geometric Connection}
+
+The 2D plasticity heatmaps (Figure~\ref{fig:bucket-heatmaps}) integrate both
+factors from the rotation model. Inter-key distance relates to $\delta_1$,
+the positional coordinate difference between keys on the drift axis---larger
+inter-key distance means larger positional score difference, amplified by
+$\alpha_K$. Query-to-key-midpoint distance relates to the query's own
+positional coordinate, which enters the score through $\mu_Q^a$. At larger
+query positions, the positional term in the score mean grows, increasing its
+dominance over content variance.
+
+The heatmap is the joint effect of both rotation parameters, mediated by
+content variance in the complement subspace. The family-specific patterns
+(Ministral uniform, Qwen diagonal gradient, Llama steep contrast) reflect
+different configurations of $(\mu_Q^a, \alpha_K, \sigma_{\text{content}}^2)$.
+
+\subsection{What Each Analysis Uniquely Contributes}
+
+Even within the unified framework, each analysis offers something the others
+cannot:
+%
+\begin{itemize}
+    \item \textbf{PCA}: model-agnostic structural fingerprint, head taxonomy,
+    variance budget. The head taxonomy tracks qualitative changes during
+    training (Figure~\ref{fig:smollm-taxonomy} in
+    Appendix~\ref{app:supplementary}) that are invisible to the other analyses.
+
+    \item \textbf{Rotation}: parametric decomposition with training-dynamics
+    specificity. The bias decomposition
+    (Figure~\ref{fig:smollm-bias-decomposition}) identifies \emph{which
+    component} collapses during LC extension ($\alpha_K$, not $\mu_Q^a$)---a
+    mechanistic distinction PCA and plasticity cannot make.
+
+    \item \textbf{Plasticity}: functional relevance and benchmark prediction.
+    Only plasticity connects to behavioral performance
+    (Table~\ref{tab:lbp-mechanistic}) and captures the 2D competition
+    geometry that reveals how inter-key distance and query-to-key distance
+    jointly determine position dominance.
+\end{itemize}

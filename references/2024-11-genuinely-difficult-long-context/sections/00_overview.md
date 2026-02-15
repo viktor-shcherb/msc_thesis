@@ -30,3 +30,6 @@ arXiv:2407.00402v4 [cs.CL], 6 Jul 2025
 5. Discussion: Towards Genuinely Difficult Long-Context Task Design
 6. Conclusions
 7. Limitations
+8. Acknowledgments
+A. Benchmark Scope-Dispersion Classification (Appendix A)
+References

@@ -14,7 +14,7 @@
 
 東京にはたくさんの素晴らしい場所があります。以下は、その中からいくつかを挙げて紹介します。
 
-1. 東京 タワー：日本最高の観光スポットの一つで、都心から見ることができます。
+1. 東京タワー：日本最高の観光スポットの一つで、都心から見ることができます。
 
 2. 皇居：日本の天皇が住む宮殿であり、大正時代に建設された美しい庭園があります。
 
@@ -48,11 +48,13 @@ Un día Alejandro decidió acercarse a Rosario para hablarle y así conocerla me
 
 Un día Alejandro decidió invitar a Rosario al bosque para enseñarle algunos lugares secretos del pueblo que sólo él conocía; así lo hicieron y pasaron toda la tarde juntos explorando el bosque hasta llegar al final del mismo donde había un pequeño lago rodeado de flores silvestres. Allí descansaron un rato antes de volver al pueblo, pero mientras caminaban por el sendero hacia la aldea vieron algo extraño: una luz brillante salía desde las profundidades del bosque como si fuera un farol gigante.
 
-**(rest omitted)**
-
 ## RWKV-Eagle Arabic Example [p. 43]
 
-[Full Arabic text example provided showing historical discussion about local authorities in Jabal Gharib region]
+في تعلم، مدخل وغير مسبوق، أعلنت السلطات المحلية في الساحة عن اكتشاف أثري قد يغير مجرى التاريخ كما نعرفه.
+
+وقالت السلطات إنه تم العثور على أدوات حربية وأدوات مدنية في منطقة بيكانا الواقعة على بعد ١٠٠ كيلومتر شمال غرب الباحة، ونشرت وزارة الثقافة والسياحة صوراً للأدوات المكتشفة، التي تضمنت مجموعات من الأحجار المصقولة والأسلحة والآلات المصنوعة من الحديد.
+
+وتنطوياً طموحاً، قام رئيس جهاز الآثار في البلاد بإعلان المنطقة وإغلاقها للجمهور. ومع ذلك، فإن عملية التنظيف تستغرق وقتاً طويلاً نظراً لأنه يُعتَرَض أن هذه الأشياء قد اختفت منذ آلاف السنين. ومع ذلك، فإن العثور على هذه الأشياء يثير حالة من الاستجواب والدهشة في أوساط المؤرخين والباحثين، إذ يُظهرون أن مدينة بيكانا كانت مركزاً للحضارات التي سقت حضارات العصر الحديث. وفي عام ٢٠١٩، تم اكتشاف آثار مدينة بيكانا في جبال أوديل (أوديل) على بعد ١٥٠ كيلومتر شمال غرب الباحة. وأظهرت هذه الاستجدات أن هناك حضارات قديمة كان يُنظر إليها على أنها غير معروفة في وادي صحري صغير في منطقة جبال أوديل (أوديل) بالقرب من تير دون (ضن). وأظهر التحليل الأولى للآثار أن هناك عملية تطور واسعة النطاق في مجال الصناعات المدنية والحربية، حيث تم العثور على أدلة حربية وأدوات مدنية. وبين عام ٢٠١٩ و٢٠٢٠، أُجريت دراسات إضافية للعثار التي أجريت في الموقع، والذي يبلغ طوله ٣٠٠ مثل. ومن خلال دراسات الجهاز الأخيرة، تم العثور على آلات حربية جديدة لإزالة الأحجار والأسان وآلات صيد كبيرة. وأظهر التحليل الأولى للآثار أن هناك عملية تطور واسع النطاق في مجال الصناعات المدنية والحربية، حيث تم العثور على آلات حربية جديدة لإزالة الأحجار والأسان وآلات صيد كبيرة.
 
 ## RWKV-Eagle Japanese-to-English Translation Example [p. 43]
 

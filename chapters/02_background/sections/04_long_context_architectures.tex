@@ -1,0 +1,48 @@
+\section{Attention Topology}
+\label{sec:attention-topology}
+
+The attention pattern---which positions each token can attend to---varies across
+architectures and directly constrains the model's ability to use long contexts.
+In full (dense) causal attention, every position $t$ attends to all prior
+positions $1, \ldots, t$. The computational cost scales quadratically with
+sequence length ($O(n^2 d)$ for the attention computation~\cite{2017-12-attention-is-all-you-need}), but all pairwise
+token interactions are preserved. FlashAttention reduces the memory overhead of
+full attention through IO-aware tiling, making full attention practical at long
+context lengths without changing the attention
+pattern~\cite{2022-12-flashattention}. All primary models in our experimental
+set use full causal attention.
+
+\subsection{Sliding-Window Attention}
+
+Sliding-window attention restricts each position to a local window of size $w$:
+position $t$ attends only to positions $\max(1, t - w + 1), \ldots,
+t$~\cite{2023-10-mistral-7b}. This reduces the per-layer cost to $O(n \cdot w
+\cdot d)$ and limits per-layer receptive field to $w$ tokens. Information beyond
+the window boundary can only reach position $t$ through multi-layer propagation
+via the residual stream, creating a hard architectural limit on single-layer
+context access.
+
+Our analysis focuses on full-attention models. The one sliding-window model in
+our study (Mistral-v0.2-7B) is analyzed only within its 32K window, since key
+pair sampling and query distribution estimation are not comparable across
+architectures with different attention spans.
+
+\subsection{Attention Sinks}
+
+Empirically, transformer language models allocate disproportionate attention
+weight to the first few tokens (typically the BOS token), regardless of their
+semantic relevance~\cite{2024-05-attention-sinks-streaming}. This ``attention
+sink'' pattern is pervasive across models and persists even when the initial
+tokens carry no useful information. Recent work shows that attention sinks
+emerge from the interaction between causal masking and softmax normalization:
+early tokens, visible to all positions, accumulate attention as a
+normalization artifact~\cite{2025-04-attention-sink-emerges}.
+
+Attention sinks represent a form of positional bias that consumes attention
+budget without contributing to content retrieval. In the context of this thesis,
+they illustrate how architectural constraints (causal masking) and training
+dynamics can produce position-dependent attention patterns that reduce the
+model's ability to allocate attention based on content relevance.
+% Verification (attention sinks): verify sink mechanism in Xiao et al.
+% (2309.17453, Sec. 3) and emergence analysis in Barbero et al.
+% (2410.10781, Sec. 4).

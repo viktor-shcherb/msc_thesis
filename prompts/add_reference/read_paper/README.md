@@ -47,7 +47,7 @@ Window 4:  pages 16–21
 Last window: clamp PAGE_END to TOTAL_PAGES
 ```
 
-For each window, spawn a `general-purpose` subagent (**model: sonnet**) with this prompt:
+For each window, spawn a subagent (**model: sonnet**) with this prompt:
 
 ```
 Read prompts/add_reference/read_paper/prompt.md and follow those instructions with

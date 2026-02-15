@@ -62,6 +62,9 @@ cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: complementary
     detail: "RWKV replaces Transformer's quadratic dot-product attention with a linear attention mechanism while maintaining parallelizable training"
+  - target: 2022-12-locating-editing-factual-associations-gpt
+    type: extends
+    detail: "Appendix I directly adopts Meng et al.'s causal tracing methodology to analyze factual retrieval and propagation dynamics in RWKV"
   - target: 2022-04-s4-structured-state-spaces
     type: complementary
     detail: "Both propose subquadratic alternatives to Transformers; S4 outperforms RWKV on LRA but RWKV scales to 14B parameters"
@@ -80,6 +83,12 @@ cross_references:
   - target: 2024-10-rwkv-eagle-finch-matrix-states
     type: extended-by
     detail: "Eagle (RWKV-5) and Finch (RWKV-6) extend RWKV-4 with matrix-valued states and data-dependent recurrence, substantially improving expressivity and multilingual performance"
+  - target: 2024-12-flashattention-3
+    type: complementary
+    detail: "FlashAttention-3 speeds up exact Transformer attention by 1.5-2.0x on H100 GPUs; paper notes these techniques may also benefit RWKV and other alternative architectures"
+  - target: 2025-04-gated-delta-networks
+    type: complementary
+    detail: "Gated DeltaNet is a concurrent linear RNN approach using gated delta rule instead of RWKV's time-decay mechanism; both address attention inefficiency with different update rules"
 open_questions:
   - question: "Can RWKV's limited ability to recall minutiae over very long contexts be addressed without sacrificing linear complexity?"
     addressed_by: 2024-10-rwkv-eagle-finch-matrix-states

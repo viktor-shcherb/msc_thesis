@@ -1,6 +1,13 @@
 # Method [p. 6–8]
 
-[p. 6] In this section, we use D to denote the model dimension, and unless explicitly stated, all vectors appearing in this section are dimension D/h, where h denotes the number of heads, belonging to R^{D/h}. For compactness and simplicity we show calculations per-head, eliding the head index. We use the convention that all vectors appearing in the section are explicitly transposed, so all matrices operate on the right side. We use the square subscript to denote a variable.
+[p. 6] In this section, we use D to denote the model dimension, and unless explicitly stated, all vectors appearing in this section are dimension D/h, where h denotes the number of heads, belonging to R^{D/h}. For compactness and simplicity we show calculations per-head, eliding the head index. We use the convention that all vectors are row vectors unless explicitly transposed, so all matrices operate on the right side. We use the square subscript to denote a variable.
+
+**Figure 1** (p. 6): "RWKV architecture overview. Left: time-mixing and channel-mixing blocks; top-right: RWKV time-mixing block as RNN cell; center-bottom: token-shift module in FeedForward module and Eagle time-mixing; bottom-right: token-shift module in Finch time-mixing. All shape annotations assume a single head for simplicity. Dashed arrows (left, top-right) indicate a connection in Finch, but not in Eagle."
+
+Description: Complex multi-part architecture diagram showing RWKV model components
+- Key elements: Four distinct sub-diagrams arranged in a composite figure. Left side shows two stacked blocks (Channel Mixing in blue/gray at top, Time Mixing in blue/gray at bottom) with LayerNorm connections. Top-right shows detailed RNN cell structure with inputs h_{t-1}^{ℓ-1}, x_{t-1}^{ℓ}, outputs h_{cat}^{ℓ}, x_{t}^{ℓ}, and internal WKV-v5/v6 component. Center-bottom shows Token Shift module with 1-d.c and d.c components. Bottom-right shows Finch-specific Token Shift with additional LoRA components (λ, A, B matrices) and ddlerp operations.
+- Notable patterns: Dashed arrows on left and top-right indicate connections present in Finch but absent in Eagle, showing architectural differences between the two models. Channel Mixing contains G, G', MLP, SiLU, Q, W, R, K, V, M components. Time Mixing shows similar structure with Out and LayerNorm. Token Shift diagrams show data flow for interpolation between current and previous tokens.
+- Supports claim: Visualizes the complete RWKV architecture including the key differences between Eagle (RWKV-5) and Finch (RWKV-6), particularly the enhanced Token Shift mechanism in Finch with data-dependent components.
 
 ## 4.1 Eagle
 
@@ -22,7 +29,7 @@ $$\square_i = \text{lerp}_{\square}(x_i, x_{i-1})W_{\square}, \quad \square \in 
 
 $$w = \exp(-\exp(\omega))$$ (5)
 
-$$wkv_i = \text{diag}(w) \cdot k_i^T \cdot v_i + \sum_{j=1}^{i-1} \text{diag}(w)^{i-1-j} \cdot k_j^T \cdot v_j \in \mathbb{R}^{(D/h) \times (D/h)}$$ (6)
+$$wkv_t = \text{diag}(u) \cdot k_t^T \cdot v_t + \sum_{i=1}^{t-1} \text{diag}(w)^{t-1-i} \cdot k_i^T \cdot v_i \in \mathbb{R}^{(D/h) \times (D/h)}$$ (6)
 
 $$o_i = \text{concat}(\text{SiLU}(g_i) \odot \text{LayerNorm}(r_i \cdot wkv_i)) W_o \in \mathbb{R}^D$$ (7)
 
@@ -30,7 +37,7 @@ Where LayerNorm operates on each of h heads separately, which is also equivalent
 
 [p. 7] The wkv_i attention calculation can alternatively be written in a recurrent form:
 
-$$wkv' = s + \text{diag}(w) \cdot k^T \cdot v$$ (8)
+$$wkv' = s + \text{diag}(u) \cdot k^T \cdot v$$ (8)
 
 $$s' = \text{diag}(w) \cdot s + k^T \cdot v$$ (9)
 
@@ -56,4 +63,4 @@ $$o'_i = \sigma(r'_i) \odot v'_i \in \mathbb{R}^D$$ (13)
 
 $$\text{lora}_{\square}(x) = \lambda_{\square} + \tanh(xA_{\square})B_{\square}$$ (14)
 
-$$\text{ddlerp}_{\square}(a, b) = a + (b - a) \odot \text{lora}_{\square}(a + (b - a) \odot \mu_{\square})$$ (15)
+$$\text{ddlerp}_{\square}(a, b) = a + (b - a) \odot \text{lora}_{\square}(a + (b - a) \odot \mu_x)$$ (15)

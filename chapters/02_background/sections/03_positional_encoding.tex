@@ -1,0 +1,102 @@
+\section{Positional Encoding}
+\label{sec:positional-encoding}
+
+Self-attention (Equation~\ref{eq:scaled-dot-product}) is permutation-equivariant:
+without positional information, the attention score $q_t^\top k_i$ depends only
+on the token identities at positions $t$ and $i$, not on $t$ and $i$ themselves.
+Language modeling requires position sensitivity---word order carries meaning---so
+transformers inject position information into their
+representations~\cite{2017-12-attention-is-all-you-need}.
+
+\subsection{Rotary Position Embeddings}
+
+Rotary Position Embeddings (RoPE) encode position by rotating query and key
+vectors in 2D subspaces~\cite{2024-01-roformer-rope}. The head dimension $d$ is
+partitioned into $d/2$ pairs, and each pair $(x_{2k}, x_{2k+1})$ is rotated by
+an angle proportional to the token position $t$:
+%
+\begin{equation}
+\text{RoPE}(x, t)_{2k:2k+1} =
+\begin{pmatrix}
+\cos(t \cdot \theta_k) & -\sin(t \cdot \theta_k) \\
+\sin(t \cdot \theta_k) & \phantom{-}\cos(t \cdot \theta_k)
+\end{pmatrix}
+\begin{pmatrix}
+x_{2k} \\ x_{2k+1}
+\end{pmatrix}
+\label{eq:rope}
+\end{equation}
+%
+where $\theta_k = \theta_{\text{base}}^{-2k/d}$ are frequency parameters
+derived from a base frequency $\theta_{\text{base}}$ (typically 10{,}000~\cite{2024-01-roformer-rope} or
+500{,}000~\cite{2024-07-llama-3-herd-of-models}). The key property is that the dot product of RoPE-transformed vectors
+depends only on content and the \emph{relative} position $t - i$:
+%
+\begin{equation}
+\text{RoPE}(q, t)^\top \text{RoPE}(k, i) = f(q, k, t - i)
+\label{eq:rope-relative}
+\end{equation}
+% Verification (RoPE relative position property): verify the relative-position
+% property in Su et al. (2104.09864), Theorem 1 / Eq. 14.
+
+This relative-position property means that the attention score encodes how far
+apart two tokens are, not their absolute positions. However, post-RoPE vectors
+carry both content and position information in a coupled form: the rotation
+entangles the learned content representation with the position angle. This
+entanglement is what the decomposition methods in
+Chapter~\ref{chap:methodology} aim to disentangle.
+
+\subsection{RoPE Frequency Structure}
+
+The frequencies $\theta_k$ span several orders of magnitude~\cite{2024-01-roformer-rope}. Low-frequency
+components ($\theta_k$ near $\theta_{\text{base}}^{-1}$) rotate slowly with
+position, encoding coarse position information over long ranges. High-frequency
+components rotate rapidly, encoding fine-grained local position. This
+multi-scale structure means that different dimension pairs carry position
+information at different granularities.
+
+When input sequences exceed the training-time maximum length, high-frequency
+components may encounter positions they were never trained on, leading to
+out-of-distribution rotations~\cite{2023-06-pi-positional-interpolation,2023-06-rope-ntk}. This failure mode motivates the context-extension
+methods described below.
+
+\subsection{Context-Length Extension}
+\label{sec:context-extension-background}
+
+Three principal methods extend the effective range of RoPE beyond the
+training-time context length by modifying the frequency parameters:
+%
+\begin{itemize}
+    \item \textbf{Position interpolation} linearly scales all positions to fit
+    within the original training range, uniformly reducing all
+    frequencies~\cite{2023-06-pi-positional-interpolation}.
+    \item \textbf{NTK-aware scaling} adjusts the base frequency
+    $\theta_{\text{base}}$ rather than the positions, preserving high-frequency
+    resolution while extending low-frequency
+    range~\cite{2023-06-rope-ntk}.
+    \item \textbf{YaRN} (Yet another RoPE extensioN) combines NTK-aware base
+    frequency adjustment with per-frequency interpolation factors and an
+    attention temperature correction, achieving extension with minimal
+    fine-tuning~\cite{2024-05-yarn-context-extension}.
+\end{itemize}
+%
+These methods are not merely theoretical: several models in our experimental
+set use them. Qwen-3 models use YaRN to extend from 32K to 128K context
+(Section~\ref{sec:cross-model-study}). Understanding how frequency modification
+changes the geometry of post-RoPE vectors---and consequently the attention
+bias structure---is part of what the rotation model
+(Section~\ref{sec:planar-rotation-model}) captures.
+% Verification (extension methods): verify PI (2306.15595, Sec. 3), NTK-aware
+% scaling (bloc97, 2023), YaRN (2309.00071, Sec. 3).
+
+\subsection{No Positional Encoding Layers}
+
+Some architectures omit positional encoding in selected layers, relying on
+position information propagated through residual connections from RoPE layers
+below~\cite{2025-07-smollm3-long-context-reasoner}. These NoPE (No Positional
+Encoding) layers compute attention scores from content projections alone:
+$s(q_t, k_i) = q_t^\top k_i / \sqrt{d}$ with no rotary transformation. NoPE
+layers are expected to show different bias structure than RoPE layers, since
+they lack the direct position-encoding mechanism. SmolLM3, used in our training
+dynamics study (Section~\ref{sec:training-dynamics-study}), applies NoPE to
+every fourth layer.

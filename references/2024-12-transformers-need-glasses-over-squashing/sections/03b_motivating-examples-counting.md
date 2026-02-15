@@ -1,0 +1,16 @@
+# 3.2 Counting [p. 5–6]
+
+vanishing of information effect (a) seems to depend on the position in the sequence, (b) seems to be affected by the prompting, and (c) by the items that make up the sequence. The authors will later argue how all three of such observations can be explained by their theoretical analysis.
+
+We now turn our attention to counting problems, i.e. tasks of the form — given a specific sequence, how many times does a particular token appear? Such problems are related to copying in the sense that they also require careful consideration of individual tokens in the sequence as ignoring even a single token may potentially lead to an incorrect output.
+
+The authors consider four different tasks: (i) Summing $1 + \cdots + 1$, (ii) Counting the number of ones in a sequence of ones, (iii) Counting the number of ones in a sequence of ones and zeroes, with ones being sampled with 70% probability, and (iv) Counting the number of times a specific word appears in a sentence. The authors vary predictions for Gemini LLM across these tasks. The LLM is instructed to only output the answer, (2) is prompted to break down the problem (CoT-no-shot), and (3) is prompted to break down the problem plus five-shot contexted examples (CoT-few-shot). They refer to the Appendix (Section C.1) for a more detailed description of the tasks.
+
+Results are presented in Figure 3. It is clear that the performance rapidly deteriorates with the sequence length. It is also interesting to see that the error seems to increase with the sequence very rapidly. For instance in task (i), the LLM is quite likely to predict the value of '100' once the sequence reaches a size around 100. Such an observation provides motivating evidence for the argument that Transformers may not be in fact mechanically counting but rather perform a type of crude subtilizing, which explains why actually 'common' numbers such as 100 are much more likely to be outputted by the LLM and why in tasks such as (i) and (ii) the values near 100 are relatively lower than the value. This does not happen in task (iii) as the response should actually be around 70% of the sequence length due to the sequence sampling procedure, explaining why the absolute error actually seems to increase around a sequence length of 100. Figure 4 further showcases this issue, more clearly showing how 100 is by far the most common response.
+
+**Figure 4** (p. 6): "Frequency of different outputted values for Gemini 1.5 for the counting tasks. The large density at 100 suggests that Gemini is likely not counting, but instead possibly performing some crude form of subitizing."
+
+Description: Histogram showing frequency distribution of Gemini 1.5's outputs for counting tasks
+- Key elements: x-axis labeled "Value" (0-200), y-axis labeled "Frequency" (0-20); three categories in legend: "Group" (black), "True Answer" (gray), "Predictions w/o CoT" (teal), "Predictions w CoT" (light teal)
+- Notable patterns: Large spike at value 100 with frequency around 22; smaller spikes scattered throughout at values 0, 25, 50, 75, 125, 150, 175, 200; most frequent incorrect predictions cluster around common round numbers
+- Supports claim: Demonstrates that Gemini is likely not actually counting but performing some crude form of subitizing, with 100 being by far the most common response regardless of the true answer

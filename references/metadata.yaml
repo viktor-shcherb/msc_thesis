@@ -145,6 +145,10 @@ ontology:
     description: Stanford Question Answering Dataset
   - id: hotpotqa
     description: HotpotQA multi-hop QA
+  - id: zsre
+    description: Zero-Shot Relation Extraction factual editing benchmark (Levy et al., 2017; adapted by De Cao et al., 2021; Mitchell et al., 2021)
+  - id: counterfact
+    description: COUNTERFACT counterfactual factual-rewrite benchmark (Meng et al., 2022)
   - id: l-eval
     description: L-Eval standardized long-context evaluation
   - id: ada-leval
@@ -375,6 +379,16 @@ ontology:
     description: CollegeMath college-level mathematics (Tang et al., 2024)
   - id: longgenbench
     description: LongGenBench long-form generation benchmark with instruction-following evaluation at 16K–32K tokens (Wu et al., 2025)
+  - id: gsm-plus
+    description: GSM-Plus extended grade school math with perturbations (Li et al., 2024)
+  - id: bfcl
+    description: Berkeley Function Calling Leaderboard tool-calling evaluation (Yan et al., 2024)
+  - id: global-mmlu
+    description: Global MMLU multilingual massive multitask language understanding
+  - id: belebele
+    description: Belebele multilingual reading comprehension benchmark (Bandarkar et al., 2023)
+  - id: flores-200
+    description: Flores-200 machine translation benchmark across 200 languages (NLLB Team, 2022)
   models:
   - id: transformer-base
     description: Original Transformer (Vaswani et al., 2017)
@@ -386,6 +400,12 @@ ontology:
     description: AWD-LSTM language model (Merity et al., 2018)
   - id: gpt-2
     description: GPT-2 (Radford et al., 2019)
+  - id: gpt-2-xl
+    description: GPT-2 XL 1.5B variant used in factual editing and causal tracing studies (Meng et al., 2022)
+  - id: gpt-j-6b
+    description: GPT-J 6B autoregressive language model (Wang and Komatsuzaki, 2021)
+  - id: gpt-neox-20b
+    description: GPT-NeoX 20B autoregressive language model (Black et al., 2022)
   - id: transformer-xl
     description: Transformer-XL (Dai et al., 2019)
   - id: compressive-transformer
@@ -452,6 +472,8 @@ ontology:
     description: Code Llama 13B (Roziere et al., 2023)
   - id: mistral-7b
     description: Mistral 7B (Jiang et al., 2023)
+  - id: mistral-7b-v0.2
+    description: Mistral 7B v0.2 32K context (Mistral AI, 2024)
   - id: falcon-7b
     description: Falcon 7B (Penedo et al., 2023)
   - id: mpt-7b
@@ -548,10 +570,20 @@ ontology:
     description: XGen 7B 8K (Nijkamp et al., 2023)
   - id: internlm-7b-8k
     description: InternLM 7B 8K (Team, 2023)
+  - id: qwen1.5-1.8b
+    description: Qwen1.5 1.8B (Alibaba, 2024)
+  - id: qwen1.5-4b
+    description: Qwen1.5 4B (Alibaba, 2024)
   - id: qwen1.5-7b
     description: Qwen1.5 7B (Alibaba, 2024)
   - id: qwen1.5-14b
     description: Qwen1.5 14B (Alibaba, 2024)
+  - id: qwen1.5-32b
+    description: Qwen1.5 32B (Alibaba, 2024)
+  - id: qwen1.5-72b
+    description: Qwen1.5 72B (Alibaba, 2024)
+  - id: qwen1.5-110b
+    description: Qwen1.5 110B (Alibaba, 2024)
   - id: qwen2.5-7b
     description: Qwen2.5 7B (Alibaba, 2024)
   - id: qwen2.5-14b
@@ -740,3 +772,7 @@ ontology:
     description: Phi-3.5-MoE 8x7B 128K context mixture-of-experts (Microsoft, 2024)
   - id: palm-2-s
     description: PaLM 2-S* (Codey) base model (Anil et al., 2023)
+  - id: smollm3-3b
+    description: SmolLM3 3B dual-mode reasoning model with 128K context (Bakouch et al., 2025)
+  - id: qwen2.5-3b
+    description: Qwen2.5 3B (Alibaba, 2024)

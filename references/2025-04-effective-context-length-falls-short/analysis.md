@@ -14,30 +14,44 @@ key_claims:
     claim: "The left-skewed position frequency distribution in pretraining corpora is the root cause of the gap between effective and training context lengths"
     evidence: "Section 2.2, Figure 1, Eq. 2"
     status: supported
+    scope: "RoPE-based models, SlimPajama-627B pretraining corpus, 2K-4K training lengths"
+    magnitude: "positions i <= 1024 account for >80% of all occurrences; positions i >= 1536 constitute <5% when L=2048"
   - id: C2
     claim: "Models achieve similar effective context lengths at similar position frequencies, regardless of maximum training length"
     evidence: "Section 3, Figure 2b"
     status: supported
+    scope: "1.3B TinyLlama models, 2K and 4K training lengths, SlimPajama-627B, 4-needle NIAH evaluation"
+    magnitude: "both models reach 1,280-token effective length at f(1280) = 100B"
   - id: C3
     claim: "Most NIAH failure cases across 13 open-source models occur within the first L/3 of the document (peak failure depth 0-33.3%)"
     evidence: "Section 3, Table 4"
     status: supported
+    scope: "13 open-source models with training lengths 2K-262K, 4-needle NIAH at training length"
+    magnitude: "all 13 models have peak failure depth at 0-33.3%"
   - id: C4
     claim: "STRING improves average NIAH (4-needle) performance from 67.8% (RoPE) to 85.7% across 7 models without any training"
     evidence: "Section 4.2, Table 1"
     status: supported
+    scope: "7 base models with training lengths 2K-128K, tested at training length, 500 test cases each"
+    magnitude: "85.7% average vs 73.1% DCA (next best) and 67.8% RoPE baseline"
   - id: C5
     claim: "STRING improves Llama3.1 70B by 15.1 points and Qwen2 72B by 30.9 points on RULER at 128K sequence length"
     evidence: "Section 4.2, Table 2"
     status: supported
+    scope: "RULER 13-task benchmark at 128K sequence length, Llama3.1 70B and Qwen2 72B"
+    magnitude: "+15.1 points (66.6 to 81.7) for Llama3.1 70B; +30.9 points (53.7 to 84.6) for Qwen2 72B"
   - id: C6
     claim: "With STRING, Llama3.1 70B surpasses GPT-4-128K on both RULER (81.7 vs 81.2) and InfiniteBench (56.88 vs 55.69)"
     evidence: "Section 4.2, Tables 2 and 3"
     status: supported
+    scope: "RULER at 128K and InfiniteBench at 128K, single configuration (S=L/3, W=128)"
+    magnitude: "RULER: 81.7 vs 81.2 (+0.5); InfiniteBench: 56.88 vs 55.69 (+1.19)"
   - id: C7
     claim: "STRING incurs negligible overhead: within 0.3s additional latency per token and less than 5GB additional GPU memory compared to standard FlashAttention"
     evidence: "Appendix A.3, Figure 9"
     status: supported
+    scope: "Llama3.1 8B on single NVIDIA 80G A100 GPU, context lengths 64K-128K, 50 test runs"
+    magnitude: "<=0.3s additional latency per token; <5GB additional GPU memory at 128K"
 cross_references:
   - target: 2024-01-roformer-rope
     type: extends
@@ -69,6 +83,9 @@ cross_references:
   - target: 2024-06-ada-leval-length-adaptable-benchmark
     type: complementary
     detail: "Both find effective context length falls short of claimed length using different methodologies"
+  - target: 2026-01-longbench-pro
+    type: complementary
+    detail: "LongBench Pro provides large-scale 2026 evidence that claimed context windows often exceed effective long-context reasoning capability, complementing this paper's mechanistic analysis"
   - target: 2024-05-attention-sinks-streaming
     type: complementary
     detail: "Attention sinks at position 0 are consistent with position 0 having the highest frequency in the left-skewed distribution"
@@ -90,6 +107,9 @@ cross_references:
   - target: 2024-08-flenqa-input-length-reasoning
     type: complementary
     detail: "FlenQA empirically demonstrates reasoning degradation at lengths far below technical maxima; this paper provides a mechanistic explanation via undertrained position indices from left-skewed training distributions"
+  - target: 2024-05-pose-positional-skip-wise-training
+    type: complementary
+    detail: "PoSE demonstrates efficient long-context extension, while STRING diagnoses and mitigates the remaining effective-length gap inside claimed context windows"
 open_questions:
   - question: "Can the left-skewed position frequency distribution be addressed during pretraining by adjusting the data length distribution, and would this preserve reasoning ability?"
     addressed_by: null
@@ -174,7 +194,7 @@ STRING operates in three steps on the relative position matrix P, illustrated fo
 
 ### Key Technical Components
 
-- **Hyperparameters:** The authors recommend W >= 32 and L/3 <= S <= L/2. For all experiments across downstream tasks: **S = L/3** and **W = 128**.
+- **Hyperparameters:** The authors recommend W >= 32 and L/7 <= S <= L/2. For all experiments across downstream tasks: **S = L/3** and **W = 128**.
 - **Ablation on W** (Figure 7a): Performance is significantly better than RoPE when W >= 32. As long as W << S, further increasing W does not cause a performance drop.
 - **Ablation on S** (Figure 7b): Within the range L/5 to L/2, performance increases with S. The trend slows when S exceeds L/3, indicating that at least the last 33-50% of positions can be overwritten.
 - **Key distinction from extrapolation methods:** STRING improves performance *within* the training context length, while extrapolation methods (NTK, YaRN, ReRoPE, Self-Extend, DCA) aim to extend *beyond* it. When testing extrapolation baselines, the training length is set to 2/3 of the original and the scaling factor is 3/2.
@@ -210,7 +230,7 @@ The two outputs are merged using a weighted combination based on their respectiv
 | TinyLlama-1.1B-3T | 2K | 77.2 | 79.8 | 69.8 | 83.2 | 88.0 | 80.2 | **97.2** |
 | Llama-2-7B | 4K | 98.6 | 98.6 | 98.0 | 95.4 | 98.0 | 91.6 | **100.0** |
 | Llama-3-8B | 8K | 99.6 | 100.0 | 99.8 | 99.8 | 100.0 | 99.9 | **99.6** |
-| LWM-7B-base | 32K | 25.2 | 19.4 | 31.8 | 29.0 | 22.2 | 28.8 | **50.4** |
+| LWM-7B-base | 32K | 25.2 | 19.4 | 31.8 | 24.0 | 22.2 | 28.8 | **50.4** |
 | Mistral-7B-base | 32K | 54.5 | 42.2 | 52.8 | 54.2 | 48.2 | 64.2 | **73.0** |
 | Llama-3.1-8B | 128K | 53.6 | 71.2 | 66.0 | 65.8 | 68.8 | 72.8 | **95.2** |
 | **Average** | -- | 67.3 | 67.6 | 67.8 | 69.6 | 70.5 | 73.1 | **85.7** |
@@ -279,6 +299,11 @@ The two outputs are merged using a weighted combination based on their respectiv
 5. **No evaluation beyond training length.** STRING is designed to improve performance *within* the training context length, not to extrapolate beyond it. Whether STRING can be combined with extrapolation methods for additional gains is not investigated.
 
 6. **Aggregation task gains limited on 8B models.** On RULER at 128K, STRING's improvement on the Aggregation category for Llama3.1 8B is minimal (36.2 to 37.6), suggesting the method's effectiveness varies by task type and model scale (Table 2).
+
+### Scope and Comparability
+
+- **What was not tested:** STRING is evaluated only on RoPE-based models. No evaluation on ALiBi, T5-bias, or absolute positional encodings. No evaluation on instruction-tuned or chat models (all experiments use base models). No evaluation on non-English tasks. Probing experiments are limited to 1.3B-parameter models with 2K/4K training lengths; the position-frequency-to-effective-length relationship has not been verified at larger scales or longer training contexts.
+- **Comparability notes:** STRING operates *within* the training context length, while the baselines (NTK, YaRN, ReRoPE, Self-Extend, DCA) are designed for extrapolation *beyond* training length. To compare them, the baselines' training length is set to 2/3 of the original and the scaling factor to 3/2, which may disadvantage the baselines since they are not operating in their intended regime. The RULER effective context length definition (surpassing Llama2-chat at 4K, score 85.6) differs from other papers that may use different thresholds. InfiniteBench commercial model results are taken from Zhang et al. (2024d), not reproduced, so differences in inference settings may exist.
 
 ---
 

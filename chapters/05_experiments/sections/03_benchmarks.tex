@@ -1,0 +1,67 @@
+\section{Benchmarks}
+\label{sec:benchmarks}
+
+Two complementary benchmarks validate the mechanistic metrics against behavioral
+performance. LongBench-Pro provides realistic task evaluation across 7 of our
+primary models; RULER provides synthetic per-length evaluation for 2 predecessor
+models.
+
+\subsection{LongBench-Pro (Primary)}
+
+LongBench-Pro (LBP) is a large-scale long-context evaluation benchmark
+comprising 1{,}500 samples across 25 tasks in a bilingual (English/Chinese)
+format~\cite{2026-01-longbench-pro}. Inputs range from 8K to 256K tokens, and
+all tasks use a multiple-choice format for consistent automated scoring.
+Samples are binned by input length (8K, 16K, 32K, 64K, 128K, 256K), providing
+length-stratified evaluation.
+% Verification (LBP structure): verify 1,500 samples, 25 tasks, bilingual
+% format, multiple-choice, and length bins in LongBench-Pro paper
+% (2601.02872), Sec. 2--3.
+
+Seven of our 11 primary models have exact matches in the LBP evaluation:
+Ministral-3 at all three scales (3B, 8B, 14B), Qwen-3 at three scales (4B, 8B,
+14B), and Llama-3.2-3B. We use non-thinking mode scores, which correspond to
+standard autoregressive generation without chain-of-thought prompting---matching
+the inference mode of our Q/K capture on base models.
+% Verification (LBP model overlap): verify that Ministral-3 3B/8B/14B,
+% Qwen-3 4B/8B/14B, and Llama-3.2-3B appear in LBP results tables
+% (2601.02872), and that non-thinking mode scores are reported.
+
+LBP is our primary benchmark because its tasks require content-dependent
+reasoning rather than simple retrieval. Since our plasticity metric measures the
+competition between content-driven and position-driven attention patterns, a
+benchmark that rewards content comprehension provides the most appropriate
+validation target.
+
+\subsection{RULER (Secondary)}
+
+RULER is a synthetic benchmark comprising 13 tasks---including NIAH variants,
+multi-key/\allowbreak{}value/\allowbreak{}query retrieval, variable tracking,
+aggregation, and question answering---evaluated at context lengths from 4K to
+128K~\cite{2024-10-ruler-context-size}. Unlike LBP's realistic document
+tasks, RULER's synthetic construction provides precise control over what
+information must be retrieved from which positions.
+
+Two of our models have published RULER per-length scores: Llama-3.1-8B and
+Mistral-v0.2-7B~\cite{2024-10-ruler-context-size}. Llama-3.1-8B shows a
+gradual decline (95.5 at 4K to 77.0 at 128K), providing per-length granularity
+for plasticity-to-benchmark correlation. Mistral-v0.2-7B scores are available
+but its sliding-window architecture limits plasticity analysis to within-window
+positions (Section~\ref{sec:cross-model-study}), so it serves primarily as a
+within-window reference for the Ministral-3 family comparison.
+% Verification (RULER scores): verify Llama-3.1-8B per-length scores (95.5 at
+% 4K, 77.0 at 128K) and Mistral-v0.2 scores (93.6 at 4K, 49.0 at 64K, 13.8
+% at 128K) in RULER paper (2404.06654), Table 1 or Table 3.
+
+\subsection{Complementary Roles}
+
+The two benchmarks exercise different aspects of long-context capability.
+LBP tests realistic content comprehension at an aggregate level across 7
+models, addressing the question: does plasticity predict performance on tasks
+that require understanding long documents? RULER tests controlled retrieval at
+per-length granularity across 2 models, addressing the question: does plasticity
+track the length-dependent degradation curve?
+
+If plasticity correlates with performance on both realistic and synthetic
+benchmarks, this provides convergent evidence that the metric captures a
+genuine mechanistic property relevant to effective context length.

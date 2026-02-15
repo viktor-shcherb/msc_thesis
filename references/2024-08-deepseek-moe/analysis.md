@@ -68,9 +68,12 @@ cross_references:
   - target: 2023-07-llama-2-open-foundation-chat
     type: evaluates
     detail: "LLaMA2 7B serves as primary dense baseline for comparison at 16B scale"
+  - target: 2024-12-deepseek-v3-technical-report
+    type: extended-by
+    detail: "DeepSeek-V3 scales DeepSeekMoE to 671B total parameters (256 routed + 1 shared expert, 8 activated per token) with auxiliary-loss-free load balancing replacing the multi-level auxiliary losses"
 open_questions:
   - question: "How does DeepSeekMoE scale beyond 145B parameters with full training?"
-    addressed_by: 2024-05-deepseek-v2-moe
+    addressed_by: [2024-05-deepseek-v2-moe, 2024-12-deepseek-v3-technical-report]
   - question: "What is the optimal ratio between shared and routed experts at different scales?"
     addressed_by: null
   - question: "Can the architecture benefit from even finer expert granularity at larger scales with better kernels?"

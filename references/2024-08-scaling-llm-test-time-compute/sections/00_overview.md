@@ -2,8 +2,8 @@
 
 **Title:** Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters
 
-**Authors:** Charlie Snell, Jaehoon Lee, Kelvin Xu (♣equal advising), Aviral Kumar (♣equal advising)
-- Charlie Snell: UC Berkeley (♦work done during an internship at Google DeepMind)
+**Authors:** Charlie Snell♦, 1, Jaehoon Lee2, Kelvin Xu♣, 2, Aviral Kumar♣, 2 (♣equal advising, ♦work done during an internship at Google DeepMind)
+- Charlie Snell: UC Berkeley (1)
 - Jaehoon Lee: Google DeepMind
 - Kelvin Xu: Google DeepMind
 - Aviral Kumar: Google DeepMind
@@ -35,3 +35,18 @@
 7. Putting it Together: Exchanging Pretraining and Test-Time Compute
 8. Discussion and Future Work
 Acknowledgements
+References
+Appendices
+   - A. Related Work
+   - B. Additional Revision Results
+   - C. Unsupervised Difficulty Bins
+   - D. PRM Training Details
+   - E. Comparing PRM Aggregation Strategies
+   - F. Comparing PRM and ORM
+   - G. Prompting Details
+   - H. Revision Model Finetuning Details
+   - I. Revision Model Selection Criteria
+   - J. Revision Model Verifier Training
+   - K. ReST^EM Revision Model Experiments
+   - L. Revision Model Example Outputs
+   - M. PRM Beam Search Example Outputs

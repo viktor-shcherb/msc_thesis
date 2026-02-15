@@ -1,7 +1,7 @@
 ---
 title: "Transformer Architectural Innovations for Long-Context Processing"
 research_question: "How have positional encoding and attention mechanism innovations in Transformers evolved to address long-context processing, and what are the key trade-offs between different approaches?"
-date_produced: 2026-02-05
+date_produced: 2026-02-09
 corpus:
   - 2017-12-attention-is-all-you-need
   - 2019-07-transformer-xl
@@ -19,6 +19,9 @@ corpus:
   - 2019-08-bert-attention-analysis
   - 2019-12-sixteen-heads-better-than-one
   - 2022-03-in-context-learning-induction-heads
+  - 2024-12-flashattention-3
+  - 2025-04-attention-sink-emerges
+  - 2025-04-differential-transformer
 corpus_search_strategy: |
   category architecture
   category position-encoding
@@ -55,11 +58,11 @@ consensus_claims:
   - claim: "Relative positional encodings enable context modeling beyond fixed segment lengths"
     sources: ["2019-07-transformer-xl", "2024-01-roformer-rope", "2022-04-alibi-train-short-test-long"]
     strength: strong
-  - claim: "Autoregressive LLMs allocate disproportionate attention to initial tokens regardless of semantic content (attention sinks)"
-    sources: ["2024-05-attention-sinks-streaming", "2019-11-dark-secrets-of-bert"]
+  - claim: "Autoregressive LLMs allocate disproportionate attention to initial tokens regardless of semantic content (attention sinks), caused by softmax normalization's sum-to-one constraint"
+    sources: ["2024-05-attention-sinks-streaming", "2019-11-dark-secrets-of-bert", "2025-04-attention-sink-emerges"]
     strength: strong
-  - claim: "Standard attention is memory-bound: HBM accesses, not FLOPs, determine runtime on modern GPUs"
-    sources: ["2022-12-flashattention"]
+  - claim: "Standard attention is memory-bound: HBM accesses, not FLOPs, determine runtime on modern GPUs, and IO-aware exact attention can reach 75% of theoretical peak throughput"
+    sources: ["2022-12-flashattention", "2024-12-flashattention-3"]
     strength: strong
   - claim: "For compute-optimal training, model size and training tokens should scale equally (a ≈ b ≈ 0.5)"
     sources: ["2022-12-chinchilla-scaling-laws"]
@@ -106,14 +109,14 @@ overall_confidence:
     level: high
     basis: "Longformer demonstrates consistent improvements over RoBERTa-base across 6 downstream tasks"
     caveats: ["Global attention token selection is task-specific and manual", "Dilation incompatible with continued pretraining"]
-  - conclusion: "IO-aware exact attention (FlashAttention) is practical and superior to approximate methods for moderate lengths"
+  - conclusion: "IO-aware exact attention (FlashAttention) is practical and superior to approximate methods for moderate lengths, reaching 75% GPU utilization with FlashAttention-3"
     level: high
-    basis: "FlashAttention achieves 2-4× speedup with exact computation; linear memory scaling"
-    caveats: ["Requires custom CUDA kernels", "Approximate methods faster at very long sequences (>1K)"]
-  - conclusion: "Attention sinks are a fundamental property of softmax-based attention, not a model-specific artifact"
+    basis: "FlashAttention achieves 2-4× speedup with exact computation; FlashAttention-3 reaches 1.5-2.0× further speedup and 75% H100 utilization via asynchrony and FP8"
+    caveats: ["Requires custom CUDA kernels", "Hopper-specific optimizations in FA-3", "FP8 effects on large-scale training quality unknown"]
+  - conclusion: "Attention sinks are a fundamental property of softmax-based attention, not a model-specific artifact, caused by softmax normalization's sum-to-one constraint"
     level: high
-    basis: "Observed across Llama-2, Falcon, MPT, Pythia families and in encoder models (BERT)"
-    caveats: ["Root cause attribution (softmax normalization) validated only at 160M scale"]
+    basis: "Observed across Llama-2, Falcon, MPT, Pythia, OPT, GPT-2 families and in encoder models (BERT); root cause identified as softmax normalization via controlled experiments showing sigmoid attention without normalization eliminates sinks"
+    caveats: ["Sigmoid attention validated only at 1B scale; scaling behavior beyond 1B unknown"]
   - conclusion: "Compute-optimal training requires equal scaling of parameters and data"
     level: high
     basis: "Three independent approaches in Chinchilla all yield a ≈ b ≈ 0.5"
@@ -123,7 +126,7 @@ overall_confidence:
 # Transformer Architectural Innovations for Long-Context Processing
 
 **Research question:** How have positional encoding and attention mechanism innovations in Transformers evolved to address long-context processing, and what are the key trade-offs between different approaches?
-**Corpus:** 16 papers, date range 2017-2024.
+**Corpus:** 19 papers, date range 2017-2025.
 **Categories:** architecture, position-encoding, attention-efficiency, attention-analysis, scaling-laws, context-extension.
 
 ---
@@ -136,9 +139,9 @@ overall_confidence:
 
 - **Sparse attention with linear scaling is practical**: Longformer's sliding window + global attention achieves O(n) complexity while consistently outperforming RoBERTa-base on 6 long-document tasks (`2020-04-longformer-long-document-transformer`). Global attention tokens are the single most important component (-8.3 WikiHop accuracy without them).
 
-- **IO-awareness enables exact attention at scale**: FlashAttention demonstrates that attention is memory-bound, not compute-bound, on modern GPUs (`2022-12-flashattention`). By reducing HBM accesses from O(Nd + N²) to O(N²d²M⁻¹), it achieves 3× GPT-2 speedup and linear O(N) memory scaling—enabling the first Transformers to solve Path-X (16K) and Path-256 (64K) benchmarks.
+- **IO-awareness enables exact attention at scale**: FlashAttention demonstrates that attention is memory-bound, not compute-bound, on modern GPUs (`2022-12-flashattention`). By reducing HBM accesses from O(Nd + N²) to O(N²d²M⁻¹), it achieves 3× GPT-2 speedup and linear O(N) memory scaling—enabling the first Transformers to solve Path-X (16K) and Path-256 (64K) benchmarks. FlashAttention-3 (`2024-12-flashattention-3`) further exploits Hopper-specific asynchrony and FP8 low-precision to reach 75% H100 utilization (1.5-2.0× over FlashAttention-2) and close to 1.2 PFLOPs/s with FP8.
 
-- **Attention sinks are universal in softmax-based transformers**: Initial tokens receive disproportionate attention regardless of semantic content due to softmax's sum-to-one constraint (`2024-05-attention-sinks-streaming`). This enables streaming inference (StreamingLLM: 22.2x speedup) but does not extend context utilization.
+- **Attention sinks are universal in softmax-based transformers**: Initial tokens receive disproportionate attention regardless of semantic content due to softmax's sum-to-one constraint (`2024-05-attention-sinks-streaming`). `2025-04-attention-sink-emerges` identifies softmax normalization as the definitive root cause: sigmoid attention without normalization eliminates sinks entirely (0.44% vs. 18.18% at 60M; 2.46% vs. 45.11% at 1B) with comparable validation loss. StreamingLLM exploits sinks for streaming inference (22.2x speedup) but they do not extend context utilization.
 
 - **Attention heads decompose into QK (attention pattern) and OV (information movement) circuits** (`2021-12-transformer-circuits-framework`). Induction heads—two-layer circuits implementing in-context pattern completion [a][b]...[a]→[b]—require compositional depth and are a key driver of in-context learning (`2022-03-in-context-learning-induction-heads`).
 
@@ -162,9 +165,12 @@ The evolution of transformer architecture for long-context processing proceeds t
 | 2021-12 | `2021-12-transformer-circuits-framework` | QK/OV circuit decomposition, induction heads | Mechanistic interpretability |
 | 2022-04 | `2022-04-alibi-train-short-test-long` | Linear attention biases for extrapolation | Train short, test long becomes viable |
 | 2022-12 | `2022-12-flashattention` | IO-aware exact attention, O(N) memory | Hardware optimization over approximation |
+| 2024-12 | `2024-12-flashattention-3` | Asynchrony, GEMM-softmax pipelining, FP8; 75% H100 utilization | Exact attention approaches hardware ceiling |
 | 2022-12 | `2022-12-chinchilla-scaling-laws` | Compute-optimal training (a≈b≈0.5) | Data scaling matches parameter scaling |
 | 2023-06 | `2023-06-pi-positional-interpolation` | Position interpolation for RoPE context extension | Post-hoc context extension without retraining |
 | 2024-05 | `2024-05-attention-sinks-streaming` | Attention sink phenomenon, StreamingLLM | Infinite streaming inference |
+| 2025-04 | `2025-04-attention-sink-emerges` | Softmax normalization as root cause; sigmoid attention eliminates sinks | Causal understanding of attention sinks |
+| 2025-04 | `2025-04-differential-transformer` | Differential attention (difference of two softmax maps) cancels attention noise; ~62% parameter efficiency | Noise cancellation via differential signal processing |
 
 ### Phase 1: Foundation (2017)
 
@@ -192,6 +198,8 @@ A paradigm shift occurred when `2022-12-flashattention` demonstrated that the at
 
 The practical impact: 15% faster BERT training than MLPerf record, up to 3× GPT-2 speedup, and **linear O(N) memory scaling** instead of O(N²). This enabled the first Transformers to solve Path-X (16K tokens, 61.4%) and Path-256 (64K tokens, 63.1%)—benchmarks where all prior methods achieved random performance or OOM. FlashAttention made long-context training practical without architectural changes, influencing all subsequent large-scale LLM training.
 
+`2024-12-flashattention-3` pushed this further on NVIDIA Hopper GPUs. FlashAttention-2 only achieved 35% utilization on H100, compared to 80-90% for optimized GEMM kernels. FlashAttention-3 addressed this through three techniques: (1) warp-specialized producer-consumer asynchrony via TMA/WGMMA separation, (2) 2-stage GEMM-softmax pipelining that overlaps the low-throughput softmax (256× lower than matmul) with asynchronous GEMMs, and (3) FP8 support with block quantization and incoherent processing. The result: **1.5-2.0× speedup over FlashAttention-2, reaching 75% utilization (~756 TFLOPs/s FP16) and close to 1.2 PFLOPs/s with FP8**. FP8 block quantization and incoherent processing reduce numerical error by 2.6× compared to per-tensor quantization (RMSE 9.1e-3 vs 2.4e-2).
+
 Concurrently, `2022-12-chinchilla-scaling-laws` revolutionized understanding of compute-optimal training. Three independent approaches showed that for optimal allocation of compute budget C, **parameters and training tokens should scale equally**: N_opt ∝ C^0.5, D_opt ∝ C^0.5. This contradicted Kaplan et al.'s scaling laws (a=0.73, b=0.27) that had driven the "scale model size" paradigm. The implication: GPT-3 (175B, 300B tokens) is massively undertrained and should use 3.7T tokens. Chinchilla (70B, 1.4T tokens) outperformed Gopher (280B, 300B tokens) by **7.6 percentage points on MMLU** with the same compute budget.
 
 For long-context research, Chinchilla implies that training data—not model size—is often the bottleneck, and longer-context datasets may be more valuable than larger models trained on limited context windows.
@@ -200,7 +208,9 @@ For long-context research, Chinchilla implies that training data—not model siz
 
 `2021-12-transformer-circuits-framework` provided mathematical foundations for understanding transformer computations. The decomposition of attention heads into independent QK circuits (attention pattern) and OV circuits (information movement) enabled mechanistic analysis of learned algorithms. The discovery of **induction heads**—two-layer circuits implementing [a][b]...[a]→[b] via K-composition—demonstrated that compositional depth enables qualitatively different algorithms that single heads cannot implement (C5).
 
-`2024-05-attention-sinks-streaming` identified a universal property: autoregressive LLMs allocate massive attention to initial tokens regardless of semantic content (C1). This arises from softmax's sum-to-one constraint forcing residual probability mass onto globally visible tokens. StreamingLLM exploits this by preserving 4 sink tokens with a rolling KV cache, enabling stable inference over 4M+ tokens with 22.2x speedup. Critically, this does not extend context—accuracy drops to zero when query-answer distance exceeds cache size (C7).
+`2024-05-attention-sinks-streaming` identified a universal property: autoregressive LLMs allocate massive attention to initial tokens regardless of semantic content (C1). This arises from softmax's sum-to-one constraint forcing residual probability mass onto globally visible tokens. StreamingLLM exploits this by preserving 4 sink tokens with a rolling KV cache, enabling stable inference over 4M+ tokens with 22.2x speedup. Critically, this does not extend context -- accuracy drops to zero when query-answer distance exceeds cache size (C7).
+
+`2025-04-attention-sink-emerges` provided the definitive causal analysis of attention sinks. Through systematic controlled experiments varying optimization, data distribution, loss function, and architecture, Gu et al. established that softmax normalization is the root cause: replacing softmax with sigmoid attention without normalization eliminates sinks entirely (0.44% vs. 18.18% at 60M; 2.46% vs. 45.11% at 1B), while maintaining comparable validation loss (C5). The first token acts as implicit key biases -- high cosine similarity with queries but small l2-norm -- absorbing excess probability without contributing to value computation (C4). Sinks are universal from Pythia-14M through LLaMA3-8B (C1), emerge between 1k--2k training steps with sufficient data (C2), and are independent of PE type (C3). This work shifted the understanding of sinks from an observed phenomenon to a mechanistically explained consequence of the softmax design choice.
 
 ---
 
@@ -245,6 +255,8 @@ Papers **disagree** on RoPE's extrapolation capability. `2024-01-roformer-rope` 
 | `2020-04-longformer-long-document-transformer` | Sliding window + global | Outperforms RoBERTa-base on 6 tasks; O(n) scaling | Fixed patterns; global attention manual |
 | `2020-04-compressive-transformer-pg19` | Memory compression | Enables longer effective context via compression | Autoregressive only |
 | `2022-12-flashattention` | IO-aware exact attention | 3× GPT-2 speedup; O(N) memory | Requires custom CUDA kernels |
+| `2024-12-flashattention-3` | Asynchrony + FP8 exact attention | 1.5-2.0× over FA-2; 75% H100 utilization | Hopper-specific; FP8 training effects unknown |
+| `2025-04-differential-transformer` | Differential attention (subtract two softmax maps) | ~62% parameters to match Transformer; 50pp multi-needle NIAH gap | 6-12% throughput overhead; validated only to 3B/13.1B |
 
 **Cross-paper analysis:**
 
@@ -258,28 +270,37 @@ Papers **agree** that O(n²) complexity is a fundamental barrier for long sequen
 
 **Key insight from FlashAttention:** Approximate methods (Linformer, Performer, etc.) fail to achieve wall-clock speedup despite reduced FLOPs because they don't address the memory-bound nature of attention. FlashAttention's exact computation with 2.4× speedup and linear memory scaling changed the calculus—approximation is no longer necessary for efficiency.
 
-**Current state:** FlashAttention has become the standard for production LLMs. Modern systems combine FlashAttention for efficiency with sparse patterns (Gemma 2's interleaved local-global attention) for extremely long contexts. Transformer-XL's recurrence mechanism has been less adopted in decoder-only LLMs but influenced the Compressive Transformer.
+**Key insight from FlashAttention-3:** At 75% utilization on H100, exact attention is approaching the hardware ceiling for GEMM-bound computation (80-90%). The remaining gap comes from non-matmul operations (softmax exponentials have 256× lower throughput than matmul on H100). FP8 support nearly doubles effective throughput (~1.2 PFLOPs/s) while block quantization and incoherent processing maintain numerical accuracy. This further strengthens the case that hardware optimization of exact attention dominates approximation methods.
+
+A fourth approach emerged with `2025-04-differential-transformer`: **noise cancellation via differential signal processing**. Rather than changing the complexity class or optimizing IO, DIFF Transformer modifies the attention operator itself by computing the difference between two independent softmax attention maps. This cancels common-mode noise (attention allocated to irrelevant context), achieving ~62% parameter efficiency (6.8B DIFF matches 11B Transformer, Section 3.2), 50pp multi-needle retrieval accuracy gap at N=6 R=2 in 4K context (Section 3.4, Table 2), and ~8.2x reduction in activation outliers (Section 3.7, Table 5). The approach is complementary to FlashAttention -- differential attention decomposes into two standard attention operations reusable with existing FlashAttention kernels (Appendix A), at the cost of 6-12% throughput overhead. Notably, the approach addresses the same root cause as `2025-04-attention-sink-emerges` (softmax's sum-to-one constraint) from a different angle: rather than replacing softmax with sigmoid, it cancels the noise softmax produces by subtracting two attention distributions.
+
+**Current state:** FlashAttention has become the standard for production LLMs. FlashAttention-3 extends this to Hopper GPUs with asynchrony and FP8, reaching 75% utilization. Modern systems combine FlashAttention for efficiency with sparse patterns (Gemma 2's interleaved local-global attention) for extremely long contexts. Transformer-XL's recurrence mechanism has been less adopted in decoder-only LLMs but influenced the Compressive Transformer. DIFF Transformer (`2025-04-differential-transformer`) represents a new direction: modifying the attention operator itself to reduce noise rather than changing complexity or hardware utilization, though validation is limited to 3B/13.1B scale.
 
 ### Theme 3: Attention Sink Phenomenon
 
-**Statement:** Softmax-based transformers universally allocate disproportionate attention to initial tokens, enabling streaming inference but not context extension.
+**Statement:** Softmax-based transformers universally allocate disproportionate attention to initial tokens, caused by the sum-to-one normalization constraint; this enables streaming inference but not context extension.
 
-**Heterogeneity check:** `2024-05-attention-sinks-streaming` measures streaming perplexity over 4M tokens; `2019-11-dark-secrets-of-bert` analyzes static attention patterns in encoder models. Phenomenon is consistent; practical implications differ.
+**Heterogeneity check:** `2024-05-attention-sinks-streaming` measures streaming perplexity over 4M tokens; `2019-11-dark-secrets-of-bert` analyzes static attention patterns in encoder models; `2025-04-attention-sink-emerges` performs controlled pre-training experiments at 60M--1B scale to isolate causal factors. Phenomenon is consistent across all three; practical implications and methodological scope differ.
 
 | Paper | Method | Key Finding | Limitations |
 |-------|--------|-------------|-------------|
 | `2024-05-attention-sinks-streaming` | StreamingLLM | 4 sink tokens + sliding window enables 4M+ token streaming | Does not extend context; accuracy drops to 0 beyond cache |
 | `2019-11-dark-secrets-of-bert` | BERT attention probing | Attention concentrates on [CLS] and [SEP] | Encoder-only; no streaming analysis |
+| `2025-04-attention-sink-emerges` | Controlled pre-training ablations | Softmax normalization is the root cause; sigmoid attention without normalization eliminates sinks up to 1B | Controlled experiments limited to 60M architecture; sigmoid validated only to 1B |
 
 **Cross-paper analysis:**
 
-Papers **agree** that attention concentration on special tokens is a structural property of softmax attention. `2024-05-attention-sinks-streaming` C1 shows Llama-2-7B allocates >50% attention to the first token in most layers. `2019-11-dark-secrets-of-bert` observed analogous patterns on [SEP] in BERT (Appendix H cross-reference in `2024-05-attention-sinks-streaming`).
+Papers **agree** that attention concentration on special tokens is a structural property of softmax attention. `2024-05-attention-sinks-streaming` C1 shows Llama-2-7B allocates >50% attention to the first token in most layers. `2019-11-dark-secrets-of-bert` observed analogous patterns on [SEP] in BERT. `2025-04-attention-sink-emerges` C1 extends this to all auto-regressive LMs from Pythia-14M to LLaMA3-8B, including random token inputs (Sink ranges 70--91%).
 
-The **mechanistic explanation** is that softmax requires attention scores to sum to one; when no token has strong semantic relevance, residual probability mass falls on globally visible tokens. Initial tokens are always visible due to causal masking, making them natural sinks (`2024-05-attention-sinks-streaming` C2). Critically, replacing initial tokens with linebreaks "\n" restores perplexity (5,158 → 5.60), confirming semantic content is irrelevant.
+The **mechanistic explanation** is now well-established through `2025-04-attention-sink-emerges`. Softmax requires attention scores to sum to one; when no token has strong semantic relevance, residual probability mass falls on globally visible tokens. Gu et al. (`2025-04-attention-sink-emerges`) provide the definitive causal evidence: replacing softmax with sigmoid attention without normalization eliminates sinks entirely (Sink^epsilon_1 = 0.44% vs. 18.18% for softmax at 60M; 2.46% vs. 45.11% at 1B), while sum-normalized sigmoid retains them (30.24%). The normalization constraint, not the similarity function, is the decisive factor (C5). The first token's keys act as implicit biases -- high cosine similarity with queries but small l2-norm, absorbing excess probability without contributing to value computation (C4). Introducing explicit learnable key biases with zero-value vectors absorbs 73.34% of sink heads while reducing first-token sinks to 0.00% (Table 4 from `2025-04-attention-sink-emerges`).
 
-**Implication:** StreamingLLM exploits this for practical efficiency (22.2x speedup) but does not extend context utilization. `2024-05-attention-sinks-streaming` C8 shows increasing cache size does not consistently lower perplexity—for Llama-2-7B, best PPL is at cache 4+2,044, rising at 4+4,092. This aligns with broader findings on context utilization failures.
+`2024-05-attention-sinks-streaming` C2 had attributed sinks to softmax's constraint, but this was based on the observation that replacing initial tokens with linebreaks "\n" restores perplexity (5,158 to 5.60). `2025-04-attention-sink-emerges` substantially strengthens this attribution through systematic controlled experiments: (1) all PE types produce sinks (NoPE through RoPE, C3); (2) sinks emerge between 1k--2k training steps and require sufficient training data (C2); (3) weight decay has a non-monotonic effect on sink strength, peaking at gamma=0.5 (41.08%) and collapsing at gamma>=2.0 (C6); (4) instruction tuning does not significantly affect sinks (C7).
 
-**Current state:** Attention sinks are understood as a side effect of softmax normalization. Open question: whether sinks serve a functional computational role (carrying global statistics via Value vectors) or merely absorb unused probability mass. `2025-04-attention-sink-emerges` (cross-reference) identifies softmax as the root cause and shows sigmoid attention without normalization eliminates sinks.
+**Implication:** StreamingLLM exploits sinks for practical efficiency (22.2x speedup) but does not extend context utilization. `2024-05-attention-sinks-streaming` C8 shows increasing cache size does not consistently lower perplexity -- for Llama-2-7B, best PPL is at cache 4+2,044, rising at 4+4,092. `2025-04-attention-sink-emerges` demonstrates that sigmoid attention is a viable alternative that eliminates sinks with comparable validation loss (3.10 vs. 3.07 at 1B scale), suggesting practical interventions for KV cache management, quantization, and streaming inference.
+
+**Related approach:** `2025-04-differential-transformer` addresses the same underlying issue (softmax's tendency to spread attention over irrelevant context) from a complementary angle. Rather than replacing softmax, DIFF Transformer subtracts two softmax attention maps, cancelling the common-mode noise. Table 3 from `2025-04-differential-transformer` shows attention noise (attention to irrelevant context) drops from 0.49--0.54 (Transformer) to 0.01--0.02 (DIFF), while attention to the answer span increases from 0.03--0.09 to 0.27--0.40. This provides an alternative to sigmoid attention (`2025-04-attention-sink-emerges`) that preserves the softmax probability structure while cancelling its noise -- though unlike sigmoid attention, it has not been analyzed specifically in terms of attention sink behavior.
+
+**Current state:** The root cause of attention sinks is established: softmax normalization's sum-to-one constraint forces residual probability mass onto globally visible tokens. Two solutions exist: (1) sigmoid attention without normalization eliminates sinks entirely (`2025-04-attention-sink-emerges`, validated to 1B), and (2) differential attention cancels common-mode noise while preserving softmax structure (`2025-04-differential-transformer`, validated to 3B). The remaining open question is whether these approaches maintain their benefits at 7B+ production scales, and whether sinks serve any functional computational role beyond absorbing probability mass.
 
 ### Theme 4: Attention Composition and Circuits
 
@@ -352,10 +373,10 @@ The **key contribution** from `2021-12-transformer-circuits-framework` is demons
 **Evidence strength:** strong
 **Qualification:** Validated on A100 GPUs; may vary on different hardware architectures.
 
-**Claim:** Attention sinks are universal in softmax-based transformers.
-**Supporting papers:** `2024-05-attention-sinks-streaming` (C1), `2019-11-dark-secrets-of-bert`
+**Claim:** Attention sinks are universal in softmax-based transformers, caused by softmax normalization's sum-to-one constraint.
+**Supporting papers:** `2024-05-attention-sinks-streaming` (C1), `2019-11-dark-secrets-of-bert`, `2025-04-attention-sink-emerges` (C1, C5)
 **Evidence strength:** strong
-**Qualification:** Root cause (softmax normalization) validated only at 160M scale via dedicated sink token training.
+**Qualification:** Root cause (softmax normalization) established through controlled experiments at 60M and 1B scale; sigmoid attention without normalization eliminates sinks. Sigmoid scaling behavior beyond 1B is unknown.
 
 **Claim:** Compute-optimal training requires equal scaling of parameters and data (a ≈ b ≈ 0.5).
 **Supporting papers:** `2022-12-chinchilla-scaling-laws` (C1)
@@ -393,6 +414,7 @@ The **key contribution** from `2021-12-transformer-circuits-framework` is demons
 | `2022-12-chinchilla-scaling-laws` | x | | | | | | x | |
 | `2024-01-roformer-rope` | | x | | | x | | | |
 | `2024-05-attention-sinks-streaming` | | | | | | x | | |
+| `2025-04-differential-transformer` | | | | | | | | |
 | `2021-12-transformer-circuits-framework` | | | | | | | | |
 
 ### Methodological Strengths
@@ -425,7 +447,7 @@ The **key contribution** from `2021-12-transformer-circuits-framework` is demons
 
 4. **Why RoPE converges faster than additive PE.** `2024-01-roformer-rope` demonstrates faster convergence but explicitly acknowledges lacking explanation (Section 4.5.5). Severity: **medium**.
 
-5. **Functional role of attention sinks.** Whether sinks serve computational purpose (global statistics) or merely absorb probability mass. `2024-05-attention-sinks-streaming` open question; `2025-04-attention-sink-emerges` addresses root cause but not function. Severity: **medium**.
+5. **Functional role of attention sinks.** Whether sinks serve computational purpose (global statistics) or merely absorb probability mass. `2024-05-attention-sinks-streaming` open question; `2025-04-attention-sink-emerges` identifies softmax normalization as root cause and shows sigmoid attention eliminates sinks with comparable validation loss, suggesting sinks are not functionally necessary -- but this is validated only to 1B and does not address potential functional roles at larger scales. Severity: **medium**.
 
 6. **Encoder-decoder and bidirectional settings.** `2022-04-alibi-train-short-test-long` and `2024-05-attention-sinks-streaming` evaluate only decoder-only models. ALiBi and streaming behavior in encoder-decoder settings is untested. Severity: **medium**.
 

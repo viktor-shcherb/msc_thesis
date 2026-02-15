@@ -77,6 +77,9 @@ cross_references:
   - target: 2022-04-alibi-train-short-test-long
     type: evaluates
     detail: "L-Eval evaluates MPT-7B-StoryWriter-65k which uses ALiBi; it achieves only 19.22% average on closed-ended tasks"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET adopts L-Eval's length-instruction-enhanced evaluation approach for summarization while replacing its reference-free pairwise win-rates with reference-based model evaluation"
   - target: 2023-02-llama-open-efficient-foundation
     type: evaluates
     detail: "LLaMA serves as the base model for Vicuna, Longchat, and other evaluated LCLMs"

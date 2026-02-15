@@ -104,6 +104,9 @@ cross_references:
   - target: 2025-04-gated-delta-networks
     type: extended-by
     detail: "Gated Delta Networks build on the selective state space concept with delta rule updates and hybrid architectures combining linear recurrence with sliding window attention"
+  - target: 2024-12-flashattention-3
+    type: complementary
+    detail: "FlashAttention-3 speeds up exact Transformer attention by 1.5-2.0x on H100 GPUs; paper notes highest-quality large models still use attention layers, making efficient attention relevant even for hybrid architectures"
 open_questions:
   - question: "Does Mamba scale comparably to Transformers at 7B+ parameters?"
     addressed_by: null

@@ -1,7 +1,7 @@
 ---
 title: "Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters"
 authors: "Snell, Lee, Xu, Kumar"
-year: 2024
+year: 2025
 venue: "ICLR 2025"
 paper_type: conference-paper
 categories: ["scaling-laws", "reasoning-evaluation"]
@@ -21,36 +21,43 @@ key_claims:
     evidence: "Figure 3 right, Figure 7 right, Sections 5.3 and 6.2"
     status: supported
     scope: "MATH benchmark, 5-level difficulty binning based on pass@1 from 2048 samples"
+    magnitude: "qualitative — optimal strategy shifts from revisions (easy) to beam search (hard) across 5 difficulty bins"
   - id: C3
     claim: "Beam search outperforms best-of-N on harder problems but degrades performance on easier problems due to PRM over-optimization"
     evidence: "Figure 3 right, Section 5.3"
     status: supported
     scope: "PaLM 2-S* with PRM, beam width M=4, MATH benchmark"
+    magnitude: "beam search degrades on bins 1-2 at high budgets; consistently outperforms best-of-N on bins 3-4; no method improves bin 5"
   - id: C4
     claim: "Sequential revisions outperform parallel sampling when combined with verifier-based or majority selection"
     evidence: "Figure 6 right, Section 6.1"
     status: supported
     scope: "PaLM 2-S* revision model, MATH benchmark"
+    magnitude: "narrow margin — sequential narrowly outperforms parallel across all generation budgets with both selection methods"
   - id: C5
     claim: "Easy questions benefit from purely sequential test-time compute, while harder questions perform best with an ideal ratio of sequential to parallel"
     evidence: "Figure 7 right, Section 6.2"
     status: supported
     scope: "MATH benchmark, generation budget of 128"
+    magnitude: "bins 1-2 peak at fully sequential; bins 3-5 peak at intermediate sequential/parallel ratio"
   - id: C6
     claim: "A smaller model with compute-optimal test-time scaling can outperform a ~14× larger model on easy and medium problems in a FLOPs-matched evaluation"
     evidence: "Figure 9, Section 7"
     status: supported
     scope: "PaLM 2-S* vs ~14× larger model, MATH difficulty bins 1-3, R << 1 to R ~= 1"
+    magnitude: "~14× parameter gap closed by test-time compute on bins 1-3; up to +27.6% relative improvement at R << 1 for revisions"
   - id: C7
     claim: "On the hardest problems, test-time compute provides very little benefit; pretraining compute is more effective"
     evidence: "Figure 9, Section 7"
     status: supported
     scope: "MATH difficulty bin 5, all R values; difficulty bins 4-5 at R >> 1"
+    magnitude: "bin 5 accuracy ~20% with no meaningful improvement from test-time compute; -37.2% relative at R >> 1 for hard questions in revisions"
   - id: C8
     claim: "PRM consistently outperforms ORM, with the gap growing as number of samples increases"
     evidence: "Figure 14, Appendix F"
     status: supported
     scope: "PaLM 2-S* base model, best-of-N evaluation up to 2048 samples"
+    magnitude: "PRM ~40% vs ORM ~35% at 2048 samples; gap widens from ~0% at N=1 to ~5% at N=2048"
 cross_references:
   - target: 2022-12-chinchilla-scaling-laws
     type: extends
@@ -204,7 +211,7 @@ where Target(θ, N, q) is the distribution induced by test-time compute hyperpar
 3. **No benefit on hardest problems.** On difficulty bin 5 (hardest questions), no test-time compute strategy provides meaningful improvement. The authors state this represents a fundamental limitation of current approaches.
 4. **PRM over-optimization.** At high generation budgets, search methods exploit the PRM, producing low-information repetitive steps or overly short solutions (Appendix M examples).
 5. **Revision model distribution shift.** ~38% of correct answers are reverted to incorrect ones during revision, requiring selection mechanisms. The base model PRM is ineffective for scoring revision model outputs due to distribution shift.
-6. **Proprietary model.** PaLM 2-S* is not publicly available, limiting reproducibility.
+6. **[Inferred] Proprietary model.** PaLM 2-S* is not publicly available, limiting reproducibility.
 7. **No combination of PRM search with revisions.** The two primary mechanisms (verifier search and proposal refinement) are not combined, which could yield further improvements.
 
 #### Scope and Comparability

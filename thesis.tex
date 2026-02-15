@@ -9,18 +9,22 @@
 \usepackage[MScThesis]{UNIGEreport}
 
 % Additional packages
-\usepackage{xspace}
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{booktabs}
 \usepackage{subcaption}
 
-% Custom commands
-\newcommand{\sysname}{SystemName\xspace}
+% Theorem environments
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+
 
 % Thesis metadata
-\title{Your Thesis Title Here}
+\title{Attention Plasticity and the Geometry of Long-Context Failure}
 \author{Viktor Shcherbakov}
 \supervisor{Prof. Fran\c{c}ois Fleuret}
 \department{Department of Computer Science}
@@ -56,26 +60,26 @@
 \maketoc
 
 % List of figures and tables (optional)
-\cleardoublepage
-\listoffigures
-\addcontentsline{toc}{chapter}{List of Figures}
-
-\cleardoublepage
-\listoftables
-\addcontentsline{toc}{chapter}{List of Tables}
+% \cleardoublepage
+% \listoffigures
+% \addcontentsline{toc}{chapter}{List of Figures}
+%
+% \cleardoublepage
+% \listoftables
+% \addcontentsline{toc}{chapter}{List of Tables}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % MAIN CONTENT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\input{chapters/01_introduction}
-\input{chapters/02_background}
-\input{chapters/03_related_work}
-\input{chapters/04_methodology}
-\input{chapters/05_experiments}
-\input{chapters/06_results}
-\input{chapters/07_discussion}
-\input{chapters/08_conclusion}
+\input{chapters/01_introduction/main}
+\input{chapters/02_background/main}
+\input{chapters/03_related_work/main}
+\input{chapters/04_methodology/main}
+\input{chapters/05_experiments/main}
+\input{chapters/06_results/main}
+\input{chapters/07_discussion/main}
+\input{chapters/08_conclusion/main}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BACK MATTER
@@ -89,6 +93,6 @@
 
 % Appendices (optional)
 \appendix
-\input{chapters/appendix_a}
+\input{chapters/appendix_a/main}
 
 \end{document}

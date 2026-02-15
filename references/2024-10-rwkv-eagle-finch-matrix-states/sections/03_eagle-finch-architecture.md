@@ -6,7 +6,7 @@
 
 ## Figure 1 [p. 6]
 
-**Figure 1:** RWKV architecture overview. **Left:** time-mixing and channel-mixing blocks; **top-right:** RWKV time-mixing block as RNN cell; **center-bottom:** token-shift module in FeedForward module and Eagle time-mixing; **bottom-right:** token-shift module in Finch time-mixing. All shape annotations assume a single head for simplicity. Dashed arrows (left, top-right) indicate a connection in Finch, but not in Eagle.
+**Figure 1** (p. 6): "RWKV architecture overview. Left: time-mixing and channel-mixing blocks; top-right: RWKV time-mixing block as RNN cell; center-bottom: token-shift module in FeedForward module and Eagle time-mixing; bottom-right: token-shift module in Finch time-mixing. All shape annotations assume a single head for simplicity. Dashed arrows (left, top-right) indicate a connection in Finch, but not in Eagle."
 
 The figure shows:
 - The overall RWKV architecture with Time Mixing and Channel Mixing blocks, each preceded by LayerNorm

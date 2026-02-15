@@ -71,6 +71,9 @@ cross_references:
   - target: 2023-12-rwkv-reinventing-rnns-transformer
     type: complementary
     detail: "RWKV replaces attention entirely with channel-wise linear recurrence rather than BigBird's sparse attention patterns, achieving O(d) memory and linear time."
+  - target: 2024-12-flashattention-3
+    type: complementary
+    detail: "FlashAttention-3 makes exact attention more competitive at moderate sequence lengths by reaching 75% utilization on H100 GPUs, reducing the efficiency gap that motivated BigBird's sparse attention"
 open_questions:
   - question: "How does BigBird scale to sequences significantly beyond 4096 tokens?"
     addressed_by: null

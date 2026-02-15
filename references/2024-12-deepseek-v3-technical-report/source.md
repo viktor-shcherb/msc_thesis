@@ -1,7 +1,9 @@
 # DeepSeek-V3 Technical Report
 
-**Authors:** DeepSeek-AI (Aixin Liu, Bei Feng, Bing Xue, Bingxuan Wang, Chengda Lu, Chenggang Zhao, Chengqi Deng, Chong Ruan, Damai Dai, Daya Guo, et al.; ~200 contributors)
-**Affiliation:** DeepSeek
+**Authors:** DeepSeek-AI
+**Affiliation:** DeepSeek-AI, Hangzhou, China
+
+Individual contributors (~200) are listed in Appendix A of the paper, organized by role: Research & Engineering, Data Annotation, and Business & Compliance. Names marked with * denote individuals who had departed from the team at time of publication.
 
 ## Publication Status
 
@@ -20,3 +22,4 @@ Cite the arXiv version:
 - arXiv: https://arxiv.org/abs/2412.19437
 - Code: https://github.com/deepseek-ai/DeepSeek-V3
 - Model: https://huggingface.co/deepseek-ai/DeepSeek-V3
+- Blog post: https://api-docs.deepseek.com/news/news1226

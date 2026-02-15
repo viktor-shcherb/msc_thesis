@@ -62,6 +62,12 @@ cross_references:
   - target: 2024-01-roformer-rope
     type: extends
     detail: "LongRoPE modifies RoPE's per-dimension frequencies via learned non-uniform rescale factors rather than the original fixed theta_d = 10000^(-2d/|D|) values"
+  - target: 2025-03-survey-transformer-context-extension
+    type: complementary
+    detail: "Survey taxonomizes LongRoPE under base frequency adjustment subcategory of positional encoding approaches for context extension"
+  - target: 2024-05-pose-positional-skip-wise-training
+    type: extends
+    detail: "LongRoPE continues PoSE's train-short context-extension direction and pushes the practical range from 128k toward multi-million-token contexts"
 open_questions:
   - question: "Can the evolutionary search be replaced with a principled analytical formula for optimal rescale factors?"
     addressed_by: null

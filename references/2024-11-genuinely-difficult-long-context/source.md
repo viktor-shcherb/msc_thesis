@@ -1,7 +1,7 @@
 # Is It Really Long Context if All You Need Is Retrieval? Towards Genuinely Difficult Long Context NLP
 
 **Authors:** Omer Goldman*, Alon Jacovi*, Aviv Slobodkin*, Aviya Maimon*, Ido Dagan, Reut Tsarfaty
-**Affiliations:** Bar-Ilan University
+**Affiliation:** Bar-Ilan University
 
 ## Publication Status
 
@@ -21,4 +21,5 @@ Cite the EMNLP 2024 version:
 
 - arXiv: https://arxiv.org/abs/2407.00402
 - ACL Anthology: https://aclanthology.org/2024.emnlp-main.924/
+- DOI: https://doi.org/10.18653/v1/2024.emnlp-main.924
 - PDF: https://aclanthology.org/2024.emnlp-main.924.pdf

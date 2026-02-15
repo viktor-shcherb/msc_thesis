@@ -1,0 +1,66 @@
+\section{Q/K Capture Protocol}
+\label{sec:qk-capture-protocol}
+
+The methodology operates on post-RoPE query and key vectors extracted from
+transformer attention heads during inference. This section defines the capture
+protocol; Sections~\ref{sec:pca-decomposition}--\ref{sec:attention-plasticity}
+define the three analyses applied to the captured vectors.
+
+\subsection{Captured Representation}
+
+For each attention head, we collect the query vector $q_t$ and key vector $k_t$
+at each sampled token position $t$. These are post-RoPE, post-projection
+vectors---the exact inputs to the dot-product attention score
+$s(q, k) = q^\top k$~\cite{2017-12-attention-is-all-you-need}. Post-RoPE
+vectors carry both content information (from the token embedding and learned
+projections) and position information (from the rotary
+encoding)~\cite{2024-01-roformer-rope}.
+% Verification (post-RoPE capture): verify that RoPE is applied after Q/K
+% projection and before dot-product scoring in the original RoPE paper
+% (2104.09864), Sec. 3.4.
+
+Analyzing pre-RoPE vectors would characterize the learned representations but
+miss the positional encoding that shapes attention patterns. Analyzing attention
+weights directly would lose the Q/K decomposition needed for the geometric
+analyses in Sections~\ref{sec:planar-rotation-model}
+and~\ref{sec:attention-plasticity}.
+
+\subsection{Input Data and Position Sampling}
+
+Vectors are captured during inference on 500 examples from LongBench-Pro
+containing samples with 128K+ token
+context~\cite{2026-01-longbench-pro}. Using realistic, long, diverse
+text---rather than synthetic probes or random tokens---ensures the captured
+vectors reflect the model's behavior on naturalistic inputs representative of
+its training distribution.
+
+Uniform position bucketing divides the context window into fixed-width buckets
+of $B_{\min}$ tokens. Within each bucket, tokens are sampled with probability
+$p_{\text{keep}} = 1 / B_{\min}$, yielding in expectation one sample per bucket
+per sequence. This ensures uniform coverage across the full context window,
+avoiding the front-loading that would occur under uniform token sampling, since
+most documents concentrate tokens in earlier positions. The bucket structure
+also provides a natural granularity for the per-position analyses in
+Section~\ref{sec:attention-plasticity}.
+
+\subsection{Head Sampling}
+
+For each model, 300 query heads are sampled uniformly at random across all
+eligible layers. In grouped-query attention (GQA)
+models~\cite{2023-12-gqa-grouped-query-attention}, multiple query heads share a
+single key head. The corresponding key head for each sampled query head is
+determined by the GQA mapping:
+%
+\begin{equation}
+h_k = \left\lfloor h_q \,\big/\, (n_q / n_{kv}) \right\rfloor
+\label{eq:gqa-mapping}
+\end{equation}
+%
+where $h_q$ is the query head index and $n_q$, $n_{kv}$ are the number of query
+and key-value heads per layer. Each (query head, key head) pair is analyzed
+independently---the shared key is broadcast to each query in the group, so each
+pair produces its own geometric structure.
+
+Only full-attention heads are captured; sliding-window layers (if present) are
+excluded. Specific per-model and per-family configuration details are described
+in Section~\ref{sec:implementation}.

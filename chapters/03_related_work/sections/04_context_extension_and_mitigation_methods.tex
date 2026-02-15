@@ -1,0 +1,64 @@
+\section{Context-Extension and Mitigation Methods}
+
+Context-extension work now spans three practical families: positional-scaling
+methods (PI, NTK-aware scaling, YaRN, and LongRoPE), hybrid production stacks (for example, RoPE
+rescaling with chunked attention), and mechanism-aware inference interventions.
+Early scaling methods established that substantial window expansion is feasible:
+PI extends LLaMA to 32K with limited adaptation and improves long-range
+perplexity in its evaluation setup (for example, LLaMA-7B PG-19: 7.20 at 2K to
+6.77 at 32K), while YaRN reports 128K perplexity and passkey gains
+\cite{2023-06-pi-positional-interpolation,2024-05-yarn-context-extension}.
+LongRoPE pushes this line further, reporting extension to 2048K with progressive
+search and high passkey retrieval in its synthetic setup
+\cite{2024-07-longrope-context-extension}. NTK-aware scaling remains a common
+low-cost zero-shot baseline in follow-up evaluations, though evidence is still
+mostly perplexity-centric and model-specific
+\cite{2024-05-yarn-context-extension,2024-07-longrope-context-extension}.
+% Verification (method-family gains): check PI Table 1/4, YaRN Table 2/5, and
+% LongRoPE Table 6/Figure 4 for reported perplexity and passkey values; confirm
+% NTK scope limits from its source analysis.
+
+Technical reports show these methods are operationally valuable in modern model
+stacks. Qwen2 reports large long-context gains from YARN+DCA (for example,
+NeedleBench 256K: 17.13 to 85.21; LV-Eval 256K: 2.88 to 42.35 for 72B
+Instruct) \cite{2024-07-qwen2-technical-report}. Qwen3 continues this design
+direction and reports strong RULER scores at 128K in non-thinking mode (90.6 on
+its 235B-A22B model) \cite{2025-05-qwen3-technical-report}. In parallel,
+Kimi Linear reports that a NoPE + KDA hybrid can outperform its RoPE variant on
+RULER (84.3 vs 78.8 at 128K), indicating that extension gains need not be tied
+to standard RoPE extrapolation alone \cite{2025-10-kimi-linear-attention}.
+% Verification (practical adoption): verify YARN+DCA deltas in Qwen2 Table 12,
+% Qwen3 RULER table values, and Kimi Linear NoPE-vs-RoPE RULER numbers.
+
+However, strong retrieval-style extension metrics do not reliably transfer to
+robust effective context on harder evaluations. RULER reports that all evaluated
+models claim at least 32K context, but only about half exceed the benchmark
+threshold at 32K \cite{2024-10-ruler-context-size}. BABILong reports that many
+models use only about 10--20\% of claimed context on QA1 and that YaRN can fail
+to extend effective reasoning context despite stable perplexity
+\cite{2024-12-babilong-long-context-reasoning}. InfiniteBench similarly shows
+large degradation at 100K+ lengths, including weak open-model results in its
+reported YaRN-Mistral setting (19.96 average; 0.00 on Retrieve.KV)
+\cite{2024-08-infinitebench-long-context-evaluation}. NoLiMa adds low-overlap
+controls and finds 11/13 models below 50\% of base score at 32K, including
+models that look much stronger on overlap-heavy settings
+\cite{2025-07-nolima-long-context-evaluation}.
+% Verification (transfer limits): cross-check RULER Table 3 threshold result,
+% BABILong QA1 utilization + YaRN failure statements, InfiniteBench Table 3
+% YaRN-Mistral scores, and NoLiMa Table 3 normalized-score outcomes.
+
+Mechanism-aware interventions partly close these gaps but do not eliminate them.
+STRING reports average 4-needle NIAH gains from 67.8 to 85.7 across seven models
+and +15.1/+30.9 RULER gains on Llama3.1-70B and Qwen2-72B, raising both from
+64K to 100K effective length in that protocol
+\cite{2025-04-effective-context-length-falls-short}. Yet controlled studies also
+show that length alone can degrade task performance even with perfect retrieval,
+which limits how far retrieval-oriented extension improvements can be
+interpreted as full long-context competence \cite{2025-11-context-length-hurts-performance}.
+
+Substantial engineering progress has been made in extending nominal context
+windows. Yet robust effective context remains mechanism- and
+benchmark-dependent, and extension methods alone do not explain why some models
+maintain performance at distance while others degrade. This motivates a
+framework that can characterize the internal geometric properties underlying
+effective context.

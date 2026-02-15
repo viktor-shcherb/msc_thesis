@@ -1,0 +1,41 @@
+%%%%%%%%%%%%%%%%%%%%%
+\chapter{Conclusion}
+\label{chap:conclusion}
+%%%%%%%%%%%%%%%%%%%%%
+
+Large language models increasingly claim context windows of 128K tokens and
+beyond, yet behavioral evaluations consistently show performance degradation
+well before these limits. This thesis developed a geometric framework to
+understand why.
+
+We introduced three complementary analyses---PCA decomposition, a planar
+rotation model, and attention plasticity---all operating on post-RoPE query and
+key vectors captured from a single forward pass. PCA reveals that
+9--32\% of Q/K variance is linear in token position (varying by family and
+vector type), with heads clustering by model family. The rotation model isolates positional bias into a scalar
+quantity ($\text{bias\_strength} = \mu_Q^a \times \alpha_K$) and corrects a
+confound in PCA that makes queries appear more positional than keys. Attention
+plasticity converts this geometric structure into a functional measure: the
+probability that query content, rather than position, determines key selection.
+
+Across 13 models from three families, plasticity drop---the degradation from
+early to late context positions---separates model families in the same order
+as LongBench-Pro benchmark scores: Ministral-3
+($\text{AP}_{\text{drop}} \approx 0.07$) outperforms Qwen-3
+($\sim$0.17) outperforms Llama-3.2 ($\sim$0.23). Within the Qwen-3 family, the
+relationship is monotonic with scale; in the Ministral family, base capability
+rather than context preservation is the bottleneck at 3B
+(Section~\ref{sec:benchmark-validation}). These results provide evidence that
+plasticity profiles serve as a mechanistically grounded diagnostic of effective
+context length.
+
+Tracking SmolLM3-3B across 10 training checkpoints revealed that
+long-context extension collapses positional bias 10$\times$ through key drift
+slope flattening, recovering near-position plasticity. Yet
+$\text{AP}_{\text{drop}}$ triples during the same process. Bias reduction is
+necessary but not sufficient: after the positional term is nearly zeroed,
+content signal decay at distant positions becomes the binding constraint.
+This finding suggests that current position-extension methods address the
+bias component of ECL degradation but not the content-decay component, and that
+maintaining content signal fidelity across positions may be an important
+complementary dimension of long-context training.

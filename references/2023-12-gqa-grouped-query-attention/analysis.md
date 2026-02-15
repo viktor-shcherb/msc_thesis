@@ -59,6 +59,15 @@ cross_references:
   - target: 2023-02-llama-open-efficient-foundation
     type: evaluates
     detail: "LLaMA is cited as a prominent model using MHA that could benefit from GQA uptraining"
+  - target: 2024-12-flashattention-3
+    type: complementary
+    detail: "FlashAttention-3 supports GQA and MQA with adjusted tensor indexing; its 1.5-2.0x speedup on exact attention benefits GQA models"
+  - target: 2025-07-smollm3-long-context-reasoner
+    type: extended-by
+    detail: "SmolLM3 adopts GQA with 4 groups at 3B scale, validated via ablations showing matching MHA performance with reduced KV cache"
+  - target: 2024-03-mistral-7b-v0.2
+    type: extended-by
+    detail: "Mistral 7B v0.2 retains GQA with 8 KV heads for inference efficiency while extending context to 32K tokens"
 open_questions:
   - question: "How does uptrained GQA compare to GQA trained from scratch with the same total compute?"
     addressed_by: null

@@ -1,0 +1,21 @@
+# 6. Conclusion, Limitations, and Future Directions [p. 35]
+
+## Summary [p. 35]
+
+In this paper, DeepSeek-V3 is introduced, a large MoE language model with 671B total parameters and 37B activated parameters, trained on 14.8T tokens. In addition to the MLA and DeepSeekMoE architectures, it also pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. The training of DeepSeek-V3 is cost-effective due to the support of FP8 training and meticulous engineering optimizations. The post-training also makes a success in distilling the reasoning capability from the DeepSeek-R1 series of models. Comprehensive evaluations demonstrate that DeepSeek-V3 has emerged as the strongest open-source model currently available, and achieves performance comparable to leading closed-source models like GPT-4o and Claude-3.5-Sonnet. Despite its strong performance, it also maintains economical training costs. It requires only 2.788M H800 GPU hours for its full training, including pre-training, context length extension, and post-training. [p. 35]
+
+## Limitations [p. 35]
+
+While acknowledging its strong performance and cost-effectiveness, it is also recognized that DeepSeek-V3 has some limitations, especially on the deployment. Firstly, to ensure efficient inference, the recommended deployment unit for DeepSeek-V3 is relatively large, which might pose a burden for small-sized teams. Secondly, although the deployment strategy for DeepSeek-V3 has achieved an end-to-end generation speed of more than two times that of DeepSeek-V2, there still remains potential for further enhancement. Fortunately, these limitations are expected to be naturally addressed with the development of more advanced hardware. [p. 35]
+
+## Future Directions [p. 35-36]
+
+DeepSeek consistently adheres to the route of open-source models with longtermism, aiming to steadily approach the ultimate goal of AGI (Artificial General Intelligence). In the future, the plan is to strategically invest in research across the following directions. [p. 35]
+
+• The team will consistently study and refine the model architectures, aiming to further improve both the training and inference efficiency, striving to approach efficient support for infinite context length. Additionally, the team will try to break through the architectural limitations of Transformer, thereby pushing the boundaries of its modeling capabilities. [p. 35]
+
+• The team will continuously iterate on the quantity and quality of the training data, and explore the incorporation of additional training signal sources, aiming to drive data scaling across a more comprehensive range of dimensions. [p. 36]
+
+• The team will consistently explore and iterate on the deep thinking capabilities of the models, aiming to enhance their intelligence and problem-solving abilities by expanding their reasoning length and depth. [p. 36]
+
+• The team will explore more comprehensive and multi-dimensional model evaluation methods to prevent the tendency towards optimizing a fixed set of benchmarks during research, which may create a misleading impression of the model capabilities and affect the foundational assessment. [p. 36]

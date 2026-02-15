@@ -1,0 +1,148 @@
+\section{Cross-Model Study}
+\label{sec:cross-model-study}
+
+The cross-model study analyzes 13 transformer language models spanning three
+primary families and two predecessor models. The primary
+families---Ministral-3, Qwen-3, and Llama~3.2---provide within-family scaling
+comparisons (0.6B--14B parameters) and across-family architectural comparisons.
+Two predecessor models provide cross-generation comparisons and per-length RULER
+scores for direct plasticity-to-benchmark correlation.
+
+\subsection{Primary Model Families}
+
+\paragraph{Ministral-3.}
+The Ministral-3 family comprises three models at 3B, 8B, and 14B
+parameters~\cite{2026-01-ministral-3-cascade-distillation}. All three use full
+attention with RoPE positional encoding and a claimed context length of 256K
+tokens---the largest among our primary models. The family uses a uniform GQA
+configuration (32 query heads, 8 key-value heads) across all scales, varying
+only in depth and hidden dimension (Table~\ref{tab:model-configs}).
+% Verification (Ministral-3 configs): verify layer counts (26/34/40), head
+% counts (32Q/8KV uniform), and 256K context from HuggingFace config.json for
+% mistralai/Ministral-3-{3B,8B,14B}-Base-2512.
+
+\paragraph{Qwen-3.}
+The Qwen-3 family spans five scales from 0.6B to 14B
+parameters~\cite{2025-05-qwen3-technical-report}, providing the widest
+parameter range in our study. All models use full attention with RoPE, extended
+to 128K context via YaRN scaling (factor 4.0, base context
+32K)~\cite{2024-05-yarn-context-extension}. The GQA configuration varies across
+scales: the smallest models (0.6B, 1.7B) use 16 query heads, the mid-range
+models (4B, 8B) use 32, and the 14B model uses 40---all with 8 key-value heads.
+Qwen-3 additionally applies RMS normalization to query and key vectors before
+the rotary embedding~\cite{2025-05-qwen3-technical-report}.
+% Verification (Qwen-3 configs): verify Q head counts (16/16/32/32/40), YaRN
+% config (factor 4.0, original_max_position_embeddings 32768), and Q/K RMS norm
+% from HuggingFace config.json for Qwen/Qwen3-{0.6B,1.7B,4B,8B,14B}.
+
+\paragraph{Llama~3.2.}
+The Llama~3.2 family includes three models at 1B, 3B, and 11B
+parameters~\cite{2024-07-llama-3-herd-of-models}. All use full attention with
+RoPE and a claimed context of 128K tokens. The 1B model is architecturally
+distinctive, with a head dimension of 64 rather than the 128 shared by all
+other models in the study. The 11B model is a vision-language model whose text
+self-attention layers use standard RoPE, while its cross-attention layers (for
+vision-text fusion) have no positional encoding---a NoPE (no position encoding)
+pattern. Our analysis captures only the text self-attention path.
+% Verification (Llama-3.2 configs): verify head dim 64 for 1B (hidden_size
+% 2048, 32 heads) and NoPE cross-attention layers for 11B from HuggingFace
+% config.json for meta-llama/Llama-3.2-{1B,3B,11B-Vision}.
+
+\subsection{Predecessor Models}
+
+Two predecessor models complement the primary families by providing published
+RULER per-length scores at six context bins (4K--128K), enabling direct
+plasticity-to-benchmark correlation at length granularity.
+
+\paragraph{Llama-3.1-8B.}
+The previous-generation Llama with full 128K
+attention~\cite{2024-07-llama-3-herd-of-models}. Its RULER scores show a
+gradual decline from 95.5 at 4K to 77.0 at
+128K~\cite{2024-10-ruler-context-size}, providing a reference trajectory for
+models with graceful degradation.
+% Verification (Llama-3.1-8B RULER): verify per-length RULER scores (95.5 at
+% 4K, 77.0 at 128K) in RULER paper (2404.06654), Table 1 or Table 3.
+
+\paragraph{Mistral-v0.2-7B.}
+The predecessor of Ministral-3 with 32K sliding-window
+attention~\cite{2024-03-mistral-7b-v0.2}. Its RULER scores show strong
+performance within the window (93.6 at 4K) but rapid decline beyond it (49.0
+at 64K, 13.8 at 128K)~\cite{2024-10-ruler-context-size}. Because the
+sliding-window mechanism limits the attention span, our analysis of this model
+is restricted to within-window positions; key pair sampling and query
+distributions are not directly comparable to the full-attention models.
+% Verification (Mistral-v0.2 RULER): verify per-length RULER scores (93.6 at
+% 4K, 49.0 at 64K, 13.8 at 128K) in RULER paper (2404.06654), Table 1 or
+% Table 3.
+
+\subsection{Selection Criteria}
+
+Three criteria governed model selection. First, all models have open weights,
+ensuring reproducibility. Second, all primary models support 128K or longer
+claimed context, placing them in the regime where effective context length
+diverges from claimed length (Chapter~\ref{chap:related_work}). Third, the
+primary families overlap with LongBench-Pro's evaluated model set (7 of 11
+primary models), while the predecessor models overlap with RULER's published
+per-length scores (Section~\ref{sec:benchmarks}).
+
+All models are analyzed in their base (non-instruct) form to measure the
+geometry established during pre-training and context extension, prior to any
+instruction-tuning modifications. Benchmark scores are taken from instruct
+variants of the same architectures, as benchmarks are typically evaluated on
+instruct-tuned models. This introduces a confound: instruction tuning could
+alter the attention geometry we measure. We discuss this limitation in
+Section~\ref{sec:limitations}.
+
+\subsection{Model Configurations}
+
+Table~\ref{tab:model-configs} summarizes the architectural configurations.
+All models use grouped-query
+attention~\cite{2023-12-gqa-grouped-query-attention} with 8 key-value heads.
+Head dimension is uniformly 128 across models, with the exception of
+Llama-3.2-1B (64). The three families differ primarily in their positional
+encoding strategy: Ministral-3 uses standard RoPE, Qwen-3 extends RoPE via
+YaRN, and Llama~3.2 uses standard RoPE with the 11B variant additionally
+featuring NoPE cross-attention layers.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Model configurations for the cross-model study. All models use
+grouped-query attention with 8 key-value heads. Context length denotes the
+claimed maximum; effective context may differ
+(Chapter~\ref{chap:related_work}). Configurations are from HuggingFace model
+repositories.}
+\label{tab:model-configs}
+\begin{tabular}{@{}lrrrrlll@{}}
+\toprule
+Model & Params & Layers & Q heads & $d_h$ & Context & Attention & Pos.\ enc. \\
+\midrule
+\multicolumn{8}{@{}l}{\textit{Ministral-3}} \\
+\quad 3B  & 3B  & 26 & 32 & 128 & 256K & Full & RoPE \\
+\quad 8B  & 8B  & 34 & 32 & 128 & 256K & Full & RoPE \\
+\quad 14B & 14B & 40 & 32 & 128 & 256K & Full & RoPE \\
+\addlinespace
+\multicolumn{8}{@{}l}{\textit{Qwen-3}} \\
+\quad 0.6B & 0.6B & 28 & 16 & 128 & 128K$^\dagger$ & Full & RoPE + YaRN \\
+\quad 1.7B & 1.7B & 28 & 16 & 128 & 128K$^\dagger$ & Full & RoPE + YaRN \\
+\quad 4B   & 4B   & 36 & 32 & 128 & 128K$^\dagger$ & Full & RoPE + YaRN \\
+\quad 8B   & 8B   & 36 & 32 & 128 & 128K$^\dagger$ & Full & RoPE + YaRN \\
+\quad 14B  & 14B  & 40 & 40 & 128 & 128K$^\dagger$ & Full & RoPE + YaRN \\
+\addlinespace
+\multicolumn{8}{@{}l}{\textit{Llama~3.2}} \\
+\quad 1B        & 1B  & 16 & 32 & 64  & 128K & Full & RoPE \\
+\quad 3B        & 3B  & 28 & 24 & 128 & 128K & Full & RoPE \\
+\quad 11B-Vision & 11B & 40 & 32 & 128 & 128K & Full$^\ddagger$ & RoPE + NoPE \\
+\addlinespace
+\multicolumn{8}{@{}l}{\textit{Predecessor models}} \\
+\quad Llama-3.1-8B    & 8B & 32 & 32 & 128 & 128K & Full    & RoPE \\
+\quad Mistral-v0.2-7B & 7B & 32 & 32 & 128 & 32K  & Sliding & RoPE \\
+\bottomrule
+\end{tabular}
+
+\vspace{4pt}
+{\footnotesize $^\dagger$\,Via YaRN scaling (factor 4.0, base
+32K)~\cite{2024-05-yarn-context-extension}. \quad $^\ddagger$\,Vision-language
+model; text self-attention layers use full attention with RoPE,
+cross-attention layers have no positional encoding.}
+\end{table}

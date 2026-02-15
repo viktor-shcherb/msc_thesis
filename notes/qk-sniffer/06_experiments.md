@@ -3,31 +3,33 @@
 ## Datasets and Models
 
 ### Instrumented Models
-- Llama 3
 - Gemma 3
-- Qwen 2 & 3
 - GLM & GLM-4
+- Llama 3
+- Ministral
+- Mllama (Llama 3.2 Vision)
+- Qwen 2 & 3
+- SmolLM3
 
-### Example Datasets
-- longbench2-128k-plus (Qwen 3 config: 2048 samples max)
-- viktoroo/example (generic example dataset)
-- Arbitrary HF datasets (configurable via YAML)
+### Dataset
+- `viktoroo/longbench-pro-128k-plus` (`test` split, 500 examples with 128k+ context)
 
 ## Sampling Strategies Tested
 
-### 1. Log-Uniform (Default)
+### 1. Log-Uniform
 - Config: `min_bucket_size=128`, `base_rate=1.0`
-- Samples uniformly within log buckets
+- Samples uniformly within log₂ buckets
 - Captures position diversity across sequence lengths
 
-### 2. Uniform
-- Config: `min_bucket_size=2048` (Qwen3), `base_rate=3.0`
-- Fixed-size chunks
-- Higher base_rate compensates for longer context
+### 2. Uniform (Production)
+- Config: `min_bucket_size=8192`, `base_rate=1.0`
+- Fixed-size chunks of 8192 tokens
+- `p_keep = min(1, 1.0 / 8192) ≈ 0.000122`
+- Used in all attention-plasticity production configs
 
 ### 3. All
-- Captures every token for ground truth
-- Used when max_length < actual dataset sequence length
+- Captures every token with no subsampling
+- Bucket ID = floor(position / bucket_size)
 
 ## Evaluation Metrics
 
@@ -40,7 +42,6 @@
 - **Metadata**:
   - Source dataset name/split
   - Sampling strategy and parameters
-  - Deduplication efficiency
 
 ## Test Coverage
 
@@ -50,12 +51,20 @@
 - Sampler determinism (same seed produces same mask)
 - Head/layer filtering
 - Query/key selective capture
+- In-memory accumulation and dense tensor storage
 
 ### test_saver.py
-- Deduplication (within-session, across-session)
-- Parquet writes and reads
+- Parquet writes and reads (including `write_config_data()` one-shot path)
 - README generation with configs and models
 - Bucket counting and metadata persistence
+
+### test_smollm3.py
+- Sniffer capture invocation (RoPE layer)
+- NoPE layer capture (use_rope=0 still triggers sniffer)
+- Pre-RoPE capture mode
+- Sliding window value propagation to sniffer
+- Forward pass without active sniffer
+- End-to-end with real sniffer: mixed RoPE/NoPE layers → parquet output
 
 ### test_cli_workflow.py
 - Full end-to-end: config → inference → capture → save

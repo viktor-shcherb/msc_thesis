@@ -1,0 +1,30 @@
+\section{Context and Motivation}
+
+Transformer-based language models are increasingly deployed on tasks that
+require processing long inputs: summarizing legal documents, answering questions
+over codebases, and reasoning across multi-document
+evidence~\cite{2026-01-longbench-pro,2024-10-ruler-context-size}. These
+applications depend on the model's ability to attend to, retrieve, and integrate
+information from distant positions in the input. Accordingly, recent models
+advertise context windows of 128K tokens or
+more~\cite{2025-05-qwen3-technical-report,2026-01-ministral-3-cascade-distillation,2024-03-gemini-1.5-long-context}.
+
+Yet a growing body of evaluation work shows that \emph{claimed} context length
+and \emph{effective} context length can diverge substantially. Models that
+accept 128K tokens may degrade on tasks requiring retrieval or reasoning beyond
+32K~\cite{2024-10-ruler-context-size,2025-04-effective-context-length-falls-short}.
+Performance often drops gradually with input length, in a pattern that varies
+across tasks, models, and position within the
+context~\cite{2024-02-lost-in-the-middle,2026-01-longbench-pro}. Behavioral
+benchmarks can detect this degradation, but they cannot explain it: they measure
+\emph{that} a model fails at long context without revealing \emph{why}.
+
+Understanding why requires looking inside the model. The attention mechanism---the
+core component that routes information between positions---computes a relevance
+score between each query and key vector, producing a ranking over the context.
+These vectors carry both content information (from learned projections) and
+position information (from rotary positional
+encoding~\cite{2024-01-roformer-rope}). When position information dominates the
+attention score, the model's ranking of keys becomes rigid: it ranks by
+position rather than by content relevance. We hypothesize that this rigidity is
+a mechanistic pathway to effective context failure.

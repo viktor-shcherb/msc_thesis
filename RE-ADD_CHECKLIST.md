@@ -47,7 +47,7 @@ Legend:
 | 34 | `2023-02-llama-open-efficient-foundation` | S | [x] | [x] | [x] | ✓ |
 | 35 | `2023-03-gpt-4-technical-report` | S | [x] | [x] | [x] | ✓ |
 | 36 | `2023-06-pi-positional-interpolation` | S | [x] | [x] | [x] | ✓ |
-| 37 | `2023-06-rope-ntk` | N | [ ] | [ ] | [ ] | queued |
+| 37 | `2023-06-rope-ntk` | N | [x] | [x] | [x] | ✓ |
 | 38 | `2023-07-gsm-ic-irrelevant-context` | S | [x] | [x] | [x] | ✓ |
 | 39 | `2023-07-hyena-hierarchy-long-convolutions` | S | [x] | [x] | [x] | ✓ |
 | 40 | `2023-07-llama-2-open-foundation-chat` | S | [x] | [x] | [x] | ✓ |
@@ -85,28 +85,28 @@ Legend:
 | 72 | `2024-08-infinitebench-long-context-evaluation` | S | [x] | [x] | [x] | ✓ |
 | 73 | `2024-08-l-eval-standardized-evaluation` | S | [x] | [x] | [x] | ✓ |
 | 74 | `2024-08-longbench-bilingual-benchmark` | S | [x] | [x] | [x] | ✓ |
-| 75 | `2024-08-scaling-llm-test-time-compute` | S | [ ] | [ ] | [ ] | queued |
-| 76 | `2024-10-ruler-context-size` | S | [ ] | [ ] | [ ] | queued |
-| 77 | `2024-10-rwkv-eagle-finch-matrix-states` | S | [ ] | [ ] | [ ] | queued |
-| 78 | `2024-11-genuinely-difficult-long-context` | S | [ ] | [ ] | [ ] | queued |
-| 79 | `2024-12-babilong-long-context-reasoning` | S | [ ] | [ ] | [ ] | queued |
-| 80 | `2024-12-deepseek-v3-technical-report` | S | [ ] | [ ] | [ ] | queued |
-| 81 | `2024-12-flashattention-3` | S | [ ] | [ ] | [ ] | queued |
-| 82 | `2024-12-lost-in-the-middle-in-between` | S | [ ] | [ ] | [ ] | queued |
-| 83 | `2024-12-transformers-need-glasses-over-squashing` | S | [ ] | [ ] | [ ] | queued |
-| 84 | `2025-01-kimi-k1.5-scaling-rl` | S | [ ] | [ ] | [ ] | queued |
-| 85 | `2025-03-gemma-3-technical-report` | S | [ ] | [ ] | [ ] | queued |
-| 86 | `2025-03-longiclbench-long-in-context-learning` | S | [ ] | [ ] | [ ] | queued |
-| 87 | `2025-03-survey-transformer-context-extension` | S | [ ] | [ ] | [ ] | queued |
-| 88 | `2025-04-attention-sink-emerges` | S | [ ] | [ ] | [ ] | queued |
-| 89 | `2025-04-differential-transformer` | S | [ ] | [ ] | [ ] | queued |
-| 90 | `2025-04-effective-context-length-falls-short` | S | [ ] | [ ] | [ ] | queued |
-| 91 | `2025-04-gated-delta-networks` | S | [ ] | [ ] | [ ] | queued |
-| 92 | `2025-04-helmet-long-context-evaluation` | S | [ ] | [ ] | [ ] | queued |
-| 93 | `2025-04-kimi-vl-technical-report` | S | [ ] | [ ] | [ ] | queued |
-| 94 | `2025-04-longgenbench-long-form-generation` | S | [ ] | [ ] | [ ] | queued |
-| 95 | `2025-04-pine-eliminating-position-bias` | S | [ ] | [ ] | [ ] | queued |
-| 96 | `2025-04-retrieval-head-long-context-factuality` | S | [ ] | [ ] | [ ] | queued |
+| 75 | `2024-08-scaling-llm-test-time-compute` | S | [x] | [x] | [x] | ✓ |
+| 76 | `2024-10-ruler-context-size` | S | [x] | [x] | [x] | ✓ |
+| 77 | `2024-10-rwkv-eagle-finch-matrix-states` | S | [x] | [x] | [x] | ✓ |
+| 78 | `2024-11-genuinely-difficult-long-context` | S | [x] | [x] | [x] | ✓ |
+| 79 | `2024-12-babilong-long-context-reasoning` | S | [x] | [x] | [x] | ✓ |
+| 80 | `2024-12-deepseek-v3-technical-report` | S | [x] | [x] | [x] | ✓ |
+| 81 | `2024-12-flashattention-3` | S | [x] | [x] | [x] | ✓ |
+| 82 | `2024-12-lost-in-the-middle-in-between` | S | [x] | [x] | [x] | ✓ |
+| 83 | `2024-12-transformers-need-glasses-over-squashing` | S | [x] | [x] | [x] | ✓ |
+| 84 | `2025-01-kimi-k1.5-scaling-rl` | S | [x] | [x] | [x] | ✓ |
+| 85 | `2025-03-gemma-3-technical-report` | S | [x] | [x] | [x] | ✓ |
+| 86 | `2025-03-longiclbench-long-in-context-learning` | S | [x] | [x] | [x] | ✓ |
+| 87 | `2025-03-survey-transformer-context-extension` | S | [x] | [x] | [x] | ✓ |
+| 88 | `2025-04-attention-sink-emerges` | S | [x] | [x] | [x] | ✓ |
+| 89 | `2025-04-differential-transformer` | S | [x] | [x] | [x] | ✓ |
+| 90 | `2025-04-effective-context-length-falls-short` | S | [x] | [x] | [x] | ✓ |
+| 91 | `2025-04-gated-delta-networks` | S | [x] | [x] | [x] | ✓ |
+| 92 | `2025-04-helmet-long-context-evaluation` | S | [x] | [x] | [x] | ✓ |
+| 93 | `2025-04-kimi-vl-technical-report` | S | [x] | [x] | [x] | ✓ |
+| 94 | `2025-04-longgenbench-long-form-generation` | S | [x] | [x] | [x] | ✓ |
+| 95 | `2025-04-pine-eliminating-position-bias` | S | [x] | [x] | [x] | ✓ |
+| 96 | `2025-04-retrieval-head-long-context-factuality` | S | [x] | [x] | [x] | ✓ |
 | 97 | `2025-04-round-and-round-rope` | S | [ ] | [ ] | [ ] | queued |
 | 98 | `2025-05-100-longbench-long-context-benchmarks` | S | [ ] | [ ] | [ ] | queued |
 | 99 | `2025-05-qwen3-technical-report` | S | [ ] | [ ] | [ ] | queued |
@@ -126,8 +126,8 @@ Legend:
 | 113 | `2026-01-longbench-pro` | S | [ ] | [ ] | [ ] | queued |
 | 114 | `2026-01-ministral-3-cascade-distillation` | S | [ ] | [ ] | [ ] | queued |
 
-**Progress: 76 / 114 complete**
+**Progress: 98 / 114 complete**
 
 **Processing (2026-02-08):**
-- Queue: #75-114 (40 papers), full pipeline from init
+- Queue: #37, #75-114 (41 papers), full pipeline from init
 - **Note:** #37 `rope-ntk` is non-standard (N) — uses read_sources path

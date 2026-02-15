@@ -77,6 +77,15 @@ cross_references:
   - target: 2025-04-retrieval-head-long-context-factuality
     type: extended-by
     detail: "Wu et al. extend the circuits program by identifying retrieval heads — a specific subnet implementing conditional retrieval from long context, analogous to how induction heads implement pattern completion"
+  - target: 2025-04-attention-sink-emerges
+    type: complementary
+    detail: "Gu et al. show the first token's key vectors act as implicit biases in the QK circuit, absorbing excess attention probability mass — a specific mechanistic role for the first token within the QK/OV circuit framework"
+  - target: 2022-09-transformerlens-library-mechanistic-interpretability
+    type: complementary
+    detail: "TransformerLens packages circuits-style model inspection and intervention workflows into reusable tooling, making this framework operational for day-to-day mechanistic analysis"
+  - target: 2022-12-locating-editing-factual-associations-gpt
+    type: complementary
+    detail: "Meng et al. extends mechanistic circuit-style causal analysis into direct factual editing by introducing the ROME rank-one intervention on GPT MLP layers"
 open_questions:
   - question: "How can the framework be extended to include MLP layers, which constitute two-thirds of standard transformer parameters?"
     addressed_by: null

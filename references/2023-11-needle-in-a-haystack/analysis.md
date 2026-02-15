@@ -86,6 +86,12 @@ cross_references:
   - target: 2025-07-lv-eval-long-context-benchmark
     type: extended-by
     detail: "LV-Eval's factrecall-en and factrecall-zh datasets extend NIAH with confusing facts insertion and keyword replacement, showing that standard NIAH is too simple"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify NIAH as the primary example of low-scope low-dispersion tasks that can be solved by implicit retrieval and are least indicative of genuine long-context capabilities"
+  - target: 2025-04-longgenbench-long-form-generation
+    type: complementary
+    detail: "LongGenBench introduces 'reversed NIAH': placing specific instructions at designated output positions in long-form generation, analogous to NIAH's needle retrieval in long inputs"
 open_questions:
   - question: "Does the single-needle, high-lexical-overlap design overestimate model retrieval capabilities compared to real-world information needs?"
     addressed_by: 2025-07-nolima-long-context-evaluation

@@ -14,13 +14,13 @@ $$d_i = \text{lora}_d(\text{ddlerp}_d(x_i, x_{i-1}))$$ (17)
 
 $$w_i = \exp(-\exp(d_i))$$ (18)
 
-$$wkv_i = \text{diag}(w) \cdot k_i^T \cdot v_i + \sum_{j=1}^{i-1} \text{diag}\left(\bigodot_{l=j+1}^{i-1} w_l\right) \cdot k_j^T \cdot v_j \in \mathbb{R}^{(D/h) \times (D/h)}$$ (19)
+$$wkv_t = \text{diag}(u) \cdot k_t^T \cdot v_t + \sum_{i=1}^{t-1} \text{diag}\left(\bigodot_{j=i+1}^{t-1} w_j\right) \cdot k_i^T \cdot v_i \in \mathbb{R}^{(D/h) \times (D/h)}$$ (19)
 
 $$o_i = \text{concat}(\text{SiLU}(g_i) \odot \text{LayerNorm}(r_i \cdot wkv_i)) W_o \in \mathbb{R}^D$$ (20)
 
 [p. 8] The wkv_i attention calculation can alternatively be written in a recurrent manner:
 
-$$wkv' = s + \text{diag}(w) \cdot k^T \cdot v$$ (21)
+$$wkv' = s + \text{diag}(u) \cdot k^T \cdot v$$ (21)
 
 $$s' = \text{diag}(w) \cdot s + k^T \cdot v$$ (22)
 

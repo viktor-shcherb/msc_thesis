@@ -1,0 +1,7 @@
+# 8 Conclusion [p. 8]
+
+In this paper, the authors presented a study of the "Lost in the Middle" problem in the context of Multi-hop Question Answering, where models must integrate information from multiple documents to generate correct answers. Using three widely-used multi-hop QA datasets (HotpotQA, 2WikiMultihopQA, and MuSiQue), the authors analyzed the performance of recent large language models as a function of the positions of evidence documents within a context interspersed with distractors. The findings reveal that model performance is not only influenced by the absolute positions of evidence documents but also by their relative positioning, highlighting a previously underexplored dimension of this problem.
+
+The authors also explored context-reduction techniques such as summarization and knowledge graph triple extraction as potential solutions. However, the results indicate that these out-of-the-box approaches are insufficient to fully mitigate the issue, as they often lead to a trade-off between reducing positional bias and retaining critical information.
+
+Overall, the work underscores the complexity of the "Lost in the Middle" problem in multi-hop settings, extending beyond the single-hop scenarios that current mitigation strategies typically address. This study opens up new challenges for the design of LLMs and methods aimed at improving reasoning across long and complex contexts.

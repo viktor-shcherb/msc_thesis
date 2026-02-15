@@ -1,72 +1,124 @@
 # Guidelines for Meta-Analysis
 
-These guidelines describe how to produce synthesis documents in the `meta-analysis/` directory. A meta-analysis synthesizes findings across multiple papers from `references/` to answer a specific research question, trace how a topic evolves over time, and assess the current state of knowledge.
+These guidelines define how to produce synthesis documents in `meta-analysis/`.
+Each meta-analysis must support two thesis needs at the same time:
 
-**Relationship to per-paper analyses:** Each `references/*/analysis.md` file describes a single paper. A meta-analysis draws from many such files to build a cross-paper argument. It does not re-summarize individual papers — it synthesizes, compares, and evaluates findings across them.
+1. a rigorous literature review narrative (`Related Work`)
+2. an evaluative argument for analysis/discussion chapters (`Results`/`Discussion`)
+
+Meta-analyses in this repository are expected to focus on long-context modeling,
+effective context evaluation, and mechanistic interpretability.
+
+**Relationship to per-paper analyses:** each `references/*/analysis.md` file
+describes one paper. A meta-analysis builds a cross-paper argument from many
+such files. Do not rewrite single-paper summaries in sequence.
 
 ---
 
 ## Ground Truth Rule
 
-The same rule from the reference guidelines applies here with an additional constraint:
+No results, numbers, claims, or statements may be fabricated.
 
-**No results, numbers, claims, or statements may be fabricated.** Every factual statement in a meta-analysis must be traceable to a specific per-paper analysis in `references/`. When synthesizing across papers, cite the source paper directory (e.g., `2024-02-lost-in-the-middle`) for every claim. When drawing inferences that go beyond what any single paper states, mark them explicitly as **synthesis inferences** and list the papers from which the inference is derived.
+Every factual statement in a meta-analysis must be traceable to specific
+per-paper analyses in `references/`. Use paper directory names in the body
+(for example, `2024-02-lost-in-the-middle`) for auditability.
+
+If an argument goes beyond any one paper, mark it explicitly as a
+**synthesis inference** and list all contributing papers.
+
+---
+
+## Thesis Alignment Requirement
+
+Every meta-analysis must produce outputs that can be dropped into thesis text
+with minimal editing.
+
+Required outputs per `analysis.md`:
+
+1. **Literature review output:** historical evolution, core themes,
+   consensus/disagreement map, boundary conditions.
+2. **Analysis output:** explicit evaluation of evidence quality, causal strength,
+   and implications for effective context evaluation design.
+3. **Traceability output:** claim-to-source mapping so all thesis statements can
+   be verified quickly.
+
+If a section does not help at least one of these outputs, tighten or remove it.
 
 ---
 
 ## Scope and Purpose
 
-Each meta-analysis must answer a **specific, well-scoped research question** such as:
+Each meta-analysis must answer one specific research question, such as:
 
-- How has position bias been characterized, explained, and mitigated across the literature?
-- What do synthetic vs. realistic benchmarks tell us about long-context capabilities, and where do they agree or diverge?
-- How have context extension methods evolved, and what are their comparative strengths?
+- How has position bias been characterized, explained, and mitigated?
+- What do synthetic vs realistic long-context benchmarks agree on?
+- Which mechanistic findings actually explain effective-context degradation?
+- Which context-extension methods improve effective (not just claimed) context?
 
-A meta-analysis is **not** a literature review that summarizes papers in sequence. It is a structured argument that uses evidence from multiple papers to answer its research question. The unit of analysis is the **finding** or **claim**, not the paper.
+A meta-analysis is not a chronological paper-by-paper summary. The unit of
+analysis is the finding/claim and its evidence quality.
 
 ---
 
 ## Directory Structure
 
-Each meta-analysis lives in its own subdirectory:
-
 ```
 meta-analysis/
-├── GUIDELINES.md               # This file
-└── short-descriptive-name/     # One directory per meta-analysis
-    └── analysis.md             # The synthesis document
+|-- GUIDELINES.md               # this file
+`-- short-descriptive-name/
+    `-- analysis.md
 ```
 
-Directory names use lowercase words separated by hyphens, derived from the research question (e.g., `position-bias-landscape`, `context-extension-methods`, `benchmark-validity`).
+Directory names use lowercase hyphenated words, derived from the question
+(for example, `context-extension-methods`, `benchmark-length-construction`).
 
 ---
 
 ## Workflow
 
-When creating a new meta-analysis, follow these steps:
+When creating or updating a meta-analysis, follow this order:
 
-1. **Define the research question.** Write a single sentence framing the question the analysis will answer. The question must be specific enough that you can determine when it has been answered.
+1. **Define the research question and thesis target.**
+   Write one sentence for the question and one sentence for why this analysis
+   is needed for thesis writing.
 
-2. **Identify the paper corpus.** Use `search.py` to find all relevant papers. Query by category, claims, cross-references, and full-text search. Document the search strategy so the corpus is reproducible.
+2. **Assemble a reproducible corpus.**
+   Use `references/search.py` and record all queries.
 
    ```bash
-   # Example: gather papers on position bias
-   python3 references/search.py category position-bias
+   python3 references/search.py category long-context-evaluation
+   python3 references/search.py category mechanistic-interpretability
+   python3 references/search.py text "effective context length"
    python3 references/search.py text "position bias"
-   python3 references/search.py text "primacy"
-   python3 references/search.py text "recency"
-   python3 references/search.py claims contested
+   python3 references/search.py text "retrieval head"
    ```
 
-3. **Read all per-paper analyses** in the corpus. Do not rely on YAML front matter alone — read the full `analysis.md` for each paper to understand methodology, limitations, and context that metadata does not capture.
+3. **Document inclusion and exclusion criteria.**
+   State why each paper class is in or out (for example, evaluation-only papers,
+   mechanism-only papers, model reports without controlled evaluation).
 
-4. **Build a timeline.** Order the papers chronologically and identify how the understanding of the topic changed at each step. Note when new evidence confirmed, refined, or contradicted prior claims.
+4. **Read all per-paper analyses in full.**
+   Do not rely on YAML only.
 
-5. **Identify themes.** Group findings into themes that cut across papers (e.g., "mechanistic explanations", "mitigation strategies", "benchmark evidence"). These themes become sections in the analysis.
+5. **Run a coverage audit before synthesis.**
+   Check that your corpus covers all relevant axes:
+   - task axis: retrieval, reasoning, generation, in-context learning
+   - benchmark axis: synthetic controllable, natural realistic, causal-control
+   - evidence axis: empirical, theoretical, mechanistic-interventional
+   - model axis: scale range, open vs closed, architecture families
+   If one axis is weak, report the gap explicitly.
 
-6. **Write the analysis** following the structure below.
+6. **Build a timeline and theme map.**
+   Identify phase transitions and cross-paper themes.
 
-7. **Verify all citations.** Every claim attributed to a paper must be present in that paper's `analysis.md`. Run a final pass to confirm no broken or inaccurate references.
+7. **Build a claim ledger.**
+   For each major claim, record supporting papers, contradictory papers,
+   evidence type, and boundary conditions.
+
+8. **Write the synthesis using the structure below.**
+
+9. **Verify traceability and consistency.**
+   Ensure every claim can be traced back to corpus papers.
 
 ---
 
@@ -76,194 +128,247 @@ When creating a new meta-analysis, follow these steps:
 
 ```yaml
 ---
-title: "Descriptive Title of the Meta-Analysis"
-research_question: "Single-sentence research question this analysis answers"
+title: "Descriptive title"
+research_question: "Single-sentence question answered by this meta-analysis"
+thesis_objective: "How this analysis supports thesis literature review and analysis sections"
 date_produced: YYYY-MM-DD
 corpus:
   - 2024-02-lost-in-the-middle
-  - 2024-08-found-in-the-middle
-  # ... all papers included in this analysis
+  - 2025-04-effective-context-length-falls-short
+  # ... exhaustive list
 corpus_search_strategy: |
-  category position-bias
+  category long-context-evaluation
+  category mechanistic-interpretability
+  text "effective context"
   text "position bias"
-  text "primacy"
-  claims contested
-categories: ["cat1", "cat2"]       # from ontology.categories
+inclusion_criteria:
+  - "Criterion 1"
+  - "Criterion 2"
+exclusion_criteria:
+  - "Criterion 1"
+categories: ["long-context-evaluation", "mechanistic-interpretability"]
 themes:
   - id: theme-slug
     label: "Human-readable theme name"
-  - id: theme-slug-2
-    label: "Another theme"
 consensus_claims:
-  - claim: "Exact claim on which papers agree"
+  - claim: "Exact statement of agreement"
     sources: ["2024-02-lost-in-the-middle", "2025-07-position-bias-transformers"]
-    strength: strong                # strong | moderate | weak
+    strength: strong      # strong | moderate | weak
 contested_claims:
-  - claim: "Claim on which papers disagree"
-    for: ["2024-02-lost-in-the-middle"]
-    against: ["2024-08-found-in-the-middle"]
-    resolution: "One sentence on current status"
+  - claim: "Exact statement of disagreement"
+    for: ["paper-a", "paper-b"]
+    against: ["paper-c"]
+    resolution: "Current status in one sentence"
     resolved: false
+evaluation_validity_summary:
+  construct_validity: "high: definition of effective length is mostly consistent across key papers"
+  causal_validity: "moderate: few direct causal-isolation experiments"
+  external_validity: "moderate: synthetic-heavy corpus with limited realistic tasks"
+mechanistic_evidence_summary:
+  interventional_papers: ["paper-a", "paper-b"]  # ablation/patching/masking interventions
+  observational_papers: ["paper-c"]              # attention patterns/correlations only
+  theoretical_papers: ["paper-d"]                # formal analysis
+thesis_mapping:
+  literature_review:
+    - claim: "High-level thesis-ready claim"
+      sources: ["paper-a", "paper-b"]
+  analysis_section:
+    - claim: "Evaluative claim for discussion chapter"
+      sources: ["paper-c", "paper-d"]
+      uncertainty: "Main caveat/assumption"
 gaps:
-  - description: "Specific gap in the literature"
-    severity: high                  # high | medium | low
+  - description: "Specific gap in current evidence"
+    severity: high       # high | medium | low
 overall_confidence:
   - conclusion: "Main conclusion statement"
-    level: high                     # high | moderate | low
-    basis: "N papers, diverse methods, consistent findings"
+    level: high          # high | moderate | low
+    basis: "N papers, method diversity, consistency"
     caveats: ["caveat 1", "caveat 2"]
 ---
 ```
 
-**Field definitions:**
+### Field Definitions
 
-- `corpus`: Exhaustive list of paper directories included in this analysis.
-- `corpus_search_strategy`: The `search.py` queries used to assemble the corpus, so it can be reproduced and updated when new papers are added.
-- `categories`: Ontology categories this meta-analysis covers.
-- `themes`: The cross-cutting themes used to organize the synthesis. Defined here, referenced in the body.
-- `consensus_claims`: Claims where multiple papers converge. `strength` reflects the breadth and quality of supporting evidence:
-  - `strong`: 3+ independent papers with consistent evidence across different methods/models.
-  - `moderate`: 2+ papers agree, but with caveats (different settings, partial overlap).
-  - `weak`: Multiple papers are consistent, but evidence is indirect or limited.
-- `contested_claims`: Claims where papers disagree. Include which papers fall on each side and whether the disagreement has been resolved.
-- `gaps`: Important questions or areas the corpus does not address.
-- `overall_confidence`: Graded confidence in the meta-analysis's main conclusions. `high` = consistent evidence from 3+ papers with diverse methods; `moderate` = 2+ papers agree but with caveats; `low` = limited or conflicting evidence.
+- `thesis_objective`: one sentence linking this document to thesis writing.
+- `inclusion_criteria` / `exclusion_criteria`: make corpus boundaries explicit.
+- `evaluation_validity_summary`: quick quality judgment on effective-context
+  evaluation evidence (construct/causal/external validity).
+- `mechanistic_evidence_summary`: separate interventional, observational, and
+  theoretical mechanism evidence.
+- `thesis_mapping`: direct, thesis-ready claims for:
+  - literature review narrative
+  - analysis/discussion argument
+
+---
+
+## Required Structure in `analysis.md`
 
 ### 1. Title Block
 
 ```markdown
-# Meta-Analysis Title
+# Meta-analysis title
 
-**Research question:** Single sentence.
-**Corpus:** N papers, date range YYYY–YYYY.
+**Research question:** single sentence.
+**Thesis objective:** single sentence.
+**Corpus:** N papers, date range YYYY-YYYY.
 **Categories:** category1, category2.
 ```
 
 ### 2. Executive Summary
 
-A self-contained summary of the entire analysis in 5–10 bullet points. Each bullet should state a finding and cite the supporting papers. A reader who reads only this section should understand the current state of the topic.
+5-10 bullets, each with a claim and paper-directory citations.
 
-### 3. Temporal Evolution
+### 3. Thesis-Ready Outputs
 
-A chronological narrative of how understanding of the topic developed. This section answers: *How did we get to the current state of knowledge?*
+This section is mandatory and has two subsections:
 
-Organize by **phases** — periods where a distinct set of assumptions or methods dominated. For each phase:
+1. **For literature review (related work):**
+   - 1-2 paragraphs with the most defensible storyline.
+   - include what changed over time and why.
+   - include major agreement and one unresolved disagreement.
+2. **For analysis/discussion:**
+   - 1-2 paragraphs with explicit evaluative claims.
+   - state what current evidence implies for effective context evaluation design.
+   - state key uncertainty that limits strong conclusions.
 
-- **Date range and defining papers.** Which papers mark the beginning and end of this phase?
-- **Prevailing understanding.** What was believed during this period?
-- **Key evidence.** What experiments or theoretical results supported this understanding?
-- **Transition.** What finding or paper caused the field to move to the next phase?
+Write this section in near-final thesis prose.
 
-Use a timeline table to anchor the narrative:
+### 4. Temporal Evolution
+
+Chronological narrative with phase transitions:
+
+- date range and defining papers
+- prevailing assumptions
+- key evidence
+- what changed the field
+
+Include a timeline table:
 
 ```markdown
 | Year | Paper | Key Contribution | Shift |
-|------|-------|-------------------|-------|
-| 2024-02 | Lost in the Middle | U-shaped performance curve | Established position bias as a first-class problem |
-| 2024-08 | Found in the Middle | Mechanistic explanation via attention | Shifted focus from observation to mechanism |
-| ... | ... | ... | ... |
+|------|-------|------------------|-------|
+| 2024-02 | 2024-02-lost-in-the-middle | U-shaped degradation | Position bias became first-class |
 ```
 
-### 4. Thematic Synthesis
+### 5. Thematic Synthesis
 
-This is the core of the meta-analysis. Organize by **themes** defined in the YAML front matter, not by paper. Each theme is a subsection (H3).
+Organize by themes (from YAML), not by paper.
 
 For each theme:
 
-#### Structure
+1. one-sentence theme statement
+2. heterogeneity check (metrics/thresholds/task definitions)
+3. evidence table
+4. cross-paper synthesis (agreement, disagreement, moderators)
+5. best-supported current conclusion
 
-1. **Statement of the theme.** One sentence defining what this theme covers.
-2. **Heterogeneity check.** Before pooling results, assess whether papers are measuring the same construct. If papers use different metrics, thresholds, or task definitions, note this explicitly. Decide whether to: pool results (comparable), report separately (incomparable), or note the discrepancy and interpret cautiously.
-3. **Evidence table.** A table comparing how each relevant paper in the corpus addresses this theme:
+Rules:
 
-   ```markdown
-   | Paper | Method/Approach | Key Finding | Limitations |
-   |-------|-----------------|-------------|-------------|
-   | 2024-02-lost-in-the-middle | Multi-doc QA, NQ, 20-doc | U-shaped curve, worst at position 10/20 | Greedy decoding only, pre-2024 models |
-   | ... | ... | ... | ... |
-   ```
+- every paragraph must connect at least two papers
+- cite claim IDs from per-paper analyses when available
+- separate evidence quality from claim popularity
+- report boundary conditions (model family, scale, benchmark, length regime)
 
-4. **Cross-paper analysis.** Prose synthesizing the evidence:
-   - Where do papers **agree**? State the consensus and cite all supporting papers.
-   - Where do papers **disagree**? State both positions, the evidence for each, and assess which position is better supported. Do not editorialize — evaluate based on methodological rigor, sample size, model coverage, and replicability.
-   - What **moderating factors** explain apparent disagreements? (e.g., different model families, context lengths, task types, evaluation protocols).
-5. **Current state.** What is the best-supported conclusion as of the most recent paper in the corpus?
+### 6. Consensus and Active Disagreements
 
-#### Rules for Thematic Synthesis
+Map directly to `consensus_claims` and `contested_claims`.
 
-- **Never summarize a paper in isolation.** Every paragraph should compare, contrast, or connect findings from at least two papers.
-- **Cite the specific claim, not just the paper.** Use the claim ID from the paper's YAML front matter when possible (e.g., "C3 from `2024-02-lost-in-the-middle`").
-- **Distinguish levels of evidence.** A claim supported by controlled experiments on 10+ models is stronger than a claim from a case study on one model. Make this distinction explicit.
-- **Track methodology differences.** When papers reach different conclusions, check whether they used different benchmarks, models, context lengths, or evaluation metrics before concluding they truly disagree.
+For each contested claim, include:
 
-### 5. Consensus and Disagreements
+- position A evidence
+- position B evidence
+- methodological differences
+- current assessment
+- concrete resolution path (what experiment would settle it)
 
-A structured summary of where the literature converges and diverges. This section corresponds directly to the `consensus_claims` and `contested_claims` in the YAML front matter but provides prose context.
+### 7. Effective Context Evaluation Validity Audit
 
-#### Consensus
+This section is mandatory for long-context work.
 
-For each consensus claim:
+Include:
 
-```markdown
-**Claim:** [Statement]
-**Supporting papers:** paper1, paper2, paper3
-**Evidence strength:** strong / moderate / weak
-**Qualification:** [Any important caveats or boundary conditions]
-```
+1. **Construct validity table** (what is "effective context" in each paper?)
+2. **Confound audit** (what covaries with length?)
+3. **Causal evidence ladder**:
+   - Level A: direct causal isolation (controls/interventions)
+   - Level B: controlled but non-isolating comparisons
+   - Level C: observational correlations
+4. **External validity judgment**:
+   - what transfers to realistic tasks
+   - what is synthetic-only
 
-#### Active Disagreements
-
-For each contested claim:
+Suggested table:
 
 ```markdown
-**Claim:** [Statement]
-**Position A (papers):** [Evidence summary]
-**Position B (papers):** [Evidence summary]
-**Methodological differences:** [How the papers' setups differ -- task type, models, controls]
-**Assessment:** [Which position is better supported and why, or why the disagreement remains unresolved]
-**Resolution path:** [What experiment or evidence would resolve this disagreement?]
+| Paper | Effective-length definition | Length manipulation | Main confound | Causal level |
+|------|------------------------------|---------------------|---------------|--------------|
+| paper-a | 85% threshold on task score | haystack padding | lexical overlap | B |
 ```
 
-### 6. Methodological Patterns
+### 8. Mechanistic Interpretability Evidence Synthesis
 
-Analyze the **methods** used across the corpus, not just the results. This section answers: *How reliable is the evidence base?*
+This section is mandatory when mechanism claims are in scope.
 
-Cover:
+For each mechanism (for example: position bias, over-squashing, retrieval
+heads, attention sinks):
 
-- **Common experimental setups.** What models, benchmarks, and evaluation protocols are most frequently used? Are there blind spots (e.g., all papers test on the same 3 models)?
-- **Methodological strengths.** What do the best papers in the corpus do that others do not?
-- **Methodological weaknesses.** Recurring limitations across papers (e.g., lack of statistical significance testing, narrow model selection, synthetic-only evaluation).
-- **Benchmark coverage matrix.** A table showing which benchmarks each paper uses, revealing overlap and gaps:
+1. mechanism statement
+2. evidence type and strength:
+   - interventional (ablation, patching, masking): strongest
+   - theoretical formalization
+   - observational analysis: weakest causal status
+3. what behavior the mechanism explains
+4. what remains unexplained
 
-  ```markdown
-  | Paper | NIAH | RULER | LongBench | InfiniteBench | Realistic Tasks |
-  |-------|------|-------|-----------|---------------|-----------------|
-  | paper1 | x | x | | | |
-  | paper2 | | x | x | x | |
-  | ... | ... | ... | ... | ... | ... |
-  ```
+Suggested table:
 
-### 7. Gaps and Open Questions
+```markdown
+| Mechanism | Papers | Evidence type | Causal strength | Explains | Open limits |
+|----------|--------|---------------|-----------------|----------|-------------|
+| retrieval heads | paper-a | interventional | high | factual retrieval failures | cross-model generalization |
+```
 
-Enumerate what the corpus does **not** address. For each gap:
+### 9. Methodological Patterns
 
-- **Description.** What is missing?
-- **Severity.** How much does this gap limit our understanding? (`high` / `medium` / `low`)
-- **Potential approach.** How might this gap be addressed? (Brief, not a full proposal.)
-- **Related open questions.** Link to `open_questions` from per-paper analyses that feed into this gap.
+Assess the reliability of the whole corpus:
+
+- common setups and blind spots
+- recurring strengths and weaknesses
+- benchmark coverage matrix
+- reproducibility signals (code/data availability, seed reporting)
+
+### 10. Gaps and Open Questions
+
+For each gap:
+
+- description
+- severity (`high` / `medium` / `low`)
+- why it matters for thesis claims
+- minimal experiment/evidence needed to reduce uncertainty
+
+---
 
 ## Style Rules
 
-All style rules from `prompts/add_reference/write_analysis/prompt.md` apply, plus:
+All style rules from `prompts/add_reference/write_analysis/prompt.md` apply.
+In addition:
 
-1. **Synthesis over summary.** Every paragraph must connect findings from multiple papers. If you find yourself describing a single paper for more than two sentences, you are summarizing, not synthesizing.
-2. **Cite paper directories, not author names, for traceability.** Use the format `2024-02-lost-in-the-middle` in the text body so references are machine-searchable. Author names (e.g., "Liu et al.") may be used alongside for readability: "Liu et al. (`2024-02-lost-in-the-middle`) found that..."
-3. **Quantify when possible.** "Most papers find X" is less useful than "5 of 7 papers find X; the two exceptions (paper1, paper2) used shorter contexts."
-4. **Explicit evidence grading.** When stating a consensus, always qualify the strength: how many papers, how diverse the methods, how consistent the results.
-5. **Tables for comparison, prose for interpretation.** Use tables to lay out the evidence, then use prose to explain what the table reveals.
-6. **Temporal markers.** When describing the evolution of understanding, always note dates: "As of 2024-08, the mechanistic explanation from `2024-08-found-in-the-middle` had not yet been independently replicated."
-7. **No orphan claims.** Every claim in the meta-analysis must trace back to at least one per-paper analysis. If you identify an insight that no single paper states but that emerges from the combination, mark it as a **synthesis inference** and list all contributing papers.
-8. **Acknowledge heterogeneity.** When papers use different definitions, metrics, or thresholds for the same concept (e.g., "effective context length"), note this explicitly before comparing their results. Large variance in reported effects often reflects measurement heterogeneity, not genuine uncertainty about the phenomenon.
+1. **Synthesis over summary.** Do not spend more than two consecutive sentences
+   on one paper unless absolutely necessary.
+2. **Traceable citations.** Use paper directory names in body text.
+3. **Quantify scope.** Replace "many papers" with explicit counts.
+4. **Separate claimed vs effective context.** Never use "context length"
+   ambiguously when numbers matter.
+5. **Separate capability vs proxy metrics.** Do not treat perplexity or passkey
+   scores as direct capability evidence without justification.
+6. **Label inference type.** Distinguish:
+   - direct paper claim
+   - synthesis inference
+   - thesis implication
+7. **Be explicit about uncertainty.** State what is unknown, not only what is
+   known.
+8. **Use absolute dates** (`YYYY-MM` or `YYYY-MM-DD`) when describing shifts.
+9. **No orphan claims.** Every substantive claim must map to corpus evidence.
 
 ---
 
@@ -271,40 +376,43 @@ All style rules from `prompts/add_reference/write_analysis/prompt.md` apply, plu
 
 ### When new papers are added to `references/`
 
-1. Check whether the new paper falls within the corpus of any existing meta-analysis (match on categories, cross-references, or keyword overlap).
-2. If it does, update the affected meta-analysis:
-   - Add the paper to the `corpus` list in the YAML front matter.
-   - Integrate its findings into the relevant thematic sections.
-   - Re-evaluate any `contested_claims` — the new paper may shift the balance.
-   - Update `consensus_claims` strength if the new paper provides additional evidence.
-   - Check whether any `gaps` have been addressed.
-   - Update `overall_confidence` if the new evidence changes certainty.
-3. Record the update date in `date_produced`.
+1. Check whether the paper fits existing corpora by category, claims, and text.
+2. If it fits:
+   - add it to `corpus`
+   - update themes, consensus, and contested claims
+   - update validity and mechanistic summaries
+   - update `thesis_mapping` outputs
+   - refresh `date_produced`
 
 ### When new evidence contradicts existing conclusions
 
-If a new paper contradicts a consensus claim:
+1. First test whether disagreement is methodological or substantive.
+2. If substantive:
+   - move claim from `consensus_claims` to `contested_claims`
+   - document both positions and evidence quality
+3. If methodological:
+   - keep consensus claim but qualify scope conditions clearly
 
-1. **Assess heterogeneity first.** Check whether the contradiction stems from methodological differences (different benchmarks, models, metrics) rather than genuine disagreement about the same phenomenon.
-2. **If genuinely contradictory:** Move the claim from `consensus_claims` to `contested_claims`. Document both positions with evidence.
-3. **If methodologically explained:** Keep the consensus claim but add a qualification noting the scope conditions under which it holds.
-4. **Update the thematic synthesis** to reflect the new state of evidence, including the moderating factors that explain divergent findings.
+---
 
-### Completeness checklist
+## Completeness Checklist
 
-Before considering a meta-analysis complete, verify:
+Before marking a meta-analysis complete, verify:
 
-- [ ] The research question is specific and answerable.
-- [ ] The corpus search strategy is documented and reproducible.
-- [ ] Every paper in the corpus has been read (full `analysis.md`, not just front matter).
-- [ ] The temporal evolution section covers the full date range of the corpus.
-- [ ] Every theme in the YAML front matter has a corresponding section in the body.
-- [ ] Every consensus claim cites 2+ papers with specific evidence.
-- [ ] Every contested claim presents both sides with evidence.
-- [ ] The methodological patterns section includes a benchmark coverage matrix.
-- [ ] Gaps are enumerated with severity ratings.
-- [ ] All paper references use directory names and are verifiable in `references/`.
-- [ ] No single-paper summaries appear — every paragraph synthesizes across papers.
-- [ ] Synthesis inferences are marked and sourced.
-- [ ] Overall confidence is graded for main conclusions with explicit basis and caveats.
-- [ ] Heterogeneity is assessed before pooling results across papers with different methodologies.
+- [ ] Research question and thesis objective are explicit.
+- [ ] Corpus search strategy is reproducible.
+- [ ] Inclusion and exclusion criteria are documented.
+- [ ] Full per-paper analyses were read (not YAML only).
+- [ ] Coverage audit across task/benchmark/evidence/model axes is complete.
+- [ ] Temporal evolution covers full corpus date range.
+- [ ] Every YAML theme has a body section.
+- [ ] Consensus claims cite 2+ papers and include evidence strength.
+- [ ] Contested claims present both sides and a resolution path.
+- [ ] Effective-context validity audit is present.
+- [ ] Mechanistic evidence synthesis is present (if mechanisms are in scope).
+- [ ] Methodological patterns include benchmark coverage and reproducibility notes.
+- [ ] Gaps include severity and why they matter for thesis conclusions.
+- [ ] `thesis_mapping` includes both literature-review and analysis outputs.
+- [ ] All claims are traceable to paper directories.
+- [ ] Synthesis inferences and thesis implications are explicitly labeled.
+- [ ] Overall confidence is graded with basis and caveats.

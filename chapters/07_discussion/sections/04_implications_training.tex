@@ -1,0 +1,45 @@
+\section{Implications for Long-Context Training}
+\label{sec:implications-training}
+
+The findings suggest specific directions for improving long-context training
+beyond current position-extension methods.
+
+\paragraph{Evaluate with positional profiles, not aggregates.}
+Perplexity on long documents is a standard evaluation metric during
+long-context training. But perplexity averages over all positions, masking
+distant-position degradation. The SmolLM3 trajectory
+(Table~\ref{tab:smollm-trajectory}) shows that $\text{AP}_{\text{drop}}$
+triples during LC extension even as the model successfully processes longer
+inputs. Per-position plasticity profiles---or any position-resolved
+metric---would detect this steepening gradient that aggregate metrics miss.
+
+\paragraph{Address content signal decay explicitly.}
+Current LC extension methods (position interpolation~\cite{2023-06-pi-positional-interpolation},
+NTK-aware RoPE scaling~\cite{2023-06-rope-ntk},
+YaRN~\cite{2024-05-yarn-context-extension},
+LongRoPE~\cite{2024-07-longrope-context-extension}) focus on making position
+encodings generalize to longer sequences. Our results suggest this addresses
+the bias component but not the content-decay component. Potential approaches
+to the latter include:
+%
+\begin{itemize}
+    \item Training objectives that explicitly reward distant-position
+    retrieval, rather than relying on next-token prediction which averages
+    over all positions.
+    \item Architectural modifications that preserve content signal fidelity
+    across positions, such as differential
+    attention~\cite{2025-04-differential-transformer} or content-gated
+    mechanisms.
+    \item Data strategies that expose the model to long-range dependencies
+    during pre-training, not only during LC fine-tuning---analogous to the
+    upsampled long-document data
+    of~\cite{2024-06-effective-long-context-scaling}.
+\end{itemize}
+
+\paragraph{The Ministral-3 target.}
+Ministral-3 achieves 2$\times$ flatter plasticity profiles than standard
+LC-trained models at comparable bias levels. While the specific training recipe
+is proprietary, the metric provides a concrete, mechanistically grounded
+target: $\text{AP}_{\text{drop}} < 0.10$ across 128K+ context. This gives
+long-context training an explicit optimization objective beyond ``extend the
+context window.''

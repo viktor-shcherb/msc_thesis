@@ -5,58 +5,82 @@ year: 2026
 venue: "arXiv preprint 2601.08584"
 paper_type: preprint
 categories: ["model-release", "architecture", "pruning-and-sparsity"]
-scope: ["knowledge distillation", "model compression", "cascade pruning", "efficient pretraining", "reasoning models"]
-benchmarks_used: ["mmlu", "triviaqa", "math-hendrycks", "agi-eval", "arc", "gpqa", "mbpp", "mmmu", "arena-hard", "livecodebench"]
+scope: ["dense open-weight LMs", "iterative distillation", "multi-size model family (3B/8B/14B)", "long-context extension to 256K"]
+benchmarks_used: ["mmlu", "triviaqa", "math-hendrycks", "agi-eval", "arc", "race", "natural-questions", "gpqa", "mbpp", "mmmu", "arena-hard", "mt-bench", "livecodebench", "aime-2025", "hmmt-2025"]
 models_introduced: ["ministral-3-3b", "ministral-3-8b", "ministral-3-14b"]
-models_evaluated: ["qwen2-7b", "qwen2-72b", "gemma-7b"]
+models_evaluated: ["qwen3-14b", "qwen3-8b", "qwen3-4b", "gemma-3-12b", "gemma-3-4b"]
 key_claims:
   - id: C1
-    claim: "Cascade Distillation produces competitive models trained on 1-3T tokens by leveraging a 24B parent model, compared to Qwen3 (36T) and Llama3 (15T) trained from scratch"
+    claim: "Cascade Distillation produces competitive 3B/8B/14B base models with 1-3T token training budgets versus larger from-scratch budgets (e.g., 15T/36T)"
     evidence: "Section 1, Table 2"
     status: supported
+    scope: "Base model pretraining comparisons against Qwen3 and Gemma3 families"
+    magnitude: "Token budget 1-3T vs 15T (Llama3) and 36T (Qwen3), with competitive benchmark performance"
   - id: C2
-    claim: "Ministral 3 14B Base closely matches Mistral Small 3.1 Base while being >40% smaller and trained on a much shorter horizon"
+    claim: "Ministral 3 14B Base retains a large fraction of Mistral Small 3.1 capability despite >40% parameter reduction"
     evidence: "Section 1, Table 3"
     status: supported
+    scope: "Teacher-student comparison on general, math/code, multilingual, and multimodal evaluations"
+    magnitude: "MMLU-Redux 82.0 vs 82.7; MMLU 79.4 vs 81.0; MBPP 71.6 vs 71.6"
   - id: C3
-    claim: "For pretraining distillation, a smaller teacher (Mistral Small 3.1) outperforms a larger teacher (Mistral Medium 3), but post-training benefits from stronger teachers"
+    claim: "For pretraining distillation, a stronger teacher (Mistral Medium 3) does not necessarily outperform a smaller teacher (Mistral Small 3.1)"
     evidence: "Section 5.1, Figure 3"
     status: supported
+    scope: "14B pretraining ablations in this report"
+    magnitude: "Figure 3 trend favors Mistral Small 3.1 distillation across multiple downstream benchmarks"
   - id: C4
-    claim: "Distilling from a post-trained (instruct) teacher during pretraining yields stronger models than distilling from a base teacher, especially for math and code"
+    claim: "Distilling from a post-trained teacher (instruct/reasoning) during pretraining improves STEM-oriented outcomes over a base teacher"
     evidence: "Section 5.1, Figure 4"
     status: supported
+    scope: "3B pretraining teacher-variant ablations"
+    magnitude: "Figure 4 reports stronger gains on MATH/code with comparable knowledge and multimodal results"
   - id: C5
-    claim: "Ministral 3 14B Reasoning achieves 89.8% on AIME 2024 (pass@16), outperforming Qwen 3 14B (83.7%)"
+    claim: "Ministral 3 14B Reasoning outperforms size-matched Qwen 3 14B on AIME 2024/2025, HMMT 2025, GPQA, and LiveCodeBench"
     evidence: "Table 5"
     status: supported
+    scope: "Reasoning evaluation at pass@16 (pass@5 for LiveCodeBench)"
+    magnitude: "AIME 2024: 89.8 vs 83.7; AIME 2025: 85.0 vs 73.7; HMMT 2025: 67.5 vs 55.8; GPQA: 71.2 vs 66.3; LiveCodeBench: 64.6 vs 59.3"
   - id: C6
-    claim: "Layer importance for pruning can be approximated by the ratio of output to input activation norms, providing a simpler proxy than counterfactual perplexity"
+    claim: "Layer importance can be approximated using output/input activation norm ratios for pruning"
     evidence: "Section 3.1, Algorithm 2"
     status: supported
+    scope: "Cascade Distillation pruning stage in this architecture/training setup"
+    magnitude: "Heuristic replaces counterfactual-perplexity layer ranking while enabling iterative pruning across 24B->14B->8B->3B"
   - id: C7
-    claim: "Online DPO significantly improves alignment over SFT and offline DPO variants, and mitigates infinite generation artifacts"
-    evidence: "Section 3.2.2"
+    claim: "ODPO improves alignment quality and mitigates generation-pathology issues relative to SFT/offline preference optimization"
+    evidence: "Section 3.2.2, Section 5.3, Figure 6"
     status: supported
+    scope: "Instruction and reasoning post-training stages (especially 14B/8B)"
+    magnitude: "Figure 6 reports substantial chat-benchmark gains for 14B/8B after ODPO; paper also reports mitigation of infinite-loop artifacts"
 cross_references:
   - target: 2017-12-attention-is-all-you-need
     type: extends
-    detail: "Ministral 3 uses decoder-only Transformer architecture with GQA, RoPE, SwiGLU, and RMSNorm"
-  - target: 2023-10-mistral-7b
-    type: extends
-    detail: "Builds on Mistral architecture; uses GQA with 32 query heads and 8 KV heads"
+    detail: "Ministral 3 uses a decoder-only Transformer backbone with modern attention/norm variants"
   - target: 2024-05-yarn-context-extension
     type: extends
-    detail: "Uses YaRN for context extension from 16K to 256K tokens"
-  - target: 2024-07-llama-3-herd-of-models
+    detail: "Uses YaRN-based context extension and position-aware scaling for long-context training"
+  - target: 2025-05-qwen3-technical-report
     type: evaluates
-    detail: "Compares against Llama 3 training efficiency; achieves competitive results with 1-3T tokens vs 15T"
+    detail: "Primary same-era baseline family in tables for both base and reasoning variants"
+  - target: 2025-03-gemma-3-technical-report
+    type: evaluates
+    detail: "Primary instruct/base comparison family in reported benchmark tables"
+  - target: 2023-10-mistral-7b
+    type: complementary
+    detail: "Shares architectural lineage; Ministral 3 extends Mistral-family work with multi-size cascade distillation"
+  - target: 2025-07-smollm3-long-context-reasoner
+    type: concurrent
+    detail: "Both are 3B-scale open model releases targeting efficient deployment with strong capabilities; SmolLM3 uses 11.2T token training vs Ministral 3's cascade distillation approach"
 open_questions:
-  - question: "How does Cascade Distillation scale beyond 3 pruning stages? Could it derive even smaller models (1B, 0.5B) effectively?"
+  - question: "How far can Cascade Distillation be pushed below 3B before quality collapse dominates compute savings?"
     addressed_by: null
-  - question: "What is the optimal teacher-student capacity ratio for distillation at different training stages?"
+  - question: "What teacher-student capacity ratio best balances pretraining and post-training distillation quality?"
     addressed_by: null
-  - question: "Does the 'capacity gap' where stronger teachers hurt pretraining distillation generalize across architectures?"
+  - question: "How robust are the teacher-selection findings across architectures and data mixtures outside this report?"
+    addressed_by: null
+  - question: "How well do 256K-context Ministral models perform on hard long-context reasoning tasks beyond retrieval-style probes?"
+    addressed_by: null
+  - question: "Can verbosity-control methods preserve STEM gains while removing reflection/backtracking artifacts in smaller reasoning models?"
     addressed_by: null
 ---
 
@@ -67,283 +91,178 @@ open_questions:
 
 ---
 
-## Core Research Problem
+## 1. Core Research Problem
 
-Training competitive language models from scratch requires enormous compute budgets: Qwen3 uses 36 trillion tokens and Llama3 uses 15 trillion tokens. This creates significant barriers for organizations seeking to produce efficient, smaller models for resource-constrained deployment. Prior work on knowledge distillation and model pruning (Minitron, Wanda) demonstrated that pretrained models could be compressed, but a systematic approach to iteratively derive multiple model sizes from a single parent while maintaining competitive performance was lacking. The core challenge was: **how to efficiently produce a family of competitive dense models at multiple scales (3B, 8B, 14B) from a single larger parent model using significantly fewer training tokens than from-scratch pretraining.**
+Recent open model families have improved quality partly by very large pretraining budgets. The paper frames this as a practical bottleneck: training from scratch at competitive quality can require tens of trillions of tokens.
 
----
+The concrete question addressed here is:
 
-## Problem Solutions
+**How can a single strong parent model be transformed into multiple smaller competitive dense models (14B, 8B, 3B) with substantially lower total pretraining cost, while still supporting modern capabilities (instruction-following, reasoning, vision, long context)?**
 
-Ministral 3 addresses this through Cascade Distillation, an iterative pruning and distillation approach:
+The paper argues this requires solving two coupled problems:
 
-1. **Iterative prune-distill-repeat.** Starting from Mistral Small 3.1 (24B), progressively prune to 14B, then 8B, then 3B, with distillation training at each stage. This produces competitive models with 1-3T tokens instead of 15-36T.
-
-2. **Multi-stage post-training.** Apply SFT + Online DPO for instruction-following variants, and SFT + GRPO + ODPO for reasoning variants, each distilling from appropriate teacher models.
-
-3. **Unified multimodal architecture.** All models share a frozen 410M parameter ViT vision encoder from Mistral Small 3.1, with trainable projection layers per model size.
+1. Efficiently transferring capability from a larger parent without retraining every child from scratch.
+2. Preserving (or recovering) downstream quality after aggressive size reduction and post-training specialization.
 
 ---
 
-## Approach Details
+## 2. Problem Solutions
 
-### Architecture
+The solution is a staged recipe named **Cascade Distillation** plus task-specific post-training:
 
-All Ministral 3 models are decoder-only Transformers with common architectural choices (Table 1):
+1. Iterative prune-distill-repeat from a 24B parent (Mistral Small 3.1) to 14B -> 8B -> 3B.
+2. Two-stage pretraining distillation per child (short context then long context).
+3. Separate post-training pipelines for:
+   - instruct models (SFT + ODPO)
+   - reasoning models (SFT + GRPO + ODPO)
+4. Shared multimodal support through a frozen ViT encoder and retrained projection heads.
 
-| Model | Layers | Latent dim | Q/KV heads | FFN dim | Tied Emb | Context |
-|---|---|---|---|---|---|---|
-| Ministral 3 14B | 40 | 5120 | 32/8 | 16384 | No | 256K |
-| Ministral 3 8B | 34 | 4096 | 32/8 | 14336 | No | 256K |
-| Ministral 3 3B | 26 | 3072 | 32/8 | 9216 | Yes | 256K |
-
-Key architectural components:
-- **Grouped-Query Attention (GQA):** 32 query heads, 8 key-value heads (Ainslie et al., 2023)
-- **RoPE positional embeddings** (Su et al., 2021)
-- **SwiGLU activation** (Shazeer, 2020)
-- **RMSNorm** (Zhang & Sennrich, 2019)
-- **YaRN** for long-context extension (Peng et al., 2023)
-- **Position-based softmax temperature scaling** (Nakanishi, 2025; MetaAI, 2025)
-- **Vocabulary size:** 131K tokens
-- **Tied embeddings:** Only for 3B model to avoid embedding parameters dominating
-
-**Vision encoder:** All models use a frozen 410M parameter ViT copied from Mistral Small 3.1 Base with the Pixtral architecture (Agrawal et al., 2024). The projection layer from ViT to LM space is retrained for each model size.
-
-### Cascade Distillation
-
-The pretraining recipe (Algorithm 1) follows an iterative approach:
-
-```
-1. Start with Mistral Small 3.1 (MS3.1) as parent
-2. For each target size in [14B, 8B, 3B]:
-   a. Prune parent model to target size
-   b. Short context distillation (16K context) with MS3.1 as teacher
-   c. Long context distillation (256K context) with MS3.1 as teacher
-   d. Output of (b) becomes input for pruning the next smaller model
-```
-
-This approach avoids data repetition: the entire process goes through the data mix once with pruning en route (Figure 2).
-
-### Pruning Strategy
-
-Three pruning techniques are applied (Algorithm 2):
-
-**1. Layer Pruning:** Rank layers by the ratio of output to input activation norms:
-> importance_score = mean(output_norm / input_norm)
-
-This provides a simpler proxy than counterfactual perplexity from Minitron.
-
-**2. Hidden Dimension Pruning:** Apply PCA to concatenated activations from attention normalization and feed-forward normalization layers across all layers. The resulting rotation matrix projects to a lower-dimensional space while maximizing explained variance.
-
-**3. Feedforward Dimension Pruning:** For SwiGLU MLPs expressed as W2(SiLU(W1x) * W3x), compute importance as:
-> importance = mean(abs(silu(W1.output) * W3.output))
-
-Keep the top-k dimensions based on this score.
-
-### Distillation
-
-Each child model is trained with logit distillation from the teacher. Key finding: **forward KL distillation objective alone outperforms weighted combinations** of distillation and next-token prediction losses.
-
-**Two-stage pretraining:**
-1. **Short context stage:** 16,384 token context window
-2. **Long context stage:** Extend to 262,144 tokens using YaRN and position-based temperature scaling
-
-### Post-Training: Instruction-Following
-
-**Supervised Fine-Tuning (SFT):**
-- Uses fp8 quantization
-- Logit distillation from Mistral Medium 3 (not Mistral Small 3.1)
-- Vision encoder remains frozen; adapter is trainable
-
-**Online Direct Preference Optimization (ODPO):**
-- For each example, sample two responses from current policy at T=0.7
-- Pairwise Reward Model (PWRM) ranks responses
-- Modified DPO loss using binomial probabilistic output instead of hard labels
-- PWRM temperature calibration and β-rescaling for stability
-- Heuristic: responses with infinite loops automatically treated as "loser"
-- Tool execution enabled during generation
-
-### Post-Training: Reasoning
-
-Three-stage pipeline starting from pretrained (not ODPO) checkpoint:
-
-**1. Reasoning SFT:** Fine-tune on mixture of short and long chain-of-thought samples across math, coding, dialogue, instruction following, multilingual, tool use, and visual reasoning.
-
-**2. GRPO (Group Relative Policy Optimization):**
-- **STEM RL stage:** Train on math, code, visual reasoning with rigorous data filtering
-- **General RL stage:** Extend beyond STEM using atomic grading rubrics evaluated by LLM judge
-- Maximum generation length: 80K tokens (increased from 32K to reduce truncation)
-
-**3. ODPO:** Post-RL alignment with thinking chunks stripped before reward model scoring.
-
-**3B model special handling:** Vanilla SFT led to brittle, verbose outputs with repetition. Logit distillation from Magistral Small 1.2 was used to reduce verbosity and stabilize RL training.
-
-### Key Results
-
-**Pretraining (Table 2) - Base models:**
-
-| Model | MMLU-Redux | TriviaQA | MATH | AGIEval | Multilingual MMLU |
-|---|---|---|---|---|---|
-| Qwen 3 14B | 83.7 | 70.3 | 62.0 | 66.1 | 75.4 |
-| **Ministral 3 14B** | 82.0 | **74.9** | **67.6** | 64.8 | 74.2 |
-| Gemma 3 12B | 76.6 | 78.8 | 48.7 | 58.7 | 69.0 |
-| Qwen 3 8B | 79.4 | 63.9 | 57.6 | 59.6 | 70.0 |
-| **Ministral 3 8B** | 79.3 | **68.1** | **62.6** | 59.1 | **70.6** |
-| Gemma 3 4B | 62.6 | 64.0 | 29.4 | 43.0 | 51.6 |
-| Qwen 3 4B | 75.9 | 53.0 | 40.5 | 57.0 | 67.7 |
-| **Ministral 3 3B** | 73.5 | **59.2** | **60.1** | 51.1 | 65.2 |
-
-Key observations:
-- Ministral 3 14B outperforms Qwen 3 14B on TriviaQA (+4.6) and MATH (+5.6)
-- Ministral 3 8B outperforms larger Gemma 12B on most benchmarks
-- Ministral 3 3B shows strong MATH performance (60.1% vs Qwen 3 4B's 40.5%)
-
-**Post-training - Instruct models (Table 4):**
-
-| Model | Arena Hard | WildBench | MATH (maj@1) | MM MTBench |
-|---|---|---|---|---|
-| Qwen3 14B (Non-Thinking) | 42.7 | 65.1 | 87.0 | N/A |
-| **Ministral 3 14B** | **55.1** | **68.5** | **90.4** | 84.9 |
-| Gemma3-12B-Instruct | 43.6 | 63.2 | 85.4 | 67.0 |
-| Qwen3-VL-8B-Instruct | **52.8** | 66.3 | **94.6** | 80.0 |
-| **Ministral 3 8B** | 50.9 | **66.8** | 87.6 | **80.8** |
-
-**Reasoning models (Table 5) - pass@16:**
-
-| Benchmark | Qwen 3 14B | Ministral 3 14B | Qwen3-VL 8B | Ministral 3 8B | Qwen3-VL 4B | Ministral 3 3B |
-|---|---|---|---|---|---|---|
-| AIME 2024 | 83.7 | **89.8** | 86.0 | 86.0 | 72.9 | **77.5** |
-| AIME 2025 | 73.7 | **85.0** | **79.8** | 78.7 | 69.7 | **72.1** |
-| HMMT 2025 | 55.8 | **67.5** | 57.5 | 55.8 | 50.8 | **51.7** |
-| GPQA Diamond | 66.3 | **71.2** | 67.1 | 66.8 | **60.1** | 53.4 |
-| LiveCodeBench v6 | 59.3 | **64.6** | 58.0 | **61.6** | 51.3 | **54.8** |
-
-### Teacher Selection Findings
-
-**Capacity gap (Figure 3):** For pretraining distillation, Mistral Small 3.1 outperforms the stronger Mistral Medium 3 as teacher, even in non-FLOP-matched settings. However, post-training benefits from stronger teachers.
-
-**Base vs. instruct teacher (Figure 4):** Distilling from a post-trained (instruct) teacher during pretraining yields stronger models, especially for MATH and code, with smaller impact on knowledge benchmarks (MMLU, TriviaQA).
-
-**Preference-tuned teachers:** Distilling from a preference-tuned checkpoint during SFT is substantially better than from an SFT-only checkpoint, and gains persist after the student's own preference tuning.
+This is designed to amortize parent capability across a full model family instead of paying separate full pretraining costs for each size.
 
 ---
 
-## Limitations and Failure Modes
+## 3. Approach Details
 
-The paper acknowledges the following limitations:
+### Method
 
-1. **3B model sensitivity.** The 3B base model is more sensitive to hyperparameter choice in fine-tuning than 14B and 8B variants (footnote 4).
+The pretraining algorithm is explicitly iterative:
 
-2. **Verbosity issues.** Vanilla SFT on 3B led to brittle, overly verbose outputs with repetition and infinite generations, requiring special handling with logit distillation.
+> Start from a parent model, prune to target size, distill on short context, distill on long context, then prune that child checkpoint to initialize the next smaller model.
 
-3. **Reasoning-chat tradeoff.** Reasoning models lag in general conversational quality compared to instruct variants, requiring ODPO post-RL to address.
+Core pruning components:
 
-4. **Long CoT tradeoffs.** Increasing long chain-of-thought data in SFT improves STEM benchmarks but leads to excessive reflection, internal monologues, and backtracking behavior undesirable for general chat.
+- Layer pruning via activation norm ratio proxy:
+  > `score = mean(output_norm / input_norm)`
+- Hidden-dimension pruning with PCA-based projection.
+- Feedforward-dimension pruning in SwiGLU blocks:
+  > `W2(SiLU(W1 x) * W3 x)`
 
-5. **3B ODPO limited gains.** The 3B model did not show significant public benchmark improvements from ODPO, though internal human evaluations improved.
+### Key Technical Components
+
+- Decoder-only Transformer, GQA (32/8), RoPE, SwiGLU, RMSNorm.
+- Vocabulary size: 131K.
+- Context target: 256K for base/instruct (reasoning variant described at 128K in intro).
+- Vision: frozen 410M ViT copied from Mistral Small 3.1; per-size projection retraining.
+- Distillation setup:
+  - forward-KL-only objective favored by ablations described in text.
+- Instruct ODPO:
+  - online pair sampling at temperature 0.7
+  - pairwise reward model with probabilistic preference weighting
+  - stability tweaks (temperature calibration + beta-rescaling)
+  - explicit handling of infinite-generation artifacts
+- Reasoning pipeline:
+  - SFT with short/long CoT
+  - two-stage GRPO (STEM then general)
+  - max generation length raised from 32K to 80K
+  - ODPO with reasoning-chunk stripping before reward scoring
+
+### Experimental Setup
+
+The report evaluates across general knowledge, reasoning, code, multilingual, multimodal, and post-training alignment benchmarks. External baselines (Qwen/Gemma families) are re-run using the same internal evaluation harness/configuration.
+
+### Key Results (from reported tables)
+
+| Highlight | Reported result |
+|---|---|
+| 14B base vs Qwen3 14B | Better on TriviaQA (74.9 vs 70.3) and MATH (67.6 vs 62.0) |
+| 14B reasoning vs Qwen3 14B | Better on AIME 2024/2025, HMMT 2025, GPQA, LiveCodeBench |
+| 14B vs teacher (24B) | Small drop on many tasks, parity on MBPP (71.6 vs 71.6), stronger MATH (67.6 vs 55.8) |
+| 8B base vs Gemma 12B | Paper reports strong parameter efficiency; 8B often competitive or better in listed tasks |
 
 ---
 
-## Conclusions
+## 4. Results and Evidence
+
+### Base-model comparisons (Table 2)
+
+- 14B: strong math/QA profile against Qwen3 and Gemma3 peers.
+- 8B: broad competitiveness with larger Gemma baseline in several metrics.
+- 3B: weaker absolute scores than larger peers but remains competitive on selected tasks, notably MATH.
+
+### Teacher-retention view (Table 3)
+
+- Capability decays with model size as expected.
+- 14B retains much of teacher performance on several benchmarks.
+- Some tasks improve versus teacher (e.g., reported MATH score in table).
+
+### Post-training view (Tables 4-5)
+
+- Instruct: 14B achieves strong Arena Hard/WildBench/MM-MTBench profile.
+- Reasoning: 14B and 8B show clear gains relative to Qwen counterparts on multiple listed benchmarks.
+
+### Discussion figures (3-6)
+
+- Figure 3: stronger teacher does not always help pretraining distillation.
+- Figure 4: post-trained teacher variant can improve student outcomes, especially STEM.
+- Figure 5: verbosity-performance tradeoff appears in instruction models.
+- Figure 6: ODPO provides substantial post-RL chat-quality gains for larger reasoning variants.
+
+---
+
+## 5. Limitations and Failure Modes
+
+### Author-acknowledged limitations
+
+1. **Teacher-selection behavior is non-trivial.** Stronger teacher quality does not monotonically map to stronger pretraining students.
+2. **Verbosity tradeoff.** More long-CoT data can raise STEM scores but can degrade chat naturalness.
+3. **3B instability/sensitivity.** 3B requires extra stabilization (distillation in SFT; sensitivity to tuning choices).
+4. **Reasoning-chat tension.** Reasoning specialization can hurt conversational quality, requiring additional alignment stages.
+
+### Inferred limitations (explicit inference)
+
+- **[Inferred]** Results are heavily table-driven and mostly relative to selected open families; external generalization beyond those baselines is not fully characterized in this report.
+- **[Inferred]** Some comparisons pool models with different modality/tooling/post-training recipes, which may confound pure architecture/training-budget attribution.
+
+### Scope and Comparability
+
+- **What was not tested:** The report does not provide exhaustive cross-family ablations for teacher choice, does not fully characterize behavior beyond listed benchmark suites, and does not isolate architecture/data/post-training effects with controlled matched runs.
+- **Comparability notes:** External baselines differ in modality stack, post-training recipes, and potentially data curation. Cross-family score gaps should be interpreted as end-to-end system comparisons, not pure architecture-only deltas.
+
+---
+
+## 6. Conclusions
 
 ### Contributions
 
-1. **Cascade Distillation methodology.** Introduced an iterative prune-distill-repeat approach that derives competitive models at 3B, 8B, and 14B scales from a 24B parent using 1-3T tokens instead of 15-36T from-scratch pretraining.
-
-2. **Pruning heuristics.** Demonstrated that layer importance can be approximated by output/input activation norm ratios, providing a simpler alternative to counterfactual perplexity.
-
-3. **Teacher selection insights.** Confirmed that (a) stronger teachers don't always yield better students in pretraining, (b) post-trained teachers are better than base teachers for pretraining distillation, (c) preference-tuned teachers are better than SFT-only teachers.
-
-4. **Open-weight release.** Released 9 models (3 sizes x 3 variants) under Apache 2.0 with 256K context and vision capabilities.
+1. **Compute-efficient family construction.** Cascade Distillation establishes a practical prune-distill-repeat recipe to derive 14B, 8B, and 3B models from a single stronger parent while retaining strong reported benchmark quality.
+2. **Actionable distillation design findings.** The paper documents that teacher strength and teacher variant interact with stage: smaller teacher can win in pretraining, while stronger/post-trained teachers can help in later alignment stages.
+3. **Integrated post-training pipelines.** It operationalizes two multi-stage release tracks (instruct and reasoning) with ODPO/GRPO adaptations and explicit mitigation for pathological generation behavior.
 
 ### Implications
 
-1. **Compute efficiency.** Cascade Distillation offers a path to producing model families at multiple scales without full pretraining runs for each size, potentially democratizing access to competitive smaller models.
-
-2. **Distillation research.** The finding that stronger teachers can hurt pretraining distillation while helping post-training suggests different mechanisms at play, warranting further investigation into the "capacity gap" phenomenon.
-
-3. **Reasoning model development.** The multi-stage pipeline (SFT + GRPO + ODPO) with separate STEM and General RL stages provides a template for training reasoning models that maintain conversational quality.
+1. **Broader model-family efficiency (speculative).** If replicated broadly, cascade recipes could lower barrier-to-entry for multi-size open model families by reusing a single high-quality parent.
+2. **Stage-specific distillation strategy (moderately supported).** Distillation may need different teacher-selection policies for pretraining versus post-training rather than a one-size-fits-all \"strongest teacher\" heuristic.
+3. **Alignment-stack modularity (speculative).** The reported gains from ODPO after RL suggest a compositional approach where reasoning and conversational quality can be tuned in separate stages.
 
 ---
 
-## Key Claims
+## 7. Key Claims
 
-1. **Cascade Distillation produces competitive models efficiently.** Models trained on 1-3T tokens compete with Qwen3 (36T) and Llama3 (15T). Evidence: Tables 2-5. Status: **supported**.
-
-2. **Ministral 3 14B matches 40% larger Mistral Small 3.1.** Comparable performance despite significant parameter reduction. Evidence: Table 3. Status: **supported**.
-
-3. **Smaller teachers can outperform larger teachers for pretraining distillation.** Mistral Small 3.1 beats Mistral Medium 3 as pretraining teacher. Evidence: Figure 3, Section 5.1. Status: **supported**.
-
-4. **Post-trained teachers yield stronger students.** Instruct teacher outperforms base teacher during pretraining, especially for STEM. Evidence: Figure 4. Status: **supported**.
-
-5. **Ministral 3 14B Reasoning achieves 89.8% on AIME 2024.** Outperforms Qwen 3 14B (83.7%) on math competition benchmarks. Evidence: Table 5. Status: **supported**.
-
-6. **Output/input norm ratio is effective for layer pruning.** Simpler than counterfactual perplexity while being effective. Evidence: Algorithm 2, Section 3.1. Status: **supported**.
-
-7. **Online DPO improves over SFT and offline DPO.** Particularly important for mitigating infinite generation artifacts. Evidence: Section 3.2.2. Status: **supported**.
+1. **C1:** Cascade Distillation enables competitive family-level pretraining efficiency versus larger from-scratch token budgets (Table 2, Section 1; supported). Scope: base-model comparisons against Qwen3/Gemma3 families. Magnitude: reported 1-3T token budgets vs cited 15T/36T scales.
+2. **C2:** 14B retains much teacher capability despite substantial size reduction (Table 3; supported). Scope: teacher-student evaluation on general, math/code, multilingual, multimodal suites. Magnitude: e.g., MMLU-Redux 82.0 vs 82.7, MBPP 71.6 vs 71.6.
+3. **C3:** Stronger teacher can underperform smaller teacher for pretraining distillation (Figure 3, Section 5.1; supported). Scope: 14B pretraining ablations in this report. Magnitude: figure trend favors Mistral Small 3.1 teacher.
+4. **C4:** Post-trained teacher variants improve student pretraining outcomes on STEM-heavy metrics (Figure 4, Section 5.1; supported). Scope: 3B teacher-variant pretraining ablations. Magnitude: stronger gains reported on math/code, smaller effects on knowledge.
+5. **C5:** 14B reasoning outperforms Qwen3 14B on multiple reasoning benchmarks in reported evaluations (Table 5; supported). Scope: pass@16 (pass@5 for LiveCodeBench). Magnitude: AIME 2024 89.8 vs 83.7; AIME 2025 85.0 vs 73.7; GPQA 71.2 vs 66.3.
+6. **C6:** Activation-norm-ratio layer scoring is a practical pruning proxy within this cascade setup (Algorithm 2, Section 3.1; supported). Scope: this architecture/training recipe. Magnitude: replaces counterfactual-perplexity ranking in iterative 24B->14B->8B->3B pruning.
+7. **C7:** ODPO improves alignment quality and helps mitigate generation artifacts for released models (Section 3.2.2 and Figure 6; supported). Scope: instruction and reasoning post-training stages, especially 14B/8B. Magnitude: figure reports substantial post-ODPO gains on chat benchmarks.
 
 ---
 
-## Open Questions
+## 8. Open Questions
 
-1. **Cascade depth limits.** How many pruning stages can Cascade Distillation support before quality degrades significantly? Could it derive 1B or 0.5B models effectively?
-
-2. **Optimal teacher-student ratio.** What is the ideal capacity ratio between teacher and student at different training stages? The capacity gap phenomenon suggests this is non-trivial.
-
-3. **Generalization of capacity gap.** Does the finding that stronger teachers hurt pretraining distillation generalize across different architectures and training setups?
-
-4. **Long-context quality.** How does Ministral 3's 256K context perform on tasks requiring reasoning over the full context, beyond simple retrieval?
-
-5. **Verbosity-quality tradeoff.** Can the verbosity issues observed in 3B be systematically addressed without hurting reasoning capabilities?
+1. How does cascade quality/computation trade off when extending below 3B?
+2. Which teacher-student capacity regimes optimize distillation quality at each stage (pretraining vs post-training)?
+3. Are the teacher-selection findings stable across other architectures and data distributions?
+4. What is effective long-context quality at 256K for complex reasoning, not just benchmark slices?
+5. Can verbosity controls preserve reasoning gains while improving conversational naturalness in smaller models?
 
 ---
 
-## Core References and Why They Are Referenced
+## 9. Core References and Why They Are Referenced
 
-### Architecture Foundations
-
-- **Vaswani et al. (2017)** -- *Attention Is All You Need.* The decoder-only Transformer architecture that Ministral 3 builds upon.
-
-- **Ainslie et al. (2023)** -- *GQA: Training Generalized Multi-Query Transformer Models.* Grouped-Query Attention with 32 query and 8 KV heads used across all Ministral 3 sizes.
-
-- **Su et al. (2021)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* RoPE positional encoding used in all models.
-
-- **Shazeer (2020)** -- *GLU Variants Improve Transformer.* SwiGLU activation used in all models.
-
-### Pruning and Distillation
-
-- **Sun et al. (2023)** -- *Wanda: A Simple and Effective Pruning Approach for Large Language Models.* Pruning methodology that Ministral 3's approach builds on.
-
-- **Muralidharan et al. (2024)** -- *Compact Language Models via Pruning and Knowledge Distillation (Minitron).* Direct predecessor for the Cascade Distillation approach; Ministral 3 uses similar pruning strategies but with simpler layer importance scoring.
-
-- **Busbridge et al. (2025)** -- *Distillation Scaling Laws.* Confirms the capacity gap observation where stronger teachers don't always yield better students.
-
-- **Goyal et al. (2025)** -- *Distilled Pretraining.* Confirms that post-trained teachers outperform base teachers for pretraining distillation.
-
-### Context Extension
-
-- **Peng et al. (2023)** -- *YaRN: Efficient Context Window Extension of Large Language Models.* Used for extending context from 16K to 256K tokens.
-
-- **Nakanishi (2025)** -- *Scalable-Softmax is Superior for Attention.* Position-based temperature scaling used for long-context extension.
-
-### Post-Training
-
-- **Ouyang et al. (2022)** -- *Training Language Models to Follow Instructions with Human Feedback.* Foundation for instruction-following fine-tuning approach.
-
-- **Rafailov et al. (2023)** -- *Direct Preference Optimization.* DPO framework that ODPO extends with online sampling.
-
-- **Guo et al. (2024)** -- *Direct Language Model Alignment from Online AI Feedback.* Online DPO methodology adopted for Ministral 3.
-
-- **Shao et al. (2024)** -- *DeepSeekMath.* GRPO algorithm used for reasoning model training.
-
-- **DeepSeek-AI et al. (2025)** -- *DeepSeek-R1.* GRPO training recipe followed for reasoning models.
-
-### Evaluation
-
-- **Hendrycks et al. (2020, 2021)** -- *MMLU* and *MATH.* Primary benchmarks for general knowledge and mathematical reasoning.
-
-- **Rein et al. (2024)** -- *GPQA.* Graduate-level science QA benchmark for evaluating reasoning.
-
-- **Li et al. (2024)** -- *Arena-Hard.* Post-training benchmark for instruction-following quality.
-
-- **Jain et al. (2024)** -- *LiveCodeBench.* Contamination-free code evaluation benchmark.
+- **Vaswani et al. (2017)**: Transformer backbone used by Ministral 3.
+- **Ainslie et al. (2023), Su et al. (2021), Shazeer (2020), Zhang & Sennrich (2019)**: Core architectural blocks (GQA, RoPE, SwiGLU, RMSNorm).
+- **Peng et al. (2023), Nakanishi (2025)**: Long-context extension and attention-temperature scaling context.
+- **Sun et al. (2023), Sreenivas et al. (2024), Muralidharan et al. (2024)**: Pruning/distillation baselines that motivate cascade choices.
+- **Rafailov et al. (2023), Guo et al. (2024), DeepSeek-AI et al. (2025)**: Preference optimization and RL methods used in post-training.
+- **Yang et al. (2025), Kamath et al. (2025), Bai et al. (2025)**: Main baseline families for empirical comparison.

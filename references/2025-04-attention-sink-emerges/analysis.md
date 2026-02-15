@@ -8,36 +8,52 @@ categories: ["attention-analysis", "mechanistic-interpretability"]
 scope: ["attention sink phenomenon", "softmax normalization", "pre-training dynamics", "attention mechanism design"]
 benchmarks_used: ["hellaswag"]
 models_introduced: []
-models_evaluated: ["gpt-2", "llama-2-7b", "llama-3-8b", "mistral-7b", "pythia-series"]
+models_evaluated: ["gpt-2", "llama-2-7b", "llama-2-13b", "llama-3-8b", "llama-3.1-8b", "mistral-7b", "pythia-series", "opt-125m", "opt-350m", "opt-1.3b"]
+# NOTE: Paper also evaluates GPT2-Medium, GPT2-Large, GPT2-XL, OPT-2.7B, OPT-6.7B, OPT-13B,
+# Jamba-v0.1, and Jamba-1.5-Mini — these need metadata.yaml entries before they can be listed here.
 key_claims:
   - id: C1
     claim: "Attention sinks exist universally in auto-regressive LMs with various inputs, even in small models (Pythia-14M) and with random token sequences"
     evidence: "Table 1, Figure 4(Left), Section 3.3"
     status: supported
+    scope: "Auto-regressive LMs from 14M to 13B parameters, English text and random tokens, T=64"
+    magnitude: "Pythia-14M exhibits sinks; random token Sink ranges from 70.29% (GPT2-XL) to 91.23% (LLaMA3-8B)"
   - id: C2
     claim: "Attention sink emerges during pre-training after effective optimization on sufficient training data; smaller learning rates reduce sink amplitude even with compensating training steps"
     evidence: "Figure 4(Middle, Right), Table 9, Figure 5(Right), Section 4-5"
     status: supported
+    scope: "~60M LLaMA-style models trained on the Pile, LR range 1e-4 to 8e-4, data range 50M to 5B tokens"
+    magnitude: "Sink emerges between 1k-2k steps; LR 1e-4 at 80k steps yields 6.29% vs 18.18% at LR 4e-4 at 20k steps"
   - id: C3
-    claim: "The sink position is determined by the loss function and data distribution, not by positional embedding type — all PE types (NoPE, absolute, learnable, relative, ALiBi, RoPE) produce attention sinks"
+    claim: "The sink position is determined by the loss function and data distribution, not by positional embedding type -- all PE types (NoPE, absolute, learnable, relative, ALiBi, RoPE) produce attention sinks"
     evidence: "Table 3, Table 10(Right), Figure 5(Middle), Section 5-7.1"
     status: supported
+    scope: "~60M LLaMA-style models, 6 PE types tested, single architecture"
+    magnitude: "Sink^epsilon_1 ranges from 18.18% (RoPE) to 35.53% (Relative PE) across PE types, all at comparable valid loss except Relative PE"
   - id: C4
     claim: "The first token acts as key biases: its keys have small l2-norm but high cosine similarity with queries, storing extra attention scores while not contributing to value computation"
     evidence: "Figure 2, Table 4 (K biases setup: Sink_*=73.34%, Sink_1=0.00%), Section 3.1, 7.3"
     status: supported
+    scope: "LLaMA3-8B (visualization), ~60M controlled models (K biases experiment)"
+    magnitude: "K biases absorb 73.34% of sink heads; first-token sink drops to 0.00% with identical valid loss 3.72"
   - id: C5
     claim: "Attention sink stems at least partially from tokens' inner dependence on attention scores due to softmax normalization; replacing softmax with sigmoid attention without normalization eliminates sinks in LMs up to 1B parameters"
     evidence: "Table 6, Figure 8, Table 14(Right), Section 7.4"
     status: supported
+    scope: "~60M and 1B LLaMA-style models, sigmoid/ELU+1/identity/MLP kernels tested"
+    magnitude: "Sigmoid (no norm) Sink=0.44% vs softmax 18.18% at 60M; Sink=2.46% vs 45.11% at 1B; valid loss gap 3.10 vs 3.07 at 1B"
   - id: C6
     claim: "Weight decay encourages the emergence of attention sink, with moderate values (gamma=0.5) inducing the strongest sink (41.08%), while excessive values (gamma>=2.0) hurt optimization and eliminate it"
     evidence: "Table 2, Section 6"
     status: supported
+    scope: "~60M LLaMA-style models, weight decay range 0.0 to 5.0, AdamW optimizer"
+    magnitude: "Non-monotonic: 15.20% at gamma=0.0, peak 41.08% at gamma=0.5, collapse to 0.01% at gamma=5.0"
   - id: C7
-    claim: "Instruction tuning has insignificant impact on attention sink — base and chat models have comparable sink metrics"
+    claim: "Instruction tuning has insignificant impact on attention sink -- base and chat models have comparable sink metrics"
     evidence: "Table 1(Right), Section 3.4"
     status: supported
+    scope: "Mistral-7B, LLaMA2-7B/13B, LLaMA3-8B base vs chat/instruct variants"
+    magnitude: "Differences range from 0.17pp (LLaMA3-8B) to 9.15pp (Mistral-7B); no consistent direction"
 cross_references:
   - target: 2024-05-attention-sinks-streaming
     type: extends
@@ -92,11 +108,11 @@ open_questions:
 
 ## Core Research Problem
 
-Auto-regressive LMs assign disproportionately high attention scores to the first token regardless of its semantic content — a phenomenon termed **attention sink** by Xiao et al. (2023). This pattern has been exploited for practical applications including streaming generation, KV cache optimization, efficient inference, and model quantization. However, the phenomenon remained poorly understood: it was unclear *when* attention sinks emerge during training, *what factors* cause them, and *why* they appear.
+Auto-regressive LMs assign disproportionately high attention scores to the first token regardless of its semantic content -- a phenomenon termed **attention sink** by Xiao et al. (2023). This pattern has been exploited for practical applications including streaming generation, KV cache optimization, efficient inference, and model quantization. However, the phenomenon remained poorly understood: it was unclear *when* attention sinks emerge during training, *what factors* cause them, and *why* they appear.
 
-Prior work (Cancedda, 2024; Sun et al., 2024) attributed attention sinks to massive activations — the first token develops disproportionately large hidden state norms. But this observation described a symptom rather than a root cause. Key questions remained unanswered: Do sinks depend on the positional encoding scheme? Do they require large-scale models? What role does the softmax normalization play?
+Prior work (Cancedda, 2024; Sun et al., 2024) attributed attention sinks to massive activations -- the first token develops disproportionately large hidden state norms. But this observation described a symptom rather than a root cause. Key questions remained unanswered: Do sinks depend on the positional encoding scheme? Do they require large-scale models? What role does the softmax normalization play?
 
-The core challenge is: **what conditions in LM pre-training — optimization, data distribution, loss function, and model architecture — cause attention sinks to emerge, and what is their mechanistic role.**
+The core challenge is: **what conditions in LM pre-training -- optimization, data distribution, loss function, and model architecture -- cause attention sinks to emerge, and what is their mechanistic role.**
 
 ---
 
@@ -104,9 +120,9 @@ The core challenge is: **what conditions in LM pre-training — optimization, da
 
 The paper provides a comprehensive empirical study that systematically varies each component of LM pre-training to identify the conditions under which attention sinks emerge. The key findings are:
 
-1. **Attention sinks are universal** — they appear in all auto-regressive LMs tested, from Pythia-14M to LLaMA3-8B, across all input types (natural text, random tokens), and persist through instruction tuning.
-2. **The first token acts as key biases** — the cosine similarity between the first token's keys and all queries is high despite small key norms, allowing it to store excess attention probability without contributing meaningfully to value computation.
-3. **Softmax normalization is the root cause** — replacing softmax with sigmoid attention without normalization eliminates attention sinks entirely in LMs up to 1B parameters, maintaining comparable validation loss.
+1. **Attention sinks are universal** -- they appear in all auto-regressive LMs tested, from Pythia-14M to LLaMA3-8B, across all input types (natural text, random tokens), and persist through instruction tuning.
+2. **The first token acts as key biases** -- the cosine similarity between the first token's keys and all queries is high despite small key norms, allowing it to store excess attention probability without contributing meaningfully to value computation.
+3. **Softmax normalization is the root cause** -- replacing softmax with sigmoid attention without normalization eliminates attention sinks entirely in LMs up to 1B parameters, maintaining comparable validation loss.
 
 ---
 
@@ -116,76 +132,75 @@ The paper provides a comprehensive empirical study that systematically varies ea
 
 The paper trains a series of controlled ~60M parameter LLaMA-style models, systematically varying one training factor at a time while holding others constant. Each trained model is evaluated using a threshold-based attention sink metric:
 
-> Sink^ε_k = (1/L) * Σ_{l=1}^{L} (1/H) * Σ_{h=1}^{H} I(α^{l,h}_k > ε)
+> Sink^epsilon_k = (1/L) * Sum_{l=1}^{L} (1/H) * Sum_{h=1}^{H} I(alpha^{l,h}_k > epsilon)
 
-where α^{l,h}_k = (1/(T-k+1)) * Σ_{i=k}^{T} A^{l,h}_{i,k} is the importance score for the k-th token in head h of block l. The metric measures the fraction of attention heads across all blocks that exhibit sink behavior at position k. The threshold ε = 0.3 is selected for being both strict and relatively insensitive to token length T (Figure 3). All measurements use T = 64.
+where alpha^{l,h}_k = (1/(T-k+1)) * Sum_{i=k}^{T} A^{l,h}_{i,k} is the importance score for the k-th token in head h of block l. The metric measures the fraction of attention heads across all blocks that exhibit sink behavior at position k. The threshold epsilon = 0.3 is selected for being both strict and relatively insensitive to token length T (Figure 3). All measurements use T = 64.
 
 ### Key Technical Components
 
-**First token as key biases.** The first token's hidden state h^l_1 has no involvement of self-attention (since there are no preceding tokens), making it a pure MLP output of the word embedding. From certain blocks onward, h^l_1 develops massive activations (large ℓ2-norm), but layer normalization suppresses these in the key/value projections, producing keys k^{l,h}_1 and values v^{l,h}_1 with *smaller* ℓ2-norms than other tokens (Figure 2, Top). Despite this small norm, the cosine similarity cos(q^{l,h}_t, k^{l,h}_1) is significantly larger than cos(q^{l,h}_t, k^{l,h}_{j≠1}), driving the attention sink (Figure 2, Bottom).
+**First token as key biases.** The first token's hidden state h^l_1 has no involvement of self-attention (since there are no preceding tokens), making it a pure MLP output of the word embedding. From certain blocks onward, h^l_1 develops massive activations (large l2-norm), but layer normalization suppresses these in the key/value projections, producing keys k^{l,h}_1 and values v^{l,h}_1 with *smaller* l2-norms than other tokens (Figure 2, Top). Despite this small norm, the cosine similarity cos(q^{l,h}_t, k^{l,h}_1) is significantly larger than cos(q^{l,h}_t, k^{l,h}_{j!=1}), driving the attention sink (Figure 2, Bottom).
 
-**Learnable key biases experiment.** To confirm the key-bias interpretation, the paper introduces explicit learnable key biases k^{*l,h} with fixed zero value biases v^{*l,h} = 0 (K biases setup). With this design, attention sink shifts entirely from the first token (Sink^ε_1 = 0.00%) to the bias position (Sink^ε_* = 73.34%), demonstrating that the sink token stores extra attention scores without contributing to value computation (Table 4). Furthermore, when the fixed v^{*l,h} is set to non-zero vectors with increasing ℓ2-norm, attention gradually shifts back from k^{*l,h} to the first token — because the model cannot cancel out the non-zero value contribution, it prefers to use the first token whose values it can optimize (Table 5).
+**Learnable key biases experiment.** To confirm the key-bias interpretation, the paper introduces explicit learnable key biases k^{*l,h} with fixed zero value biases v^{*l,h} = 0 (K biases setup). With this design, attention sink shifts entirely from the first token (Sink^epsilon_1 = 0.00%) to the bias position (Sink^epsilon_* = 73.34%), demonstrating that the sink token stores extra attention scores without contributing to value computation (Table 4). Furthermore, when the fixed v^{*l,h} is set to non-zero vectors with increasing l2-norm, attention gradually shifts back from k^{*l,h} to the first token -- because the model cannot cancel out the non-zero value contribution, it prefers to use the first token whose values it can optimize (Table 5).
 
 **Sigmoid attention without normalization.** The paper generalizes the attention output as:
 
-> v^†_i = Z_i^{-1} * Σ_{j=1}^{i} sim(φ(q_i), φ(k_j)) * v_j
+> v^dag_i = Z_i^{-1} * Sum_{j=1}^{i} sim(phi(q_i), phi(k_j)) * v_j
 
-For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ_j sim(q_i, k_j). Without normalization (Z_i = 1), attention scores for individual tokens are independent — there is no need to "dump" probability mass on a sink token. Sigmoid attention without normalization achieves comparable validation loss (3.70 vs. 3.73 for softmax) but eliminates attention sinks entirely (Sink^ε_1 = 0.44% by proxy attention scores vs. 18.18% for softmax), and also eliminates massive activations (Table 6, Figure 8).
+For softmax, phi(.) is identity and sim(q, k) = exp(qk^T/sqrt(d_h)) with Z_i = Sum_j sim(q_i, k_j). Without normalization (Z_i = 1), attention scores for individual tokens are independent -- there is no need to "dump" probability mass on a sink token. Sigmoid attention without normalization achieves comparable validation loss (3.70 vs. 3.73 for softmax) but eliminates attention sinks entirely (Sink^epsilon_1 = 0.44% by proxy attention scores vs. 18.18% for softmax), and also eliminates massive activations (Table 6, Figure 8).
 
 ### Theoretical Analysis
 
-**Propositions 1–4** prove that for LMs with NoPE, relative PE, ALiBi, or RoPE, when all input tokens are identical, all hidden states are equal across positions (since P = 0 for these PE types). This disperses the attention sink and produces uniform or distance-dependent attention. For NoPE: A^{l,h}_{t,i} = 1/t uniformly. For ALiBi: attention follows the monotonic distance penalty. For RoPE: attention scores are bounded by e^{2ξ}/(e^{2ξ} + (t−1)), decreasing to zero as t grows (Proposition 4). GPT2 (learnable PE) retains attention sinks even with repeated tokens because p_t differs across positions (Table 1, Table 7).
+**Propositions 1-4** prove that for LMs with NoPE, relative PE, ALiBi, or RoPE, when all input tokens are identical, all hidden states are equal across positions (since P = 0 for these PE types). This disperses the attention sink and produces uniform or distance-dependent attention. For NoPE: A^{l,h}_{t,i} = 1/t uniformly (Proposition 1). For ALiBi: attention follows the monotonic distance penalty, so no sink on the first token (Proposition 3). For RoPE: attention scores are bounded by e^{2*xi}/(e^{2*xi} + (t-1)), decreasing to zero as t grows (Proposition 4). GPT2 (learnable PE) retains attention sinks even with repeated tokens because p_t differs across positions (Table 1, Table 7).
 
 ### Experimental Setup
 
 **Controlled pre-training models:** LLaMA-style, d = 768, L = 10, H = 8, FFN intermediate = 1536, ~60M parameters (excluding embeddings). RoPE, pre-norm, RMSNorm, SwiGLU. Trained on 5B tokens from the Pile, context length 2048, batch size 1M tokens, 20k steps (100 warmup), LR = 4e-4 with cosine scheduling, AdamW with weight decay 0.1. Validation: Pile-CC loss. Sink metric: 100 sequences of T = 64 from out-of-training data.
 
-**1B parameter scale-up:** Softmax vs. sigmoid (without normalization). Softmax achieves validation loss 3.07 with Sink^ε_1 = 45.11%; sigmoid achieves 3.10 with Sink^ε_1 = 2.46% (proxy). Training stability verified through supervised fine-tuning on UltraChat (200k samples, LR = 2e-5).
+**1B parameter scale-up:** Softmax vs. sigmoid (without normalization). Softmax achieves validation loss 3.07 with Sink^epsilon_1 = 45.11%; sigmoid achieves 3.10 with Sink^epsilon_1 = 2.46% (proxy). Training stability verified through supervised fine-tuning on UltraChat (200k samples, LR = 2e-5, batch size 64, 1 epoch).
 
-**Open-source model evaluation:** GPT2 (124M–1.5B), Pythia (14M–12B), OPT (125M–13B), LLaMA2 (7B, 13B), LLaMA3/3.1 (8B), Mistral (7B), Jamba (v0.1, 1.5 Mini). Input domains: 17 Pile subsets.
+**Open-source model evaluation:** GPT2 (124M-1.5B), Pythia (14M-12B), OPT (125M-13B), LLaMA2 (7B, 13B), LLaMA3/3.1 (8B), Mistral (7B), Jamba (v0.1, 1.5 Mini). Input domains: 17 Pile subsets. Downstream evaluation: HellaSwag accuracy (Figure 10, Appendix C.3).
+
+**Reproducibility:** Code available at https://github.com/sail-sg/Attention-Sink. Seeds not explicitly reported. Controlled experiments use a single architecture (~60M LLaMA-style) with one factor varied at a time. No variance estimates across runs reported (limited evidence on run-to-run variability).
 
 ### Key Results
 
 **Optimization effects (Section 4):**
 
-| Factor | Condition | Sink^ε_1 (%) | Valid Loss |
+| Learning Rate | Training Steps (k) | Sink^epsilon_1 (%) | Valid Loss |
 |---|---|---|---|
-| Learning rate | 8e-4, 20k steps | 32.23 | 3.70 |
-| Learning rate | 4e-4, 20k steps (default) | 18.18 | 3.73 |
-| Learning rate | 2e-4, 40k steps | 16.81 | 3.68 |
-| Learning rate | 1e-4, 80k steps | 6.29 | 3.67 |
+| 8e-4 | 10 | 23.44 | 3.79 |
+| 8e-4 | 20 | 32.23 | 3.70 |
+| 4e-4 | 20 (default) | 18.18 | 3.73 |
+| 2e-4 | 20 | 11.21 | 3.78 |
+| 2e-4 | 40 | 16.81 | 3.68 |
+| 1e-4 | 20 | 2.90 | 3.92 |
+| 1e-4 | 80 | 6.29 | 3.67 |
 
 - Attention sink emerges between 1k and 2k training steps and increases with continued training (Figure 4, Middle).
-- Smaller learning rates delay emergence and reduce final sink amplitude, even with compensating training steps (Table 9).
-- Batch size has no effect on attention sink (Table 10, Left).
+- Smaller learning rates delay emergence and reduce final sink amplitude, even with compensating training steps (Table 9). At constant LR x steps product, smaller LR yields less sink (moderate evidence: 3 LR values tested with compensation).
+- Batch size (0.25M, 0.5M, 1M, 2M) has no effect on attention sink (Table 10, Left; limited evidence: 4 values tested, single run each).
 
 **Data distribution effects (Section 5):**
 
-| Training Data | Sink^ε_1 (%) | Valid Loss |
-|---|---|---|
-| 5B tokens | 18.18 | 3.73 |
-| 500M tokens | ~4 | ~3.8 |
-| 50M tokens | <1 | ~4.5 (overfit) |
-
-- With less training data, sinks disappear — this is driven by data amount, not overfitting (Figure 28).
+- With 50M-100M training tokens, sinks do not emerge even after 5k steps, independent of overfitting behavior (Figure 28 -- 50M and 100M models overfit early but sink stays below 1%).
 - Randomizing x_1 ~ Uniform(V) increases the sink (27.03%) because the first token carries even less semantic information.
-- When x_1, x_2 ~ Uniform(V), the sink shifts to position 2 (Sink^ε_2 = 14.08%, Sink^ε_1 = 1.98%).
-- Fixing a specific token at position k during pre-training always places the sink at position k (Table 10, Right).
+- When x_1, x_2 ~ Uniform(V), the sink shifts to position 2 (Sink^epsilon_2 = 14.08%, Sink^epsilon_1 = 1.98%).
+- Fixing a specific token at position k during pre-training always places the sink at position k (Table 10, Right: fixed at pos 1 yields Sink^epsilon_1 = 74.11%, fixed at pos 2 yields Sink^epsilon_2 = 69.03%, fixed at pos 3 yields Sink^epsilon_3 = 69.64%).
 
 **Loss function effects (Section 6):**
 
-| Weight Decay γ | 0.0 | 0.01 | 0.1 | 0.5 | 1.0 | 2.0 | 5.0 |
-|---|---|---|---|---|---|---|---|
-| Sink^ε_1 (%) | 15.20 | 15.23 | 18.18 | 41.08 | 37.71 | 6.13 | 0.01 |
-| Valid Loss | 3.72 | 3.72 | 3.73 | 3.80 | 3.90 | 4.23 | 5.24 |
+| Weight Decay gamma | 0.0 | 0.001 | 0.01 | 0.1 | 0.5 | 1.0 | 2.0 | 5.0 |
+|---|---|---|---|---|---|---|---|---|
+| Sink^epsilon_1 (%) | 15.20 | 15.39 | 15.23 | 18.18 | 41.08 | 37.71 | 6.13 | 0.01 |
+| Valid Loss | 3.72 | 3.72 | 3.72 | 3.73 | 3.80 | 3.90 | 4.23 | 5.24 |
 
 - Moderate weight decay encourages attention sink; excessive weight decay hurts optimization and eliminates it.
 - Prefix language modeling (p > 1) distributes the sink among prefix tokens rather than concentrating it on the first token (Figure 5, Middle).
-- Shifted window attention: the sink appears on the absolute first token, not the "relative" first token within each window. Smaller window sizes prevent sink emergence (Figure 6).
+- Shifted window attention: the sink appears on the absolute first token, not the "relative" first token within each window. Smaller window sizes (64, 128) prevent sink emergence; larger window sizes (512, 1024) allow it (Figure 6, Right).
 
 **Architecture effects (Section 7):**
 
-| PE Type | Sink^ε_1 (%) | Valid Loss |
+| PE Type | Sink^epsilon_1 (%) | Valid Loss |
 |---|---|---|
 | NoPE | 20.35 | 3.81 |
 | Absolute PE | 32.73 | 3.74 |
@@ -194,14 +209,14 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 | ALiBi | 20.78 | 3.71 |
 | Rotary (RoPE) | 18.18 | 3.73 |
 
-- PE type does not affect emergence — even NoPE models develop sinks (Table 3).
-- Post-norm LMs also develop sinks (Sink^ε_1 = 13.54%); massive activations exist before post-LN rather than in the hidden states (Figure 7, Left).
-- FFN activation function (ReLU, GeLU, Swish, SwiGLU variants) does not affect sinks (Table 11).
-- Multi-head design (number of heads, concatenation vs. addition) does not affect sinks (Table 12, Left).
+- PE type does not affect emergence -- even NoPE models develop sinks (Table 3).
+- Post-norm LMs also develop sinks (Sink^epsilon_1 = 13.54%); massive activations exist before post-LN rather than in the hidden states (Figure 7, Left).
+- FFN activation function (ReLU, GeLU, Swish, SwiGLU, ReGLU, GeGLU) does not affect sinks; Sink^epsilon_1 ranges from 13.88% to 18.18% across all 6 variants (Table 11).
+- Multi-head design (number of heads H = 1, 2, 4, 8; concatenation vs. addition) does not affect sinks (Table 12, Left).
 
 **Attention operation effects (Section 7.4):**
 
-| Attention Operation | Normalization | Sink^ε_1 (%) | Valid Loss |
+| Attention Operation | Normalization | Sink^epsilon_1 (%) | Valid Loss |
 |---|---|---|---|
 | Softmax (exp) | sum-to-one | 18.18 | 3.73 |
 | Sigmoid | none | 0.44* | 3.70 |
@@ -217,6 +232,11 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 - **With normalization**: attention sinks emerge regardless of the similarity function.
 - **Without normalization**: attention sinks do not emerge, even at 1B parameters (Figure 8, Right).
 - MLP kernel is the only function that avoids sinks both with and without normalization.
+- Sigmoid attention (no normalization) has no attention sink across varying learning rates (4e-4, 1e-3, 1e-4) and weight decay ratios (0.0, 0.1, 0.5, 1.0), all yielding Sink^epsilon_1 < 1% (Table 14, Right).
+
+### SFT Training Stability
+
+At the 1B scale, both softmax and sigmoid (no normalization) models show stable supervised fine-tuning on UltraChat: training loss decreases from ~2.6 to ~1.8, gradient norms stabilize around 0.2-0.4 after initial spike, with no instability issues for either attention type (Figure 30, Appendix E).
 
 ---
 
@@ -224,7 +244,7 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 1. **Scale limited to 1B parameters.** The sigmoid attention experiments scale to 1B parameters, but it is unclear whether attention sinks would remain absent at the 7B+ scales where they are most practically relevant (Section 7.4).
 
-2. **Narrow model family.** Controlled experiments use only LLaMA-style architectures. While open-source evaluation covers multiple families, the causal ablations are limited to one architecture.
+2. **Narrow model family for causal ablations.** Controlled experiments use only LLaMA-style architectures (~60M parameters). While open-source evaluation covers multiple families (GPT2, Pythia, OPT, LLaMA2/3, Mistral, Jamba), the causal ablations isolating individual factors are limited to one architecture.
 
 3. **Only the first-position sink is studied.** Sun et al. (2024) and Yu et al. (2024) observed attention sinks on word tokens with limited semantic information (e.g., periods, newlines) at non-fixed positions. This paper focuses exclusively on the positionally fixed first-token sink (Section 8).
 
@@ -234,7 +254,14 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 6. **Training data limited to English.** All controlled experiments use the Pile dataset. Whether the findings generalize to multilingual or domain-specific pre-training is untested.
 
-7. **Metric sensitivity.** The Sink^ε_k metric depends on the threshold ε and sequence length T, and the paper acknowledges there is no principled way to select an optimal threshold (Section 3.2).
+7. **Metric sensitivity.** The Sink^epsilon_k metric depends on the threshold epsilon and sequence length T, and the paper acknowledges there is no principled way to select an optimal threshold (Section 3.2).
+
+8. **[Inferred]** No variance estimates or repeated runs are reported for the controlled experiments. All comparisons appear to be single-run, making it difficult to assess whether small differences in Sink^epsilon_1 (e.g., 15.20% vs. 15.39% for gamma=0.0 vs 0.001) are meaningful.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models larger than 1B for the sigmoid attention experiments; non-English training data; models with different tokenizers; architectures beyond decoder-only Transformers (Jamba is evaluated but only for sink metrics, not for the causal ablations); effect of attention sinks on downstream task performance beyond HellaSwag correlation.
+- **Comparability notes:** The ~60M model used for controlled experiments is substantially smaller than the open-source models evaluated (7B-13B), so the magnitude of sink metrics may not transfer directly across scales. The paper uses T = 64 for all sink measurements; other work may use different sequence lengths, making direct cross-paper comparison of sink metrics difficult. The proxy attention score computation used for non-softmax operations (replacing the normalization term) is not directly comparable to standard softmax attention scores. The HellaSwag evaluation in Appendix C.3 uses the lm-evaluation-harness platform (Gao et al., 2024), which should be comparable to standard evaluations.
 
 ---
 
@@ -242,15 +269,15 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 ### Contributions
 
-1. **Comprehensive taxonomy of factors affecting attention sink emergence.** Systematically varied optimization (learning rate, batch size, steps), data (amount, distribution, token fixing), loss function (weight decay, prefix LM, window attention), and architecture (PE, normalization, attention design), establishing which factors matter and which do not (Sections 4–7).
+1. **Comprehensive taxonomy of factors affecting attention sink emergence.** Systematically varied optimization (learning rate, batch size, steps), data (amount, distribution, token fixing), loss function (weight decay, prefix LM, window attention), and architecture (PE, normalization, attention design), establishing which factors matter and which do not (Sections 4-7; tested across 6 PE types, 6 FFN activations, 8 attention operations, 8 weight decay values).
 
-2. **Identified the key-bias mechanism.** Demonstrated that the first token's keys act as implicit biases — minimizing angles with all queries to absorb excess attention — while its values have negligible ℓ2-norm and do not contribute to the output computation. Confirmed by the K-biases experiment where explicit zero-value key biases absorb 73.34% of attention sink heads (Table 4, Section 7.3).
+2. **Identified the key-bias mechanism.** Demonstrated that the first token's keys act as implicit biases -- minimizing angles with all queries to absorb excess attention -- while its values have negligible l2-norm and do not contribute to the output computation. Confirmed by the K-biases experiment where explicit zero-value key biases absorb 73.34% of attention sink heads (Table 4, Section 7.3).
 
 3. **Identified softmax normalization as a root cause.** Showed that attention sinks stem from tokens' inner dependence on attention scores imposed by the softmax sum-to-one constraint. Removing normalization (sigmoid, ELU+1, or identity kernel without normalization) eliminates sinks while maintaining comparable model quality (Table 6, Figure 8).
 
-4. **Proposed a quantitative metric for attention sink.** The Sink^ε_k metric provides a scalar measurement of attention sink strength across all heads and layers, enabling systematic comparisons across architectures and training configurations (Section 3.2).
+4. **Proposed a quantitative metric for attention sink.** The Sink^epsilon_k metric provides a scalar measurement of attention sink strength across all heads and layers, enabling systematic comparisons across architectures and training configurations (Section 3.2).
 
-5. **Proved attention properties under repeated tokens.** Propositions 1–4 establish that for NoPE/relative PE/ALiBi/RoPE, repeated token sequences produce uniform or distance-dependent attention (no sink), while learnable PE models retain sinks due to position-dependent initial embeddings (Appendix C.1).
+5. **Proved attention properties under repeated tokens.** Propositions 1-4 establish that for NoPE/relative PE/ALiBi/RoPE, repeated token sequences produce uniform or distance-dependent attention (no sink), while learnable PE models retain sinks due to position-dependent initial embeddings (Section 3.3, Appendix C.1).
 
 ### Implications
 
@@ -258,25 +285,25 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 2. **Attention sinks are a learned optimization strategy, not an architectural necessity.** The emergence depends on effective optimization with sufficient data, not on any specific architectural component. This suggests sinks are the model's learned solution to the softmax normalization constraint rather than a fundamental requirement for language modeling.
 
-3. **Practical interventions are possible.** Weight decay tuning, prefix language modeling, learnable key biases, or architectural changes to the attention normalizer can control sink behavior without fundamentally changing the model (Sections 6–7).
+3. **Practical interventions are possible.** Weight decay tuning, prefix language modeling, learnable key biases, or architectural changes to the attention normalizer can control sink behavior without fundamentally changing the model (Sections 6-7).
 
 ---
 
 ## Key Claims
 
-1. **C1: Attention sinks are universal across auto-regressive LMs.** Even Pythia-14M (14 million parameters) exhibits attention sinks. Sinks persist with random token inputs (GPT2-XL: 70.29%, LLaMA3-8B: 91.23%) but disappear with repeated tokens for RoPE/ALiBi models due to dispersed massive activations (Table 1, Figure 4, Left). Input domain across 17 Pile subsets has negligible effect (Figure 9). Status: **supported**.
+1. **C1: Attention sinks are universal across auto-regressive LMs.** Even Pythia-14M (14 million parameters) exhibits attention sinks. Sinks persist with random token inputs (GPT2-XL: 70.29%, LLaMA3-8B: 91.23%) but disappear with repeated tokens for RoPE/ALiBi models due to dispersed massive activations (Table 1, Figure 4, Left). Input domain across 17 Pile subsets has negligible effect (Figure 9). Scope: auto-regressive LMs from 14M to 13B, English text and random tokens. Magnitude: Pythia-14M through LLaMA3-8B all show sinks; random-token sinks range 70-91%. Tested across 5 model families and 17 data domains (strong evidence for universality within tested scope). Status: **supported**.
 
-2. **C2: Attention sink emerges during pre-training after effective optimization on sufficient data.** Sinks appear between 1k–2k training steps in the default setup and grow with continued training (Figure 4, Middle). With 50M–100M training tokens, sinks do not emerge even after 5k steps, independent of overfitting (Figure 28). Smaller learning rates (1e-4 vs. 4e-4) reduce sink amplitude from 18.18% to 2.90% at 20k steps, and to 6.29% even with 4x compensating steps (Table 9). Status: **supported**.
+2. **C2: Attention sink emerges during pre-training after effective optimization on sufficient data.** Sinks appear between 1k-2k training steps in the default setup and grow with continued training (Figure 4, Middle). With 50M-100M training tokens, sinks do not emerge even after 5k steps, independent of overfitting (Figure 28). Smaller learning rates (1e-4 vs. 4e-4) reduce sink amplitude from 18.18% to 2.90% at 20k steps, and to 6.29% even with 4x compensating steps (Table 9). Scope: ~60M LLaMA-style model, Pile dataset, LR range 1e-4 to 8e-4. Magnitude: 6.29% (LR 1e-4, 80k steps) vs. 18.18% (LR 4e-4, 20k steps). Single architecture tested (moderate evidence). Status: **supported**.
 
-3. **C3: Sink position depends on loss function and data distribution, not PE type.** All PE types — NoPE (20.35%), absolute (32.73%), learnable (33.13%), relative (35.53%), ALiBi (20.78%), RoPE (18.18%) — produce sinks at comparable validation loss (Table 3). Fixing a token at position k during pre-training always places the sink at position k (Table 10, Right). Prefix LM distributes sinks among prefix tokens (Figure 5, Middle). Status: **supported**.
+3. **C3: Sink position depends on loss function and data distribution, not PE type.** All PE types -- NoPE (20.35%), absolute (32.73%), learnable (33.13%), relative (35.53%), ALiBi (20.78%), RoPE (18.18%) -- produce sinks at comparable validation loss except relative PE (Table 3). Fixing a token at position k during pre-training always places the sink at position k: pos 1 yields 74.11%, pos 2 yields 69.03%, pos 3 yields 69.64% (Table 10, Right). Prefix LM distributes sinks among prefix tokens (Figure 5, Middle). Scope: ~60M model, 6 PE types, 3 fixed positions. Magnitude: Sink^epsilon_1 varies 18-36% across PE types but is present in all. Tested with 6 PE types and 3 position-fixing conditions (moderate evidence). Status: **supported**.
 
-4. **C4: The first token acts as key biases, not value contributors.** Introducing explicit learnable key biases with zero-value biases (K biases) absorbs 73.34% of sink heads while reducing first-token sinks to 0.00%, with identical validation loss 3.72 (Table 4). The key biases eliminate massive activations entirely (Figure 7, Middle). Increasing the ℓ2-norm of fixed value biases gradually shifts the sink back to the first token (Table 5). Status: **supported**.
+4. **C4: The first token acts as key biases, not value contributors.** Introducing explicit learnable key biases with zero-value biases (K biases) absorbs 73.34% of sink heads while reducing first-token sinks to 0.00%, with identical validation loss 3.72 (Table 4). The key biases eliminate massive activations entirely (Figure 7, Middle). Increasing the l2-norm of fixed value biases gradually shifts the sink back to the first token: at v' the sink* drops from 73.34% to 70.03%, at 5v' to 44.43%, at 20v' to 1.51% while Sink_1 rises from 0.00% to 25.88% (Table 5). Scope: ~60M model, 5 bias configurations. Magnitude: 73.34% absorption by K biases with 0.00% first-token sink. Confirmed by graded value-bias experiments with 7 norm settings (strong evidence). Status: **supported**.
 
-5. **C5: Softmax normalization is the root cause.** With sigmoid attention (no normalization): Sink^ε_1 = 0.44% and no massive activations. With sigmoid attention (sum-normalized): Sink^ε_1 = 30.24%. The presence vs. absence of normalization is the decisive factor, not the similarity function (Table 6). At 1B parameters, sigmoid (no normalization) achieves validation loss 3.10 vs. 3.07 for softmax, with Sink^ε_1 dropping from 45.11% to 2.46% (Section 7.4, Figure 8, Right). Status: **supported**.
+5. **C5: Softmax normalization is the root cause.** With sigmoid attention (no normalization): Sink^epsilon_1 = 0.44% and no massive activations. With sigmoid attention (sum-normalized): Sink^epsilon_1 = 30.24%. The presence vs. absence of normalization is the decisive factor, not the similarity function (Table 6). At 1B parameters, sigmoid (no normalization) achieves validation loss 3.10 vs. 3.07 for softmax, with Sink^epsilon_1 dropping from 45.11% to 2.46% (Section 7.4, Figure 8, Right). Robustness confirmed across varying LR and weight decay (Table 14, Right -- 6 configurations, all Sink < 1%). Scope: ~60M and 1B LLaMA-style models, 8 attention operation variants. Magnitude: 0.44% vs. 18.18% at 60M; 2.46% vs. 45.11% at 1B. Tested with 8 attention operations and 2 model scales (strong evidence, though limited to 1B max). Status: **supported**.
 
-6. **C6: Weight decay has a non-monotonic effect on attention sink.** No weight decay yields 15.20% sink; γ = 0.5 peaks at 41.08%; γ ≥ 2.0 collapses to near zero as optimization degrades (valid loss rising from 3.80 to 5.24). Status: **supported**.
+6. **C6: Weight decay has a non-monotonic effect on attention sink.** No weight decay yields 15.20% sink; gamma = 0.001 yields 15.39%; gamma = 0.5 peaks at 41.08%; gamma >= 2.0 collapses to near zero as optimization degrades (valid loss rising from 3.80 at gamma = 0.5 to 5.24 at gamma = 5.0) (Table 2). Scope: ~60M model, gamma range 0.0-5.0, AdamW. Magnitude: non-monotonic from 15.20% to peak 41.08% to 0.01%. Tested with 8 weight decay values (moderate evidence; single architecture, no repeated runs). Status: **supported**.
 
-7. **C7: Instruction tuning does not significantly affect attention sink.** Base vs. chat comparisons: Mistral-7B 97.49% vs. 88.34%, LLaMA2-7B 92.47% vs. 92.88%, LLaMA2-13B 91.69% vs. 90.94%, LLaMA3-8B 99.02% vs. 98.85% (Table 1, Right). Status: **supported**.
+7. **C7: Instruction tuning does not significantly affect attention sink.** Base vs. chat comparisons: Mistral-7B 97.49% vs. 88.34%, LLaMA2-7B 92.47% vs. 92.88%, LLaMA2-13B 91.69% vs. 90.94%, LLaMA3-8B 99.02% vs. 98.85% (Table 1, Right). Block-wise and head-wise distributions are also similar between base and instruct variants (Figures 19-21). Scope: 4 model pairs (Mistral-7B, LLaMA2-7B/13B, LLaMA3-8B). Magnitude: differences range from 0.17pp to 9.15pp with no consistent direction. Limited evidence: 4 model pairs, no controlled instruction tuning experiment. Status: **supported**.
 
 ---
 
@@ -288,7 +315,7 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 3. **Would sigmoid attention maintain no attention sink at scales significantly beyond 1B?** The 1B model shows near-zero sinks (2.46% by proxy scores), but scaling behavior beyond this is unknown. The slight validation loss gap (3.10 vs. 3.07) may widen or narrow. Not addressed.
 
-4. **How does attention sink interact with context extension and long-context performance?** The paper focuses on pre-training dynamics but does not study how sinks affect context utilization — a connection relevant to the streaming inference and KV cache applications that motivate the work. Not addressed.
+4. **How does attention sink interact with context extension and long-context performance?** The paper focuses on pre-training dynamics but does not study how sinks affect context utilization -- a connection relevant to the streaming inference and KV cache applications that motivate the work. Not addressed.
 
 ---
 
@@ -324,9 +351,11 @@ For softmax, φ(·) is identity and sim(q, k) = exp(qk^⊤/√d_h) with Z_i = Σ
 
 - **Dubey et al. (2024)** -- *The Llama 3 Herd of Models.* LLaMA3-8B Base provides the primary visualization model (Figure 2) and is evaluated for attention sink across different inputs and model variants.
 
-- **Biderman et al. (2023)** -- *Pythia: A Suite for Analyzing Large Language Models.* The Pythia suite (14M–12B) provides the smallest model (14M) demonstrating attention sinks and the complete scaling analysis across 10 model sizes.
+- **Biderman et al. (2023)** -- *Pythia: A Suite for Analyzing Large Language Models.* The Pythia suite (14M-12B) provides the smallest model (14M) demonstrating attention sinks and the complete scaling analysis across 10 model sizes.
 
 - **Radford et al. (2019)** -- *Language Models Are Unsupervised Multitask Learners.* GPT2 family evaluated; GPT2-XL uniquely retains sinks with repeated tokens due to learnable PE (Table 1, Table 7).
+
+- **Zhang et al. (2022)** -- *OPT: Open Pre-trained Transformer Language Models.* OPT family (125M-13B) evaluated; OPT shows stronger sinks than Pythia at comparable scale but similar downstream performance (Figure 10).
 
 ### Training and Optimization
 

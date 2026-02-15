@@ -20,7 +20,7 @@ In the case of verifiers, there is also the option to choose between different s
 
 Formally, define Target($\theta$, $N$, $q$) as the distribution over natural language output tokens induced by the model for a given prompt $q$, using test-time compute hyper-parameters $\theta$, and a compute budget of $N$. The goal is to select the hyper-parameters $\theta$ which maximize the accuracy of the target distribution for a given problem:
 
-$$\theta^*_{q, a^*(q)}(N) = \text{argmax}_\theta \left( \mathbb{E}_{y \sim \text{Target}(\theta, N, q)} \left[ \mathbb{1}_{y = y^*(q)} \right] \right)$$
+$$\theta^*_{q, y^*(q)}(N) = \text{argmax}_\theta \left( \mathbb{E}_{y \sim \text{Target}(\theta, N, q)} \left[ \mathbb{1}_{y = y^*(q)} \right] \right)$$
 (Equation 1)
 
 where $y^*(q)$ denotes the ground-truth correct response for $q$, and $\theta^*_{q, y^*(q)}(N)$ represents the test-time compute-optimal scaling strategy for the problem $q$ with compute budget $N$. [p. 5]

@@ -1,0 +1,3 @@
+# ACKNOWLEDGMENT [p. 11]
+
+The authors thank Chujie Zheng for the helpful discussion and feedback [p. 11]. This research is based upon work supported DARPA ITM Program No. FA8650-23-C-7316 [p. 11]. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the official policies, either expressed or implied, of the U.S. Government [p. 11]. The U.S. Government is authorized to reproduce and distribute reprints for governmental purposes notwithstanding any copyright annotation therein [p. 11].

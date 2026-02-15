@@ -83,6 +83,9 @@ cross_references:
   - target: 2025-11-context-length-hurts-performance
     type: complementary
     detail: "Evaluates Gemini 2.0 (successor) and finds it shows better robustness than open-source models but still exhibits context-length-induced degradation"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. cite Gemini 1.5 for models capable of processing up to 1M tokens, motivating the question of whether long context is genuinely utilized beyond retrieval"
 open_questions:
   - question: "What specific architectural changes enable 10M-token context without performance degradation? The paper describes only 'a series of significant architecture changes' without enumeration."
     addressed_by: null

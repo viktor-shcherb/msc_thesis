@@ -1,0 +1,125 @@
+\section{Behavioral ECL Evaluation Literature}
+
+Early long-context evaluation was dominated by retrieval-centric stress tests,
+especially needle-in-a-haystack (NIAH) setups
+\cite{2023-11-needle-in-a-haystack}. In these tasks, a target fact is embedded
+in long distractor text and the model is asked to recover it. This evaluation
+style is useful for probing whether a model can access distant tokens, but it is
+limited as a proxy for broader long-context reasoning, aggregation, and
+multi-step integration.
+% Verification (NIAH formulation): verify in original NIAH source
+% (LLMTest_NeedleInAHaystack repository, prompt/task setup) that the task is
+% retrieval of a planted fact from distractor text. For the "limited proxy"
+% point, compare with RULER's non-retrieval task categories in 2404.06654,
+% Sec. 3 (multi-hop tracing, aggregation, QA).
+
+Recent benchmarks broaden this picture in complementary ways. RULER extends
+synthetic evaluation beyond single retrieval tasks and reports substantial
+degradation as length grows even for models with near-perfect vanilla retrieval
+scores; in one widely cited setting, only about half of tested models maintain
+the benchmark threshold at 32K despite claiming at least 32K context
+\cite{2024-10-ruler-context-size}. BABILong stresses
+reasoning-in-a-haystack and reports that many models effectively use only a
+fraction of their claimed context on its QA1 setting
+\cite{2024-12-babilong-long-context-reasoning}. In parallel, InfiniteBench
+evaluates more realistic long-input tasks and also finds substantial degradation
+at 100K+ context lengths \cite{2024-08-infinitebench-long-context-evaluation}.
+% Verification (RULER, original PDF 2404.06654): check Sec. 3 for expanded
+% synthetic task families and Sec. 4/Table 3 for 32K threshold outcomes vs
+% claimed length; check Appendix E for vanilla/passkey retrieval saturation.
+% Verification (BABILong, original PDF 2406.10149): check Intro and Sec. 3 with
+% Fig. 1/2 for QA1 effective-use fraction claims (10-20% range).
+% Verification (InfiniteBench, original PDF 2402.13718): check Sec. 1 and Sec.
+% 4-5 plus Figure 1/4 for >100K settings and degradation with longer inputs.
+
+Another important development is explicit confound analysis. NoLiMa shows that
+many NIAH-style settings contain high literal overlap between query and context,
+which can inflate measured long-context capability through lexical matching
+shortcuts \cite{2025-07-nolima-long-context-evaluation}. On NoLiMa, performance
+at long lengths drops sharply for most tested models (for example, 11 of 13
+tested models fall below 50\% of base score at 32K), indicating that overlap
+control is critical when interpreting ECL claims
+\cite{2025-07-nolima-long-context-evaluation}. This result is consistent with
+the broader view that effective context estimates are benchmark-construction
+dependent \cite{2024-08-flenqa-input-length-reasoning,2025-11-context-length-hurts-performance}.
+% Verification (NoLiMa overlap, original PDF 2502.05167): check Table 1 for
+% ROUGE overlap comparison and Sec. 4.4.4 literal-match ablation.
+% Verification (NoLiMa 11/13, original PDF 2502.05167): check Table 3 and Sec.
+% 4.3-4.4 for 32K performance normalized to base score and the 50% criterion.
+% Verification (benchmark-construction dependence): compare NoLiMa overlap
+% controls (2502.05167, Sec. 4.4.4) with FLenQA construction controls
+% (2402.14848, Sec. 3-4) and Du et al. controls (2510.05381, Sec. 3-4).
+
+Controlled causal studies further sharpen this evidence. FLenQA uses
+duplicate-padding controls to isolate length effects and reports significant
+reasoning degradation as input length grows \cite{2024-08-flenqa-input-length-reasoning}.
+\citeauthor{2025-11-context-length-hurts-performance} show that context length
+alone can hurt performance even with perfect
+retrieval, including settings with whitespace distractors and attention masking
+controls \cite{2025-11-context-length-hurts-performance}. Ada-LEval's
+truncation-based analysis also indicates that not all nominally long-context
+tasks truly require full context \cite{2024-06-ada-leval-length-adaptable-benchmark}.
+% Verification (FLenQA, original PDF 2402.14848): check Sec. 3 for
+% duplicate-padding control design and Sec. 4/Fig. 3 for length-only degradation.
+% Verification (Du et al., original PDF 2510.05381): check Sec. 3 with Fig. 3
+% for perfect-retrieval vs reasoning drop, Sec. 4.1 with Table 2/Fig. 4
+% (whitespace), and Sec. 4.2 with Table 3 (masking controls).
+% Verification (Ada-LEval, original PDF 2404.06480): check Sec. 5 and Table 10
+% truncation ablation comparing full vs truncated inputs across benchmarks.
+
+At the realism end of the spectrum, LongBench v2 and LongBench Pro provide
+large natural-document evaluations \cite{2025-07-longbench-v2,2026-01-longbench-pro}. LongBench v2
+emphasizes difficult human-annotated tasks and shows that many models still
+struggle on realistic long-input reasoning, with limited gains from longer
+retrieval context in several settings \cite{2025-07-longbench-v2}. LongBench Pro
+additionally reports explicit claimed-versus-effective mismatches and strong
+truncation sensitivity for some models with very large advertised windows
+\cite{2026-01-longbench-pro}. These datasets
+improve external validity, but they offer weaker causal attribution than
+controlled synthetic or intervention-based studies.
+% Verification (LongBench v2, original PDF 2412.15204): check Sec. 1-3 for
+% realistic multi-task construction and Sec. 5/limitations for interpretation
+% caveats (task/length distribution effects).
+% Verification (LongBench Pro, original PDF 2601.02872): check Sec. 5 for
+% claimed-vs-effective findings and Appendix E Table 4 for truncation-sensitivity
+% stress test (e.g., GLM-4.6 instability under longer truncation).
+% Verification (external validity vs causal attribution): contrast realistic
+% benchmark methodology (LongBench v2/Pro Sec. dataset construction) with
+% controlled interventions in FLenQA (2402.14848 Sec. 3-4) and Du et al.
+% (2510.05381 Sec. 3-4).
+
+A practical takeaway is that different benchmark
+families answer different questions:
+\begin{itemize}
+    \item synthetic controllable suites are strongest for causal attribution,
+    \item overlap-controlled suites are strongest for shortcut diagnosis,
+    \item realistic document suites are strongest for external validity.
+\end{itemize}
+No single benchmark family is sufficient on its own.
+% Verification (benchmark-family tradeoffs): verify causal-control strength in
+% FLenQA/Du et al. (2402.14848 Sec. 3-4; 2510.05381 Sec. 3-4), shortcut diagnosis
+% in NoLiMa (2502.05167 Sec. 4.4.4), and realism coverage in LongBench v2/Pro
+% (2412.15204 Sec. 2-3; 2601.02872 Sec. 2-4).
+
+A second takeaway is that ECL values are not directly interchangeable across
+papers, because ``acceptable performance'' is operationalized differently. For
+example, RULER defines effective length using a fixed threshold reference,
+whereas NoLiMa uses a relative threshold tied to each model's short-context base
+score \cite{2024-10-ruler-context-size,2025-07-nolima-long-context-evaluation}.
+Therefore, cross-paper comparison requires caution even when the phrase
+``effective context length'' is shared.
+% Verification (definition mismatch): check effective-length definition sections
+% in original PDFs: RULER 2404.06654 Sec. 4/Table 3 threshold definition; NoLiMa
+% 2502.05167 Sec. 4.3/Table 3 base-score-relative threshold.
+
+Taken together, the behavioral literature establishes two robust conclusions:
+first, claimed context length and effective context length can diverge
+substantially; second, ECL estimates are highly sensitive to benchmark design,
+especially overlap, task composition, and length-construction choices. However,
+behavioral measurements alone are insufficient to identify \emph{why} ECL fails,
+which motivates the mechanistic focus of this thesis.
+% Verification (behavioral synthesis): confirm divergence and sensitivity across
+% RULER (2404.06654 Sec. 4), NoLiMa (2502.05167 Sec. 4), FLenQA (2402.14848
+% Sec. 4), Du et al. (2510.05381 Sec. 3-4), and LongBench Pro (2601.02872
+% Sec. 5 + Appendix E). Confirm "insufficient to identify why" by noting these
+% works are primarily behavioral evaluations without internal mechanism tracing.

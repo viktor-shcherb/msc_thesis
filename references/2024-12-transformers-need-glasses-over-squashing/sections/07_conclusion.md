@@ -1,0 +1,5 @@
+# 7 Conclusion and Future Work [p. 10]
+
+In this work, we first presented surprising failure cases of LLMs on simple copying and counting tasks. We then discussed how such failure cases can be explained by studying what can be contained inside the representation y_n and in particular how information may be lost. This lead to the unvealing of two phenomena: **representational collapse** and **over-squashing**. We showed how we can measure these phenomena in practice and proposed simple solutions to help alleviate such information loss.
+
+We believe that this work uncovers an interesting framework which can be used to study failure cases of Transformers and LLMs more generally. We believe that our analysis could be extended in many practical different directions, for instance by understanding how to directly measure over-squashing or how to best use this newly-found understanding to improve current Transformer models. In our work, we focused on pointing out information-propagation issues in Transformer-based architectures, but we hope that the findings may help better understand and improve language models available today.

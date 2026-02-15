@@ -55,6 +55,9 @@ cross_references:
   - target: 2023-07-llama-2-open-foundation-chat
     type: complementary
     detail: "Follows similar pretraining-SFT-RL pipeline but scales RL context to 128k and removes value functions"
+  - target: 2025-04-kimi-vl-technical-report
+    type: extended-by
+    detail: "Kimi-VL-Thinking adopts the online policy mirror descent RL algorithm and long-CoT approach from Kimi k1.5 for multimodal reasoning"
 open_questions:
   - question: "How does the overthinking phenomenon (response length growth during RL) affect generalization to out-of-distribution problems?"
     addressed_by: null

@@ -1,0 +1,7 @@
+# Limitations [p. 9]
+
+The evaluation of the "Lost in the Middle" problem in multi-hop settings is subject to several limitations, primarily due to computational and time constraints. First, the authors assessed a carefully curated subset of possible evidence location combinations, rather than exhaustively evaluating all permutations. The factorial growth in combinations, combined with the high computational costs of evaluating large language models, made a comprehensive analysis computationally prohibitive. While the approach highlights meaningful patterns, it may not capture the full range of potential variations in performance.
+
+Second, although the models evaluated were all state-of-the-art at the time of this study and were released within the past year, newer and potentially more powerful models have since become available. These more recent models, with greater reasoning capabilities and larger parameter counts, may exhibit improved robustness against the "Lost in the Middle" problem. Investigating the behavior of these models remains an important direction for future work.
+
+Lastly, the experiments primarily focus on out-of-the-box summarization and knowledge graph extraction techniques for context reduction. More advanced, model-specific fine-tuning or optimized preprocessing strategies may yield better results, but these were beyond the scope of the current study. Future research could explore such targeted interventions to further address the challenges identified here.

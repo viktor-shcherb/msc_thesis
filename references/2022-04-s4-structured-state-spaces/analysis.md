@@ -71,6 +71,12 @@ cross_references:
   - target: 2023-07-hyena-hierarchy-long-convolutions
     type: extended-by
     detail: "Hyena generalizes S4's long convolution approach by replacing SSM-parameterized filters with FFN-based implicit convolutions, matching Transformer quality without attention"
+  - target: 2024-10-rwkv-eagle-finch-matrix-states
+    type: complementary
+    detail: "Eagle and Finch (RWKV-5/6) take a different path to efficient sequence modeling via linear attention with matrix-valued recurrent states, sharing S4's goal of sub-quadratic alternatives to Transformer attention"
+  - target: 2025-04-gated-delta-networks
+    type: extended-by
+    detail: "Gated DeltaNet operates in the linear recurrent model family that evolved from SSMs, combining gated decay with delta rule for improved memory management"
 open_questions:
   - question: "Can S4 be combined with attention mechanisms to improve performance on tasks where Transformers excel (e.g., language modeling)?"
     addressed_by: null

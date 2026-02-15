@@ -1,0 +1,40 @@
+\section{Effective Context Length}
+\label{sec:effective-context-length}
+
+Modern transformer-based language models advertise context windows ranging from
+32K to over 1M tokens. However, the \emph{claimed context length}---the maximum
+input length the model accepts---is not the same as the \emph{effective context
+length} (ECL): the longest input at which the model still performs acceptably on
+a given task~\cite{2024-10-ruler-context-size,2025-07-nolima-long-context-evaluation}.
+Recent evaluations consistently show that effective context falls substantially
+short of claimed
+context~\cite{2024-10-ruler-context-size,2025-04-effective-context-length-falls-short,2026-01-longbench-pro}.
+
+ECL is not a single model constant. The same model may effectively use 128K
+tokens for simple retrieval (e.g., needle-in-a-haystack) yet degrade at 32K on
+tasks requiring multi-hop reasoning or global
+aggregation~\cite{2024-10-ruler-context-size,2026-01-longbench-pro}. Two
+factors make ECL task-conditional:
+%
+\begin{itemize}
+    \item \textbf{Task complexity}: retrieval from a specific position is easier
+    than reasoning across distributed evidence. Simple retrieval benchmarks
+    overestimate ECL relative to tasks requiring content
+    integration~\cite{2024-10-ruler-context-size}.
+    \item \textbf{Performance threshold}: ECL depends on the criterion used to
+    declare failure. A model that scores 90\% at 4K and 70\% at 128K has
+    different ECL depending on whether the threshold is set at 80\% or 60\%.
+\end{itemize}
+% Verification (task-conditional ECL): verify RULER (2404.06654) Sec. 4 showing
+% different degradation curves per task type, and LongBench-Pro (2601.02872)
+% Sec. 5 showing task-dependent performance drops.
+
+The gap between claimed and effective context length means that applications
+relying on long-context models---document summarization, multi-document QA,
+repository-scale code analysis---may silently degrade as inputs grow. Behavioral
+benchmarks can detect this gap but cannot explain
+it~\cite{2025-04-effective-context-length-falls-short}. Understanding
+\emph{why} effective context falls short requires examining the internal
+mechanisms that determine whether a model can attend to, retrieve from, and
+reason over information at distant positions. This mechanistic perspective
+motivates the analyses developed in Chapter~\ref{chap:methodology}.

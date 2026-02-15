@@ -1,10 +1,11 @@
 # NTK-Aware Scaled RoPE
 
 **Author:** bloc97 (Bowen Peng)
+**Affiliation:** Independent contributor (Université de Montréal, Canada; later Nous Research)
 
 ## Publication Status
 
-- **Published:** June 2023, Reddit post on r/LocalLLaMA
+- **Published:** June 29, 2023, Reddit post on r/LocalLLaMA
 - **Peer-reviewed:** No
 - **Conference/Journal:** None. This is a community contribution (Reddit post), not a formal paper. There is no arXiv PDF.
 - **Status:** Informal community contribution
@@ -28,5 +29,7 @@ If citing the formalized version, cite YaRN (Peng et al., ICLR 2024).
 
 - Reddit post: https://www.reddit.com/r/LocalLLaMA/comments/14lz7j5/ntkaware_scaled_rope_allows_llama_models_to_have/
 - NTK-by-parts PR: https://github.com/jquesnelle/scaled-rope/pull/1
+- YaRN code (formalizes NTK-aware): https://github.com/jquesnelle/yarn
 - EleutherAI blog (covers NTK-aware): https://blog.eleuther.ai/yarn/
+- HuggingFace TGI issue: https://github.com/huggingface/text-generation-inference/issues/512
 - Dynamic NTK Reddit post (emozilla): https://www.reddit.com/r/LocalLLaMA/comments/14mrgpr/dynamically_scaled_rope_further_increases/

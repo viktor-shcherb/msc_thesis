@@ -1,0 +1,334 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Supplementary Material}
+\label{app:supplementary}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Proof of Plasticity Decay (Theorem~\ref{thm:plasticity-decay})}
+\label{sec:proof-plasticity-decay}
+
+This section provides the formal proof of Theorem~\ref{thm:plasticity-decay},
+which states that attention plasticity decays with query position under the
+positional-semantic model. The proof proceeds in three steps: we state the model
+assumptions, establish a tail bound on single-pair plasticity, and aggregate
+over key pairs.
+
+\subsection{Model Assumptions}
+
+We work under the positional-semantic decomposition of
+Section~\ref{sec:householder-decomposition}. After applying the Householder
+reflection $H$ (Equation~\ref{eq:householder}), the query at position $t$
+decomposes as:
+%
+\begin{align}
+q_1^{\text{rot}} &= \alpha_{\text{pos}} + \beta_{\text{pos}} \cdot t +
+    \varepsilon, \qquad
+    \varepsilon \sim \mathcal{N}(0, \sigma_{\text{pos}}^2)
+\label{eq:app-query-pos} \\
+q_{2:d}^{\text{rot}} &\sim \mathcal{N}(\mu_b, \Sigma_b)
+\label{eq:app-query-sem}
+\end{align}
+%
+where the positional residual $\varepsilon$ is independent of the semantic
+components $q_{2:d}^{\text{rot}}$, and $\mu_b$, $\Sigma_b$ are the mean and
+covariance of the semantic components for query bucket $b$. The positional drift
+rate $\beta_{\text{pos}} \neq 0$ (empirically verified for all examined models).
+
+\subsection{Score Difference Distribution}
+
+\begin{lemma}[Gaussian score difference]
+\label{lem:gaussian-score}
+Under the positional-semantic model, for a fixed key pair $(k_i, k_j)$ with
+difference vector $\delta = k_i^{\text{rot}} - k_j^{\text{rot}}$ in the
+rotated basis, the score difference $D = q_t^\top(k_i - k_j)$ conditioned on
+query position $t$ is Gaussian:
+%
+\begin{equation}
+D \mid t \;\sim\; \mathcal{N}\!\big(m(t),\; v\big)
+\end{equation}
+%
+with mean $m(t) = \delta_1 (\alpha_{\text{pos}} + \beta_{\text{pos}} \cdot t)
++ \delta_{2:d}^\top \mu_b$ and variance
+$v = \delta_1^2 \sigma_{\text{pos}}^2 +
+\delta_{2:d}^\top \operatorname{diag}(\sigma_b^2)\, \delta_{2:d}$.
+The variance $v$ is independent of $t$.
+\end{lemma}
+
+\begin{proof}
+Since $H$ is orthogonal, $q^\top(k_i - k_j) = (Hq)^\top(H(k_i - k_j))$.
+Expanding in the rotated basis:
+%
+\begin{equation}
+D = \delta_1 \cdot q_1^{\text{rot}} + \delta_{2:d}^\top \cdot q_{2:d}^{\text{rot}}
+\end{equation}
+%
+Both terms are linear functions of Gaussian random variables. The first term
+has mean $\delta_1(\alpha_{\text{pos}} + \beta_{\text{pos}} t)$ and variance
+$\delta_1^2 \sigma_{\text{pos}}^2$. The second has mean
+$\delta_{2:d}^\top \mu_b$ and variance
+$\delta_{2:d}^\top \Sigma_b \, \delta_{2:d}$. By independence of $\varepsilon$
+and $q_{2:d}^{\text{rot}}$, $D$ is Gaussian with the stated parameters. Since
+$\sigma_{\text{pos}}^2$ and $\Sigma_b$ are position-independent, $v$ does not
+depend on $t$.
+\end{proof}
+
+\subsection{Single-Pair Decay}
+
+\begin{lemma}[Single-pair plasticity decay]
+\label{lem:single-pair-decay}
+For a key pair with $\delta_1 \neq 0$ and $\beta_{\text{pos}} \neq 0$, the
+pairwise plasticity satisfies:
+%
+\begin{equation}
+\text{PP}(t) \leq C_0 \cdot \exp\!\left(-\frac{\gamma^2 t^2}{8}\right)
+\label{eq:single-pair-bound}
+\end{equation}
+%
+for all $t \geq T_0$, where
+$\gamma = \delta_1 \beta_{\text{pos}} / \sqrt{v} \neq 0$, and $C_0$, $T_0$
+are constants depending on $\gamma$ and $z_0 = m(0)/\sqrt{v}$.
+\end{lemma}
+
+\begin{proof}
+Define $z(t) = m(t)/\sqrt{v}$. By Lemma~\ref{lem:gaussian-score}, $z(t) =
+\gamma t + z_0$ where $\gamma = \delta_1 \beta_{\text{pos}} / \sqrt{v}$ and
+$z_0 = (\delta_1 \alpha_{\text{pos}} + \delta_{2:d}^\top \mu_b)/\sqrt{v}$.
+The pairwise plasticity is:
+%
+\begin{equation}
+\text{PP}(t) = 4\,\Phi(z(t))\,(1 - \Phi(z(t)))
+\end{equation}
+
+We use the standard Gaussian tail bound: for $z > 0$,
+$1 - \Phi(z) \leq \exp(-z^2/2) / (\sqrt{2\pi}\, z)$.
+Since $\Phi(z) \leq 1$, we obtain:
+%
+\begin{equation}
+\text{PP}(t) \leq 4\,(1 - \Phi(|z(t)|))
+    \leq \frac{4}{\sqrt{2\pi}\,|z(t)|}\,\exp\!\left(-\frac{z(t)^2}{2}\right)
+\label{eq:pp-tail}
+\end{equation}
+%
+for $|z(t)| \geq 1$. Since $\gamma \neq 0$, for
+$t \geq T_0 := 2|z_0|/|\gamma|$ we have
+$|z(t)| \geq |\gamma| t - |z_0| \geq |\gamma| t / 2$, giving:
+%
+\begin{equation}
+z(t)^2 = (\gamma t + z_0)^2 \geq (|\gamma| t / 2)^2 = \gamma^2 t^2 / 4
+\end{equation}
+%
+Substituting into~\eqref{eq:pp-tail} and absorbing the polynomial prefactor
+$1/|z(t)|$ into the constant $C_0$ yields the
+bound~\eqref{eq:single-pair-bound}.
+\end{proof}
+
+\subsection{Aggregate Decay}
+
+\textbf{Proof of Theorem~\ref{thm:plasticity-decay}.}
+Partition the set of admissible key pairs into $\mathcal{S}_0 = \{(i,j) :
+\delta_1 = 0\}$ (keys at the same bucket position) and $\mathcal{S}_1 =
+\{(i,j) : \delta_1 \neq 0\}$ (keys at distinct positions). Let $\pi_0 =
+\Pr[\text{pair} \in \mathcal{S}_0]$ under the uniform key-pair sampling.
+
+For pairs in $\mathcal{S}_0$: $m(t) = \delta_{2:d}^\top \mu_b$ is independent
+of $t$, so $\text{PP}(t)$ is constant. Their contribution to $\text{AP}_t$
+converges to:
+%
+\begin{equation}
+\text{AP}_\infty = \pi_0 \cdot
+    \mathbb{E}\!\left[\text{PP} \,\middle|\, \delta_1 = 0\right]
+\end{equation}
+
+For pairs in $\mathcal{S}_1$: by Lemma~\ref{lem:single-pair-decay}, each pair's
+plasticity decays as $\text{PP}(t) \leq C_0^{(i,j)} \exp(-\gamma_{ij}^2 t^2 /
+8)$. Since $\delta_1 \neq 0$ implies $|\delta_1| \geq \delta_{\min} > 0$
+(bucket positions are discrete with minimum spacing), we have
+$\gamma_{ij}^2 \geq \delta_{\min}^2 \beta_{\text{pos}}^2 / v_{\max}$, where
+$v_{\max}$ is the maximum variance across key pairs. Define
+$c = \delta_{\min}^2 \beta_{\text{pos}}^2 / (8 v_{\max})$. Then for all pairs
+in $\mathcal{S}_1$ and $t \geq T_0$:
+
+\begin{equation}
+\mathbb{E}\!\left[\text{PP}(t) \,\middle|\, \delta_1 \neq 0\right]
+    \leq \bar{C} \cdot \exp(-c \cdot t^2)
+\end{equation}
+%
+where $\bar{C} = \mathbb{E}[C_0^{(i,j)} \mid \delta_1 \neq 0]$. Combining
+both cases:
+%
+\begin{equation}
+\text{AP}_t = \pi_0 \cdot \mathbb{E}[\text{PP} \mid \delta_1 = 0]
+    + (1 - \pi_0) \cdot \mathbb{E}[\text{PP}(t) \mid \delta_1 \neq 0]
+    \leq \text{AP}_\infty + C \cdot \exp(-c \cdot t^2)
+\end{equation}
+%
+with $C = (1 - \pi_0)\bar{C}$. If all key pairs have distinct positional
+coordinates ($\pi_0 = 0$), then $\text{AP}_\infty = 0$ and
+$\text{AP}_t \to 0$. \qed
+
+
+\section{Supplementary Figures: Position Bias Geometry}
+\label{sec:app-position-bias-geometry}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-pca/02_rq_vs_rk_scatter/figure.png}
+\caption{Head taxonomy scatter plot in $(r_q, r_k)$ space on PC0 across all
+11 primary models. Each point is one attention head; colors indicate model
+family. Llama heads concentrate in the top-right (both correlations high),
+Qwen models appear Q-positional (high $r_q$, moderate $r_k$), and Ministral
+heads occupy a moderate region. Dashed lines at $|r| = 0.3$ and $|r| = 0.7$
+indicate taxonomy thresholds.}
+\label{fig:rq-rk-scatter}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-rotation/04_bias_strength/figure.png}
+\caption{Distribution of bias strength ($\mu_Q^a \times \alpha_K$) across all
+3{,}239 analyzed heads, grouped by model family. 99.0\% of heads show positive
+bias strength (recency bias); only 31 heads exhibit primacy bias.
+Distributions are tight within families, confirming that the bias mechanism
+is architecture-determined.}
+\label{fig:bias-strength-dist}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-rotation/07_bias_vs_separation/figure.png}
+\caption{Bias strength vs.\ Q/K separation strength per head, colored by model
+family. The overall correlation is $+0.48$, but within the Llama family it
+reverses to $-0.65$---a Simpson's paradox. Families have genuinely different
+bias-separation trade-offs that are masked by pooling across architectures.}
+\label{fig:bias-vs-separation}
+\end{figure}
+
+
+\section{Supplementary Figures: Training Dynamics}
+\label{sec:app-training-dynamics}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-pca/08_smollm_taxonomy_evolution/figure.png}
+\caption{Head taxonomy evolution across SmolLM3-3B training checkpoints.
+Position-dominated heads grow from 34\% to 55\% within stage~1, while
+content-focused heads virtually disappear. The structural fingerprint is
+largely set by step 1.2M; subsequent training refines but does not
+restructure head roles.}
+\label{fig:smollm-taxonomy}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-pca/12_smollm_rq_rk_scatter_grid/figure.png}
+\caption{$(r_q, r_k)$ scatter plots across 6 representative SmolLM3-3B
+training checkpoints. The head population progresses from a diffuse cloud
+at step 40K to a tight position-dominated cluster by the end of pre-training.
+Long-context extension does not alter the taxonomy structure established
+during pre-training.}
+\label{fig:smollm-rq-rk-grid}
+\end{figure}
+
+\begin{table}[h]
+\centering
+\small
+\caption{Per-position plasticity values during SmolLM3-3B long-context
+extension phases. Near-position plasticity (0--1K, 1K--2K) holds steady
+while distant positions show progressively lower values as the context
+window expands.}
+\label{tab:smollm-perposition-lc}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Checkpoint & 0--1K & 1K--2K & 2K--4K & 4K--8K & 8K--16K & 16K--32K & 32K--48K & 48K--64K \\
+\midrule
+LC 4K$\to$32K 4K   & 0.651 & 0.629 & 0.598 & 0.556 & 0.525 & 0.464 & ---   & ---   \\
+LC 4K$\to$32K 20K  & 0.657 & 0.626 & 0.594 & 0.553 & 0.524 & 0.467 & ---   & ---   \\
+LC 32K$\to$64K 4K  & ---   & 0.676 & 0.641 & 0.600 & 0.560 & 0.526 & 0.479 & 0.426 \\
+LC 32K$\to$64K 20K & ---   & 0.679 & 0.639 & 0.598 & 0.557 & 0.526 & 0.480 & 0.430 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{LongBench-Pro Task Structure}
+\label{sec:lbp-task-structure}
+
+Table~\ref{tab:lbp-tasks} lists the 25 secondary tasks in LongBench-Pro,
+grouped under 11 primary task
+categories~\cite{2026-01-longbench-pro}. The benchmark follows a balanced
+combinatorial design: 25 tasks $\times$ 2 languages (EN, ZH) $\times$ 6 length
+bins $\times$ 5 samples per cell $=$ 1{,}500 total samples.
+
+\begin{table}[t]
+\centering
+\small
+\caption{LongBench-Pro secondary tasks grouped by primary category. Each
+secondary task has 60 samples (2 languages $\times$ 6 length bins $\times$ 5
+samples). Context requirement indicates whether the task requires global
+integration across the full document (F) or localized retrieval from a specific
+region (P).}
+\label{tab:lbp-tasks}
+\begin{tabular}{@{}cllc@{}}
+\toprule
+ID & Primary category & Secondary task & Ctx \\
+\midrule
+T1.1 & Retrieval \& Ranking          & Global cohesive retrieval     & F \\
+T1.2 &                                & Key-snippet retrieval         & P \\
+\addlinespace
+T2.1 & Sequencing \& Reconstruction   & Global timeline               & F \\
+T2.2 &                                & Local causal-chain sorting    & P \\
+\addlinespace
+T3.1 & Evidence-Grounded QA           & Multi-doc integration QA      & F \\
+T3.2 &                                & Single-hop fact QA            & P \\
+\addlinespace
+T4.1 & Summarization \& Synthesis     & Global constrained summary    & F \\
+T4.2 &                                & Query-focused summary         & P \\
+\addlinespace
+T5.1 & Attribution \& Citation        & Full-sentence alignment       & F \\
+T5.2 &                                & Key-statement alignment       & P \\
+\addlinespace
+T6.1 & Aggregation \& Clustering      & Large-scale clustering        & F \\
+T6.2 &                                & Targeted subset               & P \\
+T6.3 &                                & Global frequency              & F \\
+\addlinespace
+T7.1 & Consistency \& Compliance      & Global conflicts              & F \\
+T7.2 &                                & Targeted rule violation       & P \\
+T7.3 &                                & Anomaly sweep                 & F \\
+\addlinespace
+T8.1 & Structured \& Numeric          & Multi-source verification     & F \\
+T8.2 & Reasoning                      & Targeted aggregation          & P \\
+T8.3 &                                & Procedural state tracking     & F \\
+\addlinespace
+T9.1 & Version \& Code Diff           & Dependency-aware impact       & F \\
+T9.2 &                                & Localized interface changes   & P \\
+\addlinespace
+T10.1 & Rule Induction \& ICL         & Large-scale rule induction    & F \\
+T10.2 &                               & Targeted rule induction       & P \\
+\addlinespace
+T11.1 & Dialogue Memory \&            & Long-range entity/commitment  & F \\
+T11.2 & Long-Horizon Tracking         & Short-range reference/state   & P \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:lbp-length-bins} shows the per-length-bin sample distribution.
+All bins contain exactly 250 samples by design, ensuring that aggregate scores
+weight each context length equally. Length assignment uses the Qwen tokenizer
+with $\pm 20\%$ tolerance around target lengths~\cite{2026-01-longbench-pro}.
+
+\begin{table}[h]
+\centering
+\small
+\caption{LongBench-Pro sample counts per length bin. The balanced design ensures
+equal representation across context lengths.}
+\label{tab:lbp-length-bins}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+ & 8K & 16K & 32K & 64K & 128K & 256K \\
+\midrule
+Samples per bin & 250 & 250 & 250 & 250 & 250 & 250 \\
+English         & 125 & 125 & 125 & 125 & 125 & 125 \\
+Chinese         & 125 & 125 & 125 & 125 & 125 & 125 \\
+\bottomrule
+\end{tabular}
+\end{table}

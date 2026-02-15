@@ -1,7 +1,7 @@
 # LongGenBench: Benchmarking Long-Form Generation in Long Context LLMs
 
 **Authors:** Yuhao Wu, Ming Shan Hee, Zhiqing Hu, Roy Ka-Wei Lee
-**Affiliation:** Singapore University of Technology and Design
+**Affiliation:** Singapore University of Technology and Design, Singapore
 
 ## Publication Status
 
@@ -19,5 +19,7 @@ Cite the ICLR 2025 version:
 ## Links
 
 - arXiv: https://arxiv.org/abs/2409.02076
+- Proceedings: https://proceedings.iclr.cc/paper_files/paper/2025/hash/141304a37d59ec7f116f3535f1b74bde-Abstract-Conference.html
 - OpenReview: https://openreview.net/forum?id=3A71qNKWAS
 - Code: https://github.com/mozhu621/LongGenBench
+- Dataset: https://huggingface.co/datasets/mozhu/LongGenBench

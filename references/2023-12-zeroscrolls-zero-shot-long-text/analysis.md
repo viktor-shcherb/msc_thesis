@@ -71,6 +71,12 @@ cross_references:
   - target: 2025-07-lv-eval-long-context-benchmark
     type: concurrent
     detail: "LV-Eval addresses ZeroSCROLLS' insufficient average context length (~14k words) by providing five controlled length levels up to 256k with knowledge-leakage mitigation"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET addresses ZeroSCROLLS limitations including inadequate context lengths (mostly <128K) and lack of base model support"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify ZeroSCROLLS tasks (SpaceDigest, BookSumSort) as high-scope low-dispersion aggregation tasks in their scope-dispersion taxonomy"
 open_questions:
   - question: "How should automatic metrics be adapted for zero-shot evaluation where output format varies across models?"
     addressed_by: null

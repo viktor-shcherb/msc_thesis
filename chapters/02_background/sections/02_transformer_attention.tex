@@ -1,0 +1,84 @@
+\section{Transformer Attention}
+\label{sec:transformer-attention}
+
+The transformer architecture~\cite{2017-12-attention-is-all-you-need} processes
+sequences through layers of self-attention and feed-forward networks. This
+section defines the attention mechanism and its variants relevant to this thesis.
+
+\subsection{Scaled Dot-Product Attention}
+
+Given an input sequence of $n$ tokens with embedding dimension $d$, each
+attention head computes query, key, and value matrices via learned projections:
+%
+\begin{equation}
+Q = XW_Q, \quad K = XW_K, \quad V = XW_V
+\label{eq:qkv-projection}
+\end{equation}
+%
+where $X \in \mathbb{R}^{n \times d_{\text{model}}}$ is the input and
+$W_Q, W_K \in \mathbb{R}^{d_{\text{model}} \times d}$,
+$W_V \in \mathbb{R}^{d_{\text{model}} \times d_v}$ are learned projection
+matrices. The attention output is:
+%
+\begin{equation}
+\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d}}\right) V
+\label{eq:scaled-dot-product}
+\end{equation}
+%
+The score $s(q_t, k_i) = q_t^\top k_i / \sqrt{d}$ measures the relevance of
+position $i$ to query position $t$. The softmax normalizes these scores into a
+probability distribution over positions, and the output is the
+probability-weighted sum of value vectors.
+% Verification (attention formula): verify scaled dot-product attention in
+% Vaswani et al. (1706.03762), Sec. 3.2.1.
+
+\subsection{Causal Masking}
+
+In autoregressive language models, position $t$ may only attend to positions
+$i \leq t$. This is enforced by setting $s(q_t, k_i) = -\infty$ for $i > t$
+before the softmax, producing zero attention weight for future positions~\cite{2017-12-attention-is-all-you-need}. Under
+causal masking, the set of positions competing for attention at query position
+$t$ grows linearly with $t$---an asymmetry that underlies the context-length
+dependence studied in this thesis.
+
+\subsection{Multi-Head Attention}
+
+Rather than a single attention function with $d_{\text{model}}$-dimensional
+keys, the transformer uses $n_h$ parallel attention heads, each operating on
+$d = d_{\text{model}} / n_h$ dimensions. Multi-head attention allows different
+heads to attend to different positions and learn different
+patterns~\cite{2017-12-attention-is-all-you-need}. The outputs are concatenated
+and projected:
+%
+\begin{equation}
+\text{MHA}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_{n_h})\, W_O
+\label{eq:multi-head}
+\end{equation}
+%
+Different heads may develop specialized roles: some encode position, others
+perform content-based retrieval, and some attend primarily to early tokens
+regardless of content~\cite{2025-04-retrieval-head-long-context-factuality,2025-04-attention-sink-emerges}.
+This specialization is a key observation exploited by the per-head analyses
+in Chapter~\ref{chap:methodology}.
+
+\subsection{Grouped-Query Attention}
+\label{sec:gqa-background}
+
+Standard multi-head attention assigns independent $K$ and $V$ projections to
+each head, which dominates inference memory cost due to the key-value cache.
+Grouped-query attention (GQA) reduces this cost by sharing a single key-value
+head across a group of $g = n_q / n_{kv}$ query
+heads~\cite{2023-12-gqa-grouped-query-attention}:
+%
+\begin{equation}
+h_k = \left\lfloor h_q \,\big/\, g \right\rfloor
+\label{eq:gqa-mapping-background}
+\end{equation}
+%
+where $h_q$ is the query head index and $h_k$ is the corresponding key-value
+head. All models examined in this thesis use GQA (Table~\ref{tab:model-configs}).
+The sharing means that query heads within the same group operate on identical
+keys but with different learned query projections, so each produces distinct
+attention patterns despite sharing the same key geometry.
+% Verification (GQA): verify GQA formulation and KV cache motivation in
+% Ainslie et al. (2305.13245), Sec. 2.

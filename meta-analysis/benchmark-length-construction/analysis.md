@@ -1,7 +1,8 @@
 ---
 title: "How Long-Context Benchmarks Construct Length, and What Their Choices Reveal"
-research_question: "How do long-context benchmarks construct their length dimension, and what do their methodological choices reveal about what is actually being measured?"
-date_produced: 2026-02-06
+research_question: "How do long-context benchmarks construct their length dimension, and what do those choices actually measure?"
+thesis_objective: "Provide thesis-ready evidence for related-work synthesis and for methodological decisions in context-evaluation analysis."
+date_produced: 2026-02-13
 corpus:
   - 2021-05-long-range-arena
   - 2021-11-long-range-models-use-context
@@ -19,457 +20,389 @@ corpus:
   - 2024-12-babilong-long-context-reasoning
   - 2025-03-longiclbench-long-in-context-learning
   - 2025-04-effective-context-length-falls-short
+  - 2025-04-helmet-long-context-evaluation
+  - 2025-04-longgenbench-long-form-generation
   - 2025-07-longbench-v2
   - 2025-07-nolima-long-context-evaluation
   - 2025-11-context-length-hurts-performance
-  - 2025-04-longgenbench-long-form-generation
   - 2026-01-longbench-pro
 corpus_search_strategy: |
   category benchmarking
   category long-context-evaluation
+  category mechanistic-interpretability
   text "length"
-  text "benchmark"
-  text "haystack"
-  text "synthetic"
+  text "effective context"
+  text "literal overlap"
+  text "attention masking"
+  text "synthetic benchmark"
+inclusion_criteria:
+  - "Papers that introduce long-context benchmarks or evaluation protocols with explicit length construction/manipulation."
+  - "Papers that provide controlled evidence isolating length effects or key benchmark confounds."
+  - "Papers that materially affect interpretation of benchmark results (taxonomy, mechanism, or validation studies)."
+exclusion_criteria:
+  - "Architecture-only papers without benchmark design or benchmark-interpretation evidence."
+  - "Model reports without methodological evaluation contributions for length construction."
 categories: ["benchmarking", "long-context-evaluation"]
 themes:
   - id: length-construction-taxonomy
-    label: "A taxonomy of length construction strategies"
-  - id: confounds-in-length-scaling
-    label: "Confounds introduced by each construction strategy"
+    label: "Length construction strategy taxonomy"
+  - id: confounds-and-disentanglement
+    label: "Confounds and causal disentanglement"
   - id: literal-overlap-shortcut
-    label: "Literal overlap as a pervasive shortcut"
+    label: "Literal overlap as a benchmark shortcut"
   - id: length-vs-difficulty
-    label: "Disentangling length from task difficulty"
-  - id: what-benchmarks-actually-measure
-    label: "What benchmarks actually measure vs. what they claim"
+    label: "Length versus task difficulty"
+  - id: measured-vs-claimed
+    label: "What benchmarks measure versus what they claim"
 consensus_claims:
-  - claim: "Every length construction strategy introduces confounds that covary with the length dimension, and no single benchmark isolates pure context-length effects across realistic tasks"
+  - claim: "Length construction is never neutral: each strategy introduces confounds that co-vary with length."
     sources: ["2024-08-flenqa-input-length-reasoning", "2025-11-context-length-hurts-performance", "2024-11-genuinely-difficult-long-context", "2024-10-ruler-context-size"]
     strength: strong
-  - claim: "Benchmarks that pad with irrelevant text (NIAH, BABILong, RULER) conflate length with signal-to-noise ratio, while benchmarks that use naturally long documents (SCROLLS, LongBench v2) conflate length with task complexity"
-    sources: ["2024-08-flenqa-input-length-reasoning", "2024-11-genuinely-difficult-long-context", "2024-10-ruler-context-size", "2024-12-babilong-long-context-reasoning", "2022-12-scrolls-long-language-sequences", "2025-07-longbench-v2"]
+  - claim: "Literal lexical overlap is a major shortcut in NIAH-style evaluations and inflates effective-context estimates."
+    sources: ["2025-07-nolima-long-context-evaluation", "2024-10-ruler-context-size", "2024-08-infinitebench-long-context-evaluation", "2025-04-helmet-long-context-evaluation"]
     strength: strong
-  - claim: "High literal overlap between queries and relevant context (ROUGE-1 up to 0.966) enables surface-level token matching that inflates benchmark scores, masking failures in genuine long-context reasoning"
-    sources: ["2025-07-nolima-long-context-evaluation", "2024-10-ruler-context-size", "2024-08-infinitebench-long-context-evaluation"]
+  - claim: "Perplexity and n-gram metrics are insufficient proxies for long-context capability without stronger task-aware evaluation controls."
+    sources: ["2021-11-long-range-models-use-context", "2024-08-flenqa-input-length-reasoning", "2024-12-babilong-long-context-reasoning", "2024-08-l-eval-standardized-evaluation"]
     strength: strong
-  - claim: "Benchmarks using naturally long documents without truncation controls cannot establish that their tasks actually require full-context comprehension, as demonstrated by cases where truncation improves or negligibly affects performance"
-    sources: ["2022-12-scrolls-long-language-sequences", "2024-06-ada-leval-length-adaptable-benchmark", "2024-08-l-eval-standardized-evaluation"]
+  - claim: "Synthetic controllable benchmarks and natural-document benchmarks provide complementary but individually incomplete evidence."
+    sources: ["2024-10-ruler-context-size", "2024-06-ada-leval-length-adaptable-benchmark", "2025-07-longbench-v2", "2026-01-longbench-pro"]
     strength: strong
-  - claim: "Perplexity is a misleading proxy for long-context capability, showing negative correlation with downstream task performance and failing to detect reasoning degradation"
-    sources: ["2024-08-flenqa-input-length-reasoning", "2024-12-babilong-long-context-reasoning", "2021-11-long-range-models-use-context"]
+  - claim: "Length alone can degrade reasoning even when retrieval and distractor effects are controlled."
+    sources: ["2024-08-flenqa-input-length-reasoning", "2025-11-context-length-hurts-performance", "2025-07-nolima-long-context-evaluation"]
     strength: strong
-  - claim: "Synthetic benchmarks with controllable length (RULER, BABILong, Ada-LEval) offer superior experimental control but have unvalidated proxy relationships with realistic long-context tasks"
-    sources: ["2024-10-ruler-context-size", "2024-12-babilong-long-context-reasoning", "2024-06-ada-leval-length-adaptable-benchmark", "2025-07-longbench-v2"]
+  - claim: "Input-side retrieval capability and output-side long-form generation capability are related but distinct."
+    sources: ["2025-04-longgenbench-long-form-generation", "2024-10-ruler-context-size"]
     strength: moderate
 contested_claims:
-  - claim: "Whether padding-based length construction measures context-length ability or merely information retrieval under increasing noise"
+  - claim: "Whether padding-based benchmarks primarily measure true long-context ability or mainly noise filtering."
     for: ["2024-10-ruler-context-size", "2024-12-babilong-long-context-reasoning"]
-    against: ["2025-07-nolima-long-context-evaluation", "2024-08-flenqa-input-length-reasoning", "2024-11-genuinely-difficult-long-context"]
-    resolution: "Both aspects are present. FLenQA's duplicate-padding experiment isolates length from noise, showing degradation even without distractors. Du et al.'s attention-masking experiment (`2025-11-context-length-hurts-performance`) provides the strongest causal evidence: even when all padding tokens are invisible to the attention mechanism, performance degrades 7.9%--50% at 30K tokens. However, most padding-based benchmarks (RULER, BABILong) simultaneously increase noise, making their measured degradation a composite of both factors."
+    against: ["2024-08-flenqa-input-length-reasoning", "2025-07-nolima-long-context-evaluation", "2025-11-context-length-hurts-performance"]
+    resolution: "Evidence now supports both components: padding-based scores reflect both length effects and noise/shortcut effects unless strict controls are used."
     resolved: true
-  - claim: "Whether naturally long documents or synthetic constructions provide more valid measures of long-context capability"
+  - claim: "Whether natural-document or synthetic benchmarks are more valid for model selection."
     for: ["2025-07-longbench-v2", "2026-01-longbench-pro", "2022-12-scrolls-long-language-sequences"]
-    against: ["2024-10-ruler-context-size", "2024-06-ada-leval-length-adaptable-benchmark"]
-    resolution: "Unresolved. Natural documents have ecological validity but uncontrollable length and unverified full-context necessity. Synthetic constructions have experimental control but unvalidated proxy relationships with real tasks. The field lacks a benchmark that combines both. LongBench Pro (`2026-01-longbench-pro`) represents the most comprehensive natural-document effort but explicitly does not experimentally manipulate length."
+    against: ["2024-10-ruler-context-size", "2024-06-ada-leval-length-adaptable-benchmark", "2025-04-helmet-long-context-evaluation"]
+    resolution: "Unresolved. Natural benchmarks maximize realism; synthetic benchmarks maximize causal attribution. Both are needed."
     resolved: false
+evaluation_validity_summary:
+  construct_validity: "moderate: papers use incompatible definitions of effective length and quality metrics."
+  causal_validity: "moderate: a small set of controlled studies isolate length effects, but most benchmark evidence is observational."
+  external_validity: "moderate: realistic benchmarks improve transfer relevance, but they rarely manipulate length causally."
+mechanistic_evidence_summary:
+  interventional_papers: ["2024-08-flenqa-input-length-reasoning", "2025-11-context-length-hurts-performance", "2025-07-nolima-long-context-evaluation", "2024-06-ada-leval-length-adaptable-benchmark", "2025-04-effective-context-length-falls-short"]
+  observational_papers: ["2023-11-needle-in-a-haystack", "2024-02-lost-in-the-middle", "2024-08-infinitebench-long-context-evaluation", "2024-08-longbench-bilingual-benchmark", "2025-07-longbench-v2", "2026-01-longbench-pro", "2024-10-ruler-context-size"]
+  theoretical_papers: ["2024-11-genuinely-difficult-long-context"]
+thesis_mapping:
+  literature_review:
+    - claim: "Benchmark progress from 2021 to 2026 is mainly progress in confound awareness, not just longer context ranges."
+      sources: ["2021-05-long-range-arena", "2024-08-flenqa-input-length-reasoning", "2025-07-nolima-long-context-evaluation", "2026-01-longbench-pro"]
+    - claim: "The central design tension is controllability versus ecological validity."
+      sources: ["2024-10-ruler-context-size", "2024-06-ada-leval-length-adaptable-benchmark", "2025-07-longbench-v2", "2026-01-longbench-pro"]
+  analysis_section:
+    - claim: "Method claims based on a single benchmark family are weak; robust conclusions need a benchmark portfolio with explicit confound controls."
+      sources: ["2024-10-ruler-context-size", "2025-04-helmet-long-context-evaluation", "2025-07-nolima-long-context-evaluation"]
+      uncertainty: "Cross-benchmark weighting is not standardized."
+    - claim: "Length-induced degradation should be treated as a causal factor separate from retrieval difficulty and distractor content."
+      sources: ["2024-08-flenqa-input-length-reasoning", "2025-11-context-length-hurts-performance"]
+      uncertainty: "Controlled evidence currently covers limited task families."
 gaps:
-  - description: "No benchmark simultaneously controls for length, task difficulty, literal overlap, signal-to-noise ratio, and information position while using realistic text"
+  - description: "No benchmark combines realistic text with strict causal control over length, overlap, and noise simultaneously."
     severity: high
-  - description: "The proxy relationship between synthetic benchmark tasks (variable tracking, frequency counting) and realistic NLP tasks (coreference resolution, summarization) has never been empirically validated"
+  - description: "Synthetic-to-real transfer validity for proxy tasks is still not empirically established."
     severity: high
-  - description: "No study has systematically compared how the same model performs on the same underlying task when length is constructed via different strategies (padding vs. distractor addition vs. naturally long documents)"
+  - description: "Controlled multilingual long-context benchmarking is missing."
     severity: high
-  - description: "Generation tasks (open-ended writing, long-form summarization) are poorly represented across most benchmarks; most tasks are extractive or classificatory. LongGenBench (`2025-04-longgenbench-long-form-generation`) partially addresses this by evaluating instruction-following in 16K--32K token outputs with objective binary verification, but does not evaluate open-ended creative or reasoning generation."
+  - description: "Open-ended long-output generation quality remains under-measured beyond constrained instruction adherence."
     severity: medium
-  - description: "The interaction between length construction method and position bias has not been studied; the lost-in-the-middle effect may differ depending on how length was achieved"
-    severity: medium
-  - description: "Multilingual evaluation of length construction effects is absent; nearly all controlled-length benchmarks are English-only"
+  - description: "Position effects and length effects are not jointly benchmarked under the same task templates across benchmark families."
     severity: medium
 overall_confidence:
-  - conclusion: "Context length alone, independent of retrieval difficulty or distraction, degrades LLM reasoning performance"
+  - conclusion: "Benchmark construction choices materially change measured long-context capability."
     level: high
-    basis: "3 papers with complementary controls -- FLenQA (duplicate padding), Du et al. (attention masking), NoLiMa (position-aligned analysis) -- all showing degradation attributable to length itself"
-    caveats: ["All controlled studies test relatively simple tasks (True/False, short-answer)", "Maximum controlled length is 30K tokens, far below claimed context windows", "Mechanistic explanation is only partially understood (positional distribution bias)"]
-  - conclusion: "Literal lexical overlap between questions and needles is a major confound in existing benchmarks"
+    basis: "Multiple independent benchmark families plus controlled causal studies show large design-dependent shifts."
+    caveats: ["Magnitude differs by task type and metric definition.", "Several findings are benchmark-family specific."]
+  - conclusion: "Literal overlap and metric choice are two major hidden drivers of inflated long-context scores."
     level: high
-    basis: "NoLiMa provides quantitative measurements (ROUGE-1 0.069 vs 0.905 for NIAH) and ablations showing 16x reduction in effective length when overlap is removed"
-    caveats: ["NoLiMa tests only 58 question-needle pairs", "Applies primarily to retrieval-style tasks; aggregation tasks may be less affected"]
-  - conclusion: "No existing benchmark provides a valid measure of 'long-context capability' as a unitary construct"
+    basis: "NoLiMa overlap quantification/ablations and L-Eval/HELMET metric analyses converge."
+    caveats: ["Most overlap evidence is strongest for retrieval-style tasks."]
+  - conclusion: "A portfolio evaluation strategy is currently more defensible than any single benchmark score."
     level: moderate
-    basis: "Goldman et al.'s taxonomy shows benchmarks target different capability dimensions; no benchmark scores correlate across dimensions"
-    caveats: ["The dispersion/scope taxonomy is informal and not empirically validated", "Correlation studies between benchmark types have not been conducted"]
+    basis: "Strong conceptual and empirical support, but no agreed community standard for portfolio composition."
+    caveats: ["Portfolio design remains partly subjective.", "Cross-benchmark normalization remains unresolved."]
 ---
 
 # How Long-Context Benchmarks Construct Length, and What Their Choices Reveal
 
-**Research question:** How do long-context benchmarks construct their length dimension, and what do their methodological choices reveal about what is actually being measured?
-**Corpus:** 21 papers, 2021--2026.
+**Research question:** How do long-context benchmarks construct their length dimension, and what do those choices actually measure?
+**Thesis objective:** Provide thesis-ready evidence for related-work synthesis and for methodological decisions in context-evaluation analysis.
+**Corpus:** 22 papers, 2021-2026.
 **Categories:** benchmarking, long-context-evaluation.
 
 ---
 
 ## Executive Summary
 
-- **Seven distinct strategies for constructing benchmark length exist across the corpus**, each introducing different confounds: byte inflation, naturally long documents, haystack padding, distractor injection, demonstration concatenation, controlled padding with fixed tasks, and output-side generation (`2021-05-long-range-arena`, `2022-12-scrolls-long-language-sequences`, `2023-11-needle-in-a-haystack`, `2024-02-lost-in-the-middle`, `2025-03-longiclbench-long-in-context-learning`, `2024-08-flenqa-input-length-reasoning`, `2025-04-longgenbench-long-form-generation`).
+- Long-context benchmarks use multiple distinct length-construction strategies, and each introduces specific confounds (`2021-05-long-range-arena`, `2024-08-flenqa-input-length-reasoning`, `2024-10-ruler-context-size`, `2024-11-genuinely-difficult-long-context`).
+- Length alone degrades reasoning in controlled settings: FLenQA drops from 0.92 to 0.68 by 3K tokens, and attention-masked settings still drop by at least 7.9% at 30K (`2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`).
+- Literal overlap is a major shortcut: NoLiMa reports ROUGE-1 overlap as high as 0.966 for prior benchmarks and 0.069 for NoLiMa; removing overlap can collapse effective length (for example, Llama 3.1 70B: 32K on RULER to 2K on NoLiMa) (`2025-07-nolima-long-context-evaluation`).
+- Natural-document benchmarks improve realism but cannot cleanly attribute degradation to length because task and difficulty distributions shift with document collections (`2025-07-longbench-v2`, `2026-01-longbench-pro`).
+- Synthetic controllable benchmarks provide stronger causal attribution, but proxy validity to realistic tasks remains under-validated (`2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`).
+- Truncation studies show that many nominally long-context tasks do not require full input; for GPT-4-Turbo in Ada-LEval, BestAnswer drops 44.0 to 11.0 when truncated to 2K, while GovReport improves from 30.9 to 33.6 (`2024-06-ada-leval-length-adaptable-benchmark`).
+- Perplexity and ROUGE/F1 can mislead long-context evaluation unless length and format effects are controlled (`2021-11-long-range-models-use-context`, `2024-08-l-eval-standardized-evaluation`, `2024-12-babilong-long-context-reasoning`).
+- Input retrieval and output generation are related but not equivalent capabilities: LongGenBench reports only moderate correlation with RULER (r = 0.51 at 16K, r = 0.66 at 32K) (`2025-04-longgenbench-long-form-generation`).
 
-- **Context length alone degrades reasoning, independent of retrieval or distraction.** Du et al. (`2025-11-context-length-hurts-performance`) provide the strongest causal evidence: even when all padding tokens are masked from attention computation, performance drops 7.9%--50% at 30K tokens. The only difference from short-context is positional displacement. FLenQA (`2024-08-flenqa-input-length-reasoning`) shows earlier evidence: duplicate-padding (no distractors) degrades accuracy from 0.92 to 0.68 at just 3,000 tokens.
+---
 
-- **High literal overlap between queries and relevant context is a pervasive confound.** NoLiMa (`2025-07-nolima-long-context-evaluation`) measured ROUGE-1 precision between questions and context across benchmarks, finding values from 0.553 (BABILong) to 0.966 (InfiniteBench QA). When overlap is removed, Llama 3.1 70B's effective length drops from 32K (RULER) to 2K (NoLiMa) -- a 16x reduction.
+## Thesis-Ready Outputs
 
-- **Benchmarks using naturally long documents cannot verify that their tasks require reading the full input.** Ada-LEval (`2024-06-ada-leval-length-adaptable-benchmark`) showed that GovReport summarization performance actually *improves* when truncated from full length to 8K tokens, while NarrativeQA drops only 8.4 points -- compared to 33 points for a task designed to require full-text comprehension.
+### For Literature Review (Related Work)
 
-- **Goldman et al. (`2024-11-genuinely-difficult-long-context`) provide the conceptual vocabulary** for distinguishing orthogonal dimensions of difficulty beyond length: dispersion (how hard it is to find information) and scope (how much information is needed). Most benchmarks measure one axis while claiming to measure "long-context ability" generally. The high-scope, high-dispersion quadrant is severely under-explored.
+Long-context benchmark design from 2021 to 2026 evolves from "longer inputs" to "controlled interpretation." Early benchmarks either inflated sequence length (`2021-05-long-range-arena`) or emphasized naturally long documents (`2022-12-scrolls-long-language-sequences`) without isolating what length itself causes. The 2024-2025 wave adds explicit confound diagnosis: controllable synthetic suites (`2024-10-ruler-context-size`), truncation-based validity checks (`2024-06-ada-leval-length-adaptable-benchmark`), controlled length-only stress tests (`2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`), and overlap-aware retrieval diagnostics (`2025-07-nolima-long-context-evaluation`).
 
-- **The evolution of benchmark design shows progressive recognition of these confounds**, from LRA's byte inflation (2021) through SCROLLS's insistence on natural length (2022), NIAH's systematic length sweeping (2023), and finally the controlled designs of FLenQA, RULER, and NoLiMa (2024--2025), which each isolate specific variables at the cost of ecological validity.
+The stable conclusion is that "long-context capability" is not a single construct. It decomposes into at least retrieval robustness, shortcut resistance, reasoning under positional displacement, and sustained long-output compliance (`2024-11-genuinely-difficult-long-context`, `2025-04-longgenbench-long-form-generation`, `2025-04-helmet-long-context-evaluation`). The unresolved disagreement is not whether confounds exist, but which benchmark family should dominate model claims.
 
-- **Perplexity is unreliable as a proxy for long-context capability.** Sun et al. (`2021-11-long-range-models-use-context`) showed perplexity plateaus at 2K tokens for models with 8K context. Levy et al. (`2024-08-flenqa-input-length-reasoning`) found a -0.95 Pearson correlation between next-word prediction accuracy and reasoning accuracy. Kuratov et al. (`2024-12-babilong-long-context-reasoning`) showed that YaRN-extended models maintain stable perplexity while failing on BABILong reasoning tasks.
+### For Analysis/Discussion
 
-- **A fundamental tension exists between controllability and ecological validity** that no benchmark has resolved. Synthetic benchmarks (RULER, BABILong) offer precise length control but have unvalidated proxy relationships with real tasks. Natural-document benchmarks (LongBench v2, LongBench Pro) test realistic scenarios but cannot attribute performance changes to context length specifically.
+For thesis analysis, benchmark scores should be interpreted conditionally on length construction method. Scores from high-overlap retrieval settings should be treated as upper-bound retrieval indicators, not general long-context reasoning evidence (`2025-07-nolima-long-context-evaluation`). Conversely, realistic natural-document benchmarks should be treated as high external-validity indicators with weak causal attribution to length (`2025-07-longbench-v2`, `2026-01-longbench-pro`).
+
+Method conclusions are strongest when supported by a portfolio: at least one controlled causal benchmark (for internal validity), one realistic benchmark (for external validity), and one confound-specific stress test (for failure mode diagnosis). Current uncertainty is portfolio weighting: the field has not standardized how to combine these signals into a single defensible capability claim (`2025-04-helmet-long-context-evaluation`).
 
 ---
 
 ## Temporal Evolution
 
-| Year-Month | Paper | Key Contribution | Shift in Understanding |
+| Year-Month | Paper | Key Contribution | Shift |
 |---|---|---|---|
-| 2021-05 | `2021-05-long-range-arena` | LRA: byte tokenization and pixel flattening to reach 1K--16K | Established first benchmark suite for efficient Transformers; exposed that byte inflation conflates character composition with long-range dependency |
-| 2021-11 | `2021-11-long-range-models-use-context` | Prefix-length manipulation on PG-19 | Showed perplexity plateaus at 2K; long-range context primarily enables token copying, not discourse understanding |
-| 2022-12 | `2022-12-scrolls-long-language-sequences` | SCROLLS: naturally long documents, no inflation | Rejected LRA's byte inflation; insisted on organic length; introduced information spread metric |
-| 2023-11 | `2023-11-needle-in-a-haystack` | NIAH: systematic (depth × length) sweeping | Introduced the haystack padding paradigm; first systematic position × length evaluation |
-| 2023-12 | `2023-12-zeroscrolls-zero-shot-long-text` | ZeroSCROLLS: zero-shot natural documents + aggregation tasks | Extended SCROLLS to zero-shot; introduced aggregation tasks requiring full-input synthesis |
-| 2024-02 | `2024-02-lost-in-the-middle` | Position-controlled multi-document QA | Showed U-shaped performance curve; but confounded length with distractor count |
-| 2024-06 | `2024-06-ada-leval-length-adaptable-benchmark` | Ada-LEval: first length-adaptable design (1K--128K) | Introduced principled length controllability; validated full-text requirement via truncation |
-| 2024-08 | `2024-08-flenqa-input-length-reasoning` | FLenQA: duplicate-padding isolates length from noise | First benchmark to truly isolate input length from task difficulty; showed degradation at just 3K tokens |
-| 2024-08 | `2024-08-longbench-bilingual-benchmark` | LongBench: multi-strategy length + LongBench-E bins | Introduced per-length-range analysis via binning; revealed Wikipedia memorization confound |
-| 2024-08 | `2024-08-infinitebench-long-context-evaluation` | InfiniteBench: first 100K+ benchmark | Extended evaluation ceiling to 100K+; later revealed to have highest literal overlap (R-1=0.966) |
-| 2024-08 | `2024-08-l-eval-standardized-evaluation` | L-Eval: evaluation methodology (LIE technique) | Shifted focus from length construction to evaluation protocol; showed metrics fail without length-matched generation |
-| 2024-10 | `2024-10-ruler-context-size` | RULER: 4-category synthetic benchmark, fully controllable | Established that vanilla NIAH is insufficient; showed that near-perfect NIAH does not predict broader performance |
-| 2024-11 | `2024-11-genuinely-difficult-long-context` | Dispersion × scope taxonomy | Provided conceptual vocabulary for distinguishing orthogonal dimensions of difficulty beyond length |
-| 2024-12 | `2024-12-babilong-long-context-reasoning` | BABILong: reasoning-in-a-haystack, up to 50M tokens | Extended NIAH to multi-fact reasoning; showed perplexity unreliable and RAG fails on multi-fact tasks |
-| 2025-03 | `2025-03-longiclbench-long-in-context-learning` | LongICLBench: length via demonstration count | Novel construction via ICL demonstrations; but confounds length with label-space complexity |
-| 2025-04 | `2025-04-effective-context-length-falls-short` | Mechanistic explanation via position frequency | Provided causal mechanism (left-skewed position frequency) for why extended context fails |
-| 2025-04 | `2025-04-longgenbench-long-form-generation` | LongGenBench: first output-side generation benchmark at 16K--32K | Shifted evaluation from input comprehension to output generation; showed RULER scores correlate only moderately (r=0.51--0.66) with generation ability |
-| 2025-07 | `2025-07-longbench-v2` | LongBench v2: human-annotated, naturally long, multiple-choice | Raised the difficulty floor via human verification pipeline; but task distribution varies with length |
-| 2025-07 | `2025-07-nolima-long-context-evaluation` | NoLiMa: quantified literal overlap confound | Demonstrated that removing lexical overlap reduces effective length by 16x; identified attention mechanism overload as the bottleneck |
-| 2025-11 | `2025-11-context-length-hurts-performance` | Attention-masking experiment | Strongest causal evidence: positional displacement alone degrades reasoning, even when padding tokens are invisible |
-| 2026-01 | `2026-01-longbench-pro` | LongBench Pro: 1500 samples, bilingual, 256K, difficulty-calibrated | Most comprehensive natural-document benchmark; but length is intrinsic to documents, not experimentally controlled |
+| 2021-05 | `2021-05-long-range-arena` | First broad long-range suite; byte-level inflation | Length became a benchmark axis but with tokenization confounds |
+| 2021-11 | `2021-11-long-range-models-use-context` | Prefix-length analysis shows perplexity plateaus near 2K | Early warning that long window size != long-context use |
+| 2022-12 | `2022-12-scrolls-long-language-sequences` | Naturally long documents, multi-task benchmarking | Shift from synthetic inflation to ecological realism |
+| 2023-11 | `2023-11-needle-in-a-haystack` | Depth x length sweeping for retrieval | NIAH became default stress test |
+| 2024-02 | `2024-02-lost-in-the-middle` | Position-dependent degradation in multi-doc QA | Position entered benchmark interpretation |
+| 2024-06 | `2024-06-ada-leval-length-adaptable-benchmark` | Length-adaptable tasks + truncation checks | First explicit full-context-necessity validation |
+| 2024-08 | `2024-08-flenqa-input-length-reasoning` | Duplicate-padding controlled design | Isolated length effects from distractor effects |
+| 2024-10 | `2024-10-ruler-context-size` | Multi-task synthetic suite and effective-length framing | Showed NIAH saturation hides broader failures |
+| 2024-11 | `2024-11-genuinely-difficult-long-context` | Dispersion-scope taxonomy | Reframed "length" as multidimensional difficulty |
+| 2025-04 | `2025-04-helmet-long-context-evaluation` | Correlation analysis across synthetic/downstream categories | Single synthetic tasks shown to be weak proxies |
+| 2025-07 | `2025-07-nolima-long-context-evaluation` | Literal-overlap quantification and ablations | Exposed lexical shortcut inflation in NIAH-style tests |
+| 2025-11 | `2025-11-context-length-hurts-performance` | Attention-masking control at 30K | Strong causal evidence that length alone can hurt reasoning |
+| 2026-01 | `2026-01-longbench-pro` | Large bilingual natural benchmark with difficulty labels | Better realism and coverage, still weak causal control |
 
-### Phase 1: Establishing Long-Context Evaluation (2021--2022)
-
-The field began with two opposing philosophies. LRA (`2021-05-long-range-arena`) used byte tokenization and pixel flattening to inflate sequence length, explicitly trading tokenization realism for controlled evaluation of efficient attention mechanisms. SCROLLS (`2022-12-scrolls-long-language-sequences`) rejected this approach, insisting on "organically long" documents. In parallel, Sun et al. (`2021-11-long-range-models-use-context`) established through prefix-length experiments that perplexity plateaus at 2K tokens, suggesting models used long-range context only for superficial token copying. This early work set the stage for the central tension: controllability (synthetic construction) vs. ecological validity (natural documents).
-
-### Phase 2: The Haystack Paradigm and Position Analysis (2023--early 2024)
-
-Kamradt's NIAH test (`2023-11-needle-in-a-haystack`) introduced the dominant paradigm for the next two years: insert a target into padding material and sweep over both position and length. This paradigm was immediately adopted for its simplicity and interpretability. Liu et al. (`2024-02-lost-in-the-middle`) extended position analysis using multi-document QA, discovering the U-shaped performance curve. ZeroSCROLLS (`2023-12-zeroscrolls-zero-shot-long-text`) added aggregation tasks that structurally require full-input processing. However, during this phase, the confounds introduced by each construction strategy were not yet recognized.
-
-### Phase 3: Recognizing and Isolating Confounds (2024)
-
-The critical year. Four papers independently exposed different confounds. FLenQA (`2024-08-flenqa-input-length-reasoning`) introduced duplicate padding to show that length alone degrades reasoning -- the first design to isolate length from noise. Ada-LEval (`2024-06-ada-leval-length-adaptable-benchmark`) validated full-text comprehension requirements via truncation experiments, revealing that traditional QA/summarization tasks do not actually require reading the full input. RULER (`2024-10-ruler-context-size`) demonstrated that vanilla NIAH scores are uninformative by showing near-perfect NIAH alongside massive degradation on harder tasks. Goldman et al. (`2024-11-genuinely-difficult-long-context`) provided the conceptual framework, arguing that "context length" conflates dispersion (how hard it is to find information) with scope (how much information is needed).
-
-### Phase 4: Mechanistic Understanding and Confound Elimination (2025--2026)
-
-NoLiMa (`2025-07-nolima-long-context-evaluation`) quantified the literal overlap confound, measuring ROUGE-1 precision across benchmarks and showing that effective length collapses 16x when surface cues are removed. Du et al. (`2025-11-context-length-hurts-performance`) provided the strongest causal evidence through attention masking: even invisible padding tokens degrade performance, isolating positional displacement as a causal factor. An et al. (`2025-04-effective-context-length-falls-short`) identified the mechanistic root cause -- left-skewed position frequency distributions in pretraining. LongGenBench (`2025-04-longgenbench-long-form-generation`) opened a new evaluation dimension entirely: instead of measuring input comprehension, it evaluated whether models can generate instruction-compliant text at 16K--32K tokens, finding that even the best model achieves only 32.4% weighted average accuracy. Meanwhile, LongBench v2 (`2025-07-longbench-v2`) and LongBench Pro (`2026-01-longbench-pro`) pushed natural-document benchmarks toward greater difficulty and scale, but without resolving the fundamental controllability limitation.
+**Synthesis inference:** Field progression is best interpreted as confound decomposition. Later benchmarks do not simply extend context limits; they separate previously entangled factors (length, overlap, distraction, instruction following, and task dispersion).
 
 ---
 
 ## Thematic Synthesis
 
-### A Taxonomy of Length Construction Strategies
+### Theme 1: Length Construction Strategy Taxonomy
 
-**Statement:** Across the corpus, seven distinct strategies for constructing the length dimension can be identified, each with characteristic strengths and confounds.
+**Statement:** Different constructions of "long input" produce different measured capabilities.
 
-**Heterogeneity check:** Papers use different tokenizers and length measurement conventions. LRA (`2021-05-long-range-arena`) measures in bytes/characters. SCROLLS (`2022-12-scrolls-long-language-sequences`) measures in words. Most recent benchmarks use model-specific tokenizers (GPT-4, Qwen). LongBench Pro (`2026-01-longbench-pro`) notes a ±20% tolerance. These measurement differences complicate direct comparison of length thresholds across papers but do not affect the qualitative classification of construction strategies.
+**Heterogeneity check:** Papers mix tokens, words, bytes, and model-specific tokenizers; direct threshold comparisons are unsafe (`2021-05-long-range-arena`, `2022-12-scrolls-long-language-sequences`, `2026-01-longbench-pro`).
 
-| Strategy | Examples | Mechanism | Length Range | Controllable? |
-|---|---|---|---|---|
-| **Byte/character inflation** | `2021-05-long-range-arena` | Byte-level tokenization of text; pixel flattening of images | 1K--16K | Fixed per task |
-| **Naturally long documents** | `2022-12-scrolls-long-language-sequences`, `2023-12-zeroscrolls-zero-shot-long-text`, `2024-08-l-eval-standardized-evaluation`, `2024-08-infinitebench-long-context-evaluation`, `2025-07-longbench-v2`, `2026-01-longbench-pro` | Curate documents at their native length | 1.7K--2M words | No |
-| **Haystack padding** | `2023-11-needle-in-a-haystack`, `2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`, `2025-07-nolima-long-context-evaluation` | Insert target facts into irrelevant filler text | 1K--50M tokens | Yes (continuous) |
-| **Distractor injection** | `2024-02-lost-in-the-middle`, `2024-08-longbench-bilingual-benchmark` (multi-doc QA) | Add more retrieved or random distractor documents/answers | ~2K--16K | Yes (discrete, via count) |
-| **Demonstration concatenation** | `2025-03-longiclbench-long-in-context-learning`, `2024-08-longbench-bilingual-benchmark` (few-shot) | Increase the number of in-context learning examples | 1K--50K | Yes (via rounds × classes) |
-| **Controlled padding with fixed task** | `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance` | Pad around a fixed-difficulty task with duplicate, topical, or null tokens | 250--30K | Yes (continuous) |
-| **Output-side generation** | `2025-04-longgenbench-long-form-generation` | Evaluate model's ability to generate long, instruction-compliant text (output length is the length dimension) | 16K--32K output tokens | Yes (via target length) |
-
-#### Cross-paper analysis
-
-The most significant division is between **controllable** and **uncontrollable** strategies. Seven of 16 benchmark papers use naturally long documents, inheriting whatever length the source material provides. This prevents attributing performance changes to context length specifically: a model might score lower on a 100K-token novel than on a 10K-token paper because the novel requires different reasoning, not because it is longer.
-
-Among controllable strategies, the critical variable is **what covaries with length**. In haystack padding (`2023-11-needle-in-a-haystack`, `2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`), signal-to-noise ratio decreases as length increases -- the number of relevant tokens stays constant while irrelevant tokens grow. In distractor injection (`2024-02-lost-in-the-middle`, `2024-08-longbench-bilingual-benchmark`), the number of plausible-but-incorrect items increases with length, raising retrieval difficulty. In demonstration concatenation (`2025-03-longiclbench-long-in-context-learning`), label-space size and context length increase simultaneously. Only FLenQA's duplicate-padding design (`2024-08-flenqa-input-length-reasoning`) and Du et al.'s whitespace/masking conditions (`2025-11-context-length-hurts-performance`) isolate length from these covariates.
-
-The evolution from LRA's byte inflation (2021) to FLenQA's controlled padding (2024) and Du et al.'s attention masking (2025) represents a five-year trajectory toward recognizing that "making the input longer" is not a single operation but a family of operations with different causal implications. LongGenBench (`2025-04-longgenbench-long-form-generation`) introduces a seventh, fundamentally different strategy: instead of making the input longer, it makes the **output** longer (16K--32K tokens) and evaluates whether the model can maintain instruction compliance throughout extended generation. Its moderate correlation with input-retrieval benchmarks (RULER, Pearson r = 0.51--0.66) provides the first evidence that input-length and output-length challenges are related but distinct dimensions of long-context capability.
-
-### Confounds Introduced by Each Construction Strategy
-
-**Statement:** Every length construction strategy introduces at least one confound that covaries with the length dimension, making it impossible to attribute observed performance changes solely to context length.
-
-**Heterogeneity check:** Papers vary in how they measure and report degradation. FLenQA reports accuracy on True/False tasks. Du et al. report percentage drops from baseline on GSM8K, MMLU, and HumanEval. RULER uses a recall-based composite score. These metric differences mean effect magnitudes are not directly comparable across papers, but the qualitative finding (degradation occurs) is consistent.
-
-| Strategy | Primary Confound | Evidence |
+| Strategy | Representative papers | What varies with length |
 |---|---|---|
-| Byte inflation | Conflates character composition with long-range dependency | `2021-05-long-range-arena` acknowledges this; `2022-12-scrolls-long-language-sequences` criticizes it explicitly |
-| Natural documents | Task difficulty, domain, and length are entangled | `2024-06-ada-leval-length-adaptable-benchmark` shows GovReport improves when truncated; `2025-07-longbench-v2` acknowledges that task distributions differ across length bins |
-| Haystack padding | Signal-to-noise ratio decreases with length | `2024-08-flenqa-input-length-reasoning` (C2) shows degradation even with duplicate padding (no noise), isolating length; the difference between duplicate and different-padding conditions quantifies the noise confound |
-| Distractor injection | Retrieval difficulty increases with length | `2024-02-lost-in-the-middle` uses Contriever distractors in relevance order, confounding position and relevance; `2024-08-longbench-bilingual-benchmark` adds distractors up to a maximum, conflating length with distractor count |
-| Demonstration concatenation | Label-space complexity increases with length | `2025-03-longiclbench-long-in-context-learning` analysis notes this explicitly: "impossible to isolate which factor drives performance degradation" |
-| Controlled padding | Limited ecological validity; very short length range | `2024-08-flenqa-input-length-reasoning` tests only to 3K tokens; `2025-11-context-length-hurts-performance` tests to 30K but only on simple single-evidence tasks |
-| Output-side generation | Content repetition and instruction-following conflated with generation ability; narrow scenario coverage | `2025-04-longgenbench-long-form-generation`: ~45% of outputs show repetition; only 4 scenarios tested; does not evaluate open-ended reasoning or creativity |
+| Byte/character inflation | `2021-05-long-range-arena` | representation granularity and sequence length together |
+| Naturally long documents | `2022-12-scrolls-long-language-sequences`, `2025-07-longbench-v2`, `2026-01-longbench-pro` | document type, domain, and task complexity with length |
+| Haystack padding | `2023-11-needle-in-a-haystack`, `2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning` | signal-to-noise ratio and distractor volume |
+| Distractor injection | `2024-02-lost-in-the-middle`, `2024-08-longbench-bilingual-benchmark` | candidate ambiguity and retrieval burden |
+| Demonstration concatenation | `2025-03-longiclbench-long-in-context-learning` | label-space complexity and context length |
+| Controlled fixed-task padding | `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance` | mostly positional displacement / sequence length |
+| Output-side length scaling | `2025-04-longgenbench-long-form-generation` | instruction retention over long generation |
 
-#### Cross-paper analysis
+**Current state:** No single strategy provides both clean causal attribution and strong ecological validity.
 
-The confound picture sharpens when comparing results across strategies. FLenQA's duplicate-padding experiment (`2024-08-flenqa-input-length-reasoning`, C2) shows that average accuracy drops from 0.92 to 0.68 at 3,000 tokens when the padding consists of duplicates of the key paragraphs -- zero irrelevant content, zero change in task difficulty. Du et al. (`2025-11-context-length-hurts-performance`, C3) extend this further: even when all padding tokens are masked from attention, performance drops 7.9%--50% at 30K tokens, isolating positional displacement as the causal factor. These two papers together provide the strongest evidence that "context length alone" is a genuine independent variable, not merely a proxy for noise, distraction, or retrieval difficulty.
+### Theme 2: Confounds and Causal Disentanglement
 
-However, this clean isolation comes at the cost of ecological validity. FLenQA tasks are simple True/False reasoning chains; Du et al. use short-answer math and code problems. Whether length-alone degradation occurs for complex multi-document reasoning, long-form summarization, or code repository understanding remains untested. The controlled-padding strategy has proven that length effects are real but has not yet demonstrated their magnitude in the settings that natural-document benchmarks target.
+**Statement:** Most benchmark degradation curves are composite effects unless controlled designs isolate variables.
 
-The natural-document benchmarks, conversely, test ecologically valid tasks but cannot determine what fraction of the observed degradation comes from length per se. The gap between these two approaches constitutes the most significant unresolved methodological problem in the field.
+**Heterogeneity check:** Some papers manipulate one variable at a time; others change multiple dimensions simultaneously.
 
-### Literal Overlap as a Pervasive Shortcut
-
-**Statement:** High lexical overlap between benchmark queries and relevant context enables models to exploit surface-level pattern matching, inflating scores and masking genuine reasoning failures.
-
-**Heterogeneity check:** NoLiMa (`2025-07-nolima-long-context-evaluation`) provides the only systematic cross-benchmark measurement of literal overlap (Table 1). All values below are from this single source, using ROUGE-1 precision between question tokens and context. The metric is well-defined, making these values directly comparable.
-
-| Benchmark | ROUGE-1 Precision (Q→Context) | Source |
+| Paper | Key control | Main takeaway |
 |---|---|---|
-| InfiniteBench QA | 0.966 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| InfiniteBench MC | 0.946 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| Vanilla NIAH | 0.905 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| RULER QA | 0.809 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| HELMET RAG | 0.689 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| RULER S-NIAH | 0.571 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| BABILong 0K | 0.553 | `2025-07-nolima-long-context-evaluation`, Table 1 |
-| **NoLiMa** | **0.069** | `2025-07-nolima-long-context-evaluation`, Table 1 |
+| `2024-08-flenqa-input-length-reasoning` | duplicate padding | length degrades reasoning even without irrelevant content |
+| `2025-11-context-length-hurts-performance` | whitespace and attention masking | length effect persists when distractors are invisible |
+| `2024-06-ada-leval-length-adaptable-benchmark` | truncation across task families | many "long-context" tasks are partially solvable from truncated input |
+| `2024-10-ruler-context-size` | task variety under synthetic control | NIAH success overestimates broader long-context competence |
 
-#### Cross-paper analysis
+**Current state:** Causal evidence exists for length-alone degradation, but external validity remains limited because controlled studies use narrower task families.
 
-The literal overlap confound was not recognized until NoLiMa (`2025-07-nolima-long-context-evaluation`) systematically measured it in 2025. Prior benchmark authors were aware that their tasks might be "too easy" (RULER acknowledges NIAH is insufficient; BABILong extends NIAH with reasoning), but the specific mechanism -- lexical token matching via induction heads rather than genuine comprehension -- was not identified.
+### Theme 3: Literal Overlap as Shortcut
 
-The impact is dramatic. Llama 3.1 70B achieves 32K effective length on RULER, 16K on BABILong (QA1), but only **2K on NoLiMa** (`2025-07-nolima-long-context-evaluation`, Section 4.4). This 16x reduction occurs despite the underlying task being simpler on NoLiMa (single-fact retrieval vs. RULER's multi-task suite). The explanation is mechanistic: Olsson et al. (2022) showed that attention excels at recalling repetitive patterns through induction heads. When question tokens literally appear in the context, the attention mechanism can locate the relevant passage via pattern matching. When this cue is absent (NoLiMa), the model must perform latent associative reasoning, which degrades rapidly with context length.
+**Statement:** Lexical overlap provides a retrieval shortcut that can dominate benchmark outcomes.
 
-NoLiMa's ablation experiments (`2025-07-nolima-long-context-evaluation`, Table 6) provide direct causal evidence: adding multiple-choice options containing literal matches raises two-hop accuracy from 25.9% to 87.2% at 32K tokens -- a 3.4x improvement from surface cues alone, with no change in the underlying reasoning requirement. Conversely, adding literal-match distractors (sentences containing the query keyword but irrelevant to the answer) reduces GPT-4o's effective length from 8K to 1K.
+**Heterogeneity check:** Systematic cross-benchmark overlap quantification is currently strongest in one paper (`2025-07-nolima-long-context-evaluation`).
 
-This finding retroactively calls into question results across the corpus. NIAH's original finding (`2023-11-needle-in-a-haystack`) that Claude 2.1 achieves only 27% retrieval may partly reflect a refusal behavior rather than retrieval failure (accuracy jumps to 98% with a single prompt directive), but the needle itself ("The best thing to do in San Francisco is eat a sandwich...") shares most tokens with the query ("What is the best thing to do in San Francisco?"). RULER's extension of NIAH (`2024-10-ruler-context-size`) adds harder tasks, but its retrieval subtasks still use direct lexical matching ("the special magic number for XXX is: YYY"). InfiniteBench QA (`2024-08-infinitebench-long-context-evaluation`) has the highest measured overlap (R-1=0.966), suggesting that models can locate answers through simple token scanning.
+| Benchmark | ROUGE-1 precision (question -> context) |
+|---|---|
+| InfiniteBench QA | 0.966 |
+| Vanilla NIAH | 0.905 |
+| RULER QA | 0.809 |
+| HELMET RAG | 0.689 |
+| RULER S-NIAH | 0.571 |
+| BABILong 0K | 0.553 |
+| NoLiMa | 0.069 |
 
-The benchmarks that fare best under this analysis are those that structurally prevent lexical shortcuts: FLenQA (`2024-08-flenqa-input-length-reasoning`) requires reasoning over relationships between entities, not retrieval of specific facts. LongICLBench (`2025-03-longiclbench-long-in-context-learning`) requires label matching against a set of demonstrations. RULER's aggregation tasks (CWE, FWE) require counting occurrences across the full context. But even these benchmarks have not been systematically evaluated for the degree to which surface-level patterns enable shortcuts.
+**Cross-paper synthesis:** NoLiMa shows direct performance consequences: at 32K, 11 of 13 models fall below 50% of their base score; Llama 3.1 70B drops from 32K effective length on RULER to 2K on NoLiMa (`2025-07-nolima-long-context-evaluation`, `2024-10-ruler-context-size`). HELMET similarly reports that synthetic tasks do not fully predict downstream categories (`2025-04-helmet-long-context-evaluation`).
 
-### Disentangling Length from Task Difficulty
+**Current state:** Overlap-aware evaluation is now mandatory for claims about long-context reasoning robustness.
 
-**Statement:** Most benchmarks fail to disentangle context length from task difficulty, making it impossible to determine whether observed degradation stems from length per se or from harder tasks at longer lengths.
+### Theme 4: Length Versus Task Difficulty
 
-**Heterogeneity check:** Papers use fundamentally different experimental designs. Some (FLenQA, Du et al.) hold the task constant and vary only length. Others (LongBench-E, LongBench v2) bin samples by length but use different samples in each bin. Still others (Ada-LEval's BestAnswer) add distractors to increase length. These designs answer different questions and cannot be pooled. The table below organizes findings by design type.
+**Statement:** Many reported length effects are entangled with task-distribution shifts.
 
-| Paper | Disentanglement Approach | Limitation |
+**Heterogeneity check:** Binning by length on naturally occurring datasets is not equivalent to controlled manipulation at fixed task templates.
+
+| Evidence | What is shown |
+|---|---|
+| `2024-06-ada-leval-length-adaptable-benchmark` Table 10 | BestAnswer drops 44.0 -> 11.0 at 2K, NarrativeQA drops 33.1 -> 24.7, GovReport improves 30.9 -> 33.6 |
+| `2025-07-longbench-v2` | authors explicitly caution that task distributions differ across Short/Medium/Long bins |
+| `2026-01-longbench-pro` | broad length/difficulty labeling but no within-task causal length manipulation |
+
+**Current state:** Length-conditioned leaderboard slices are informative but insufficient for causal interpretation.
+
+### Theme 5: What Benchmarks Measure Versus What They Claim
+
+**Statement:** "Long-context ability" claims are often broader than the benchmark construct.
+
+**Heterogeneity check:** Benchmarks target different constructs: retrieval, synthesis, long-output control, instruction adherence, or mixed application performance.
+
+| Benchmark family | Primary measured construct | Common over-claim risk |
 |---|---|---|
-| `2024-08-flenqa-input-length-reasoning` | Identical task at all lengths; duplicate padding eliminates noise | Maximum 3K tokens; simple True/False only |
-| `2025-11-context-length-hurts-performance` | Identical task at all lengths; whitespace/attention-masking conditions | Maximum 30K; single-evidence tasks only |
-| `2024-06-ada-leval-length-adaptable-benchmark` | Same questions reused across lengths (BestAnswer); validate via truncation | BestAnswer adds distractors to increase length, changing retrieval difficulty |
-| `2024-08-longbench-bilingual-benchmark` | LongBench-E bins samples by word count (0--4K, 4K--8K, 8K+) | Different samples in each bin; difficulty may correlate with length |
-| `2024-10-ruler-context-size` | Same task configurations scaled to different lengths | Signal-to-noise ratio decreases with length for aggregation tasks; distractor count increases for QA |
-| `2024-12-babilong-long-context-reasoning` | Same bAbI reasoning tasks embedded in growing haystacks | Signal-to-noise ratio changes; fact-to-filler ratio changes |
-| `2025-07-longbench-v2` | Length bins (Short/Medium/Long) with natural documents | Task distributions differ by bin (code in Long, dialogue in Short) |
-| `2026-01-longbench-pro` | 6 length buckets × 25 task types × 2 languages | Documents at different lengths; no per-task length manipulation |
+| NIAH-style | lexical retrieval under distractors | treated as general reasoning proxy |
+| RULER/BABILong | synthetic controllable retrieval/reasoning composites | assumed transfer to realistic tasks without validation |
+| L-Eval/HELMET | evaluation protocol quality + category correlations | metric improvements interpreted as capability gains |
+| LongBench v2/Pro | realistic multi-task performance | length effects inferred without controlled manipulation |
+| LongGenBench | long-output instruction retention | taken as general long-context understanding |
 
-#### Cross-paper analysis
-
-Only 2 of 16 benchmark papers achieve clean disentanglement of length and difficulty (`2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`), and both pay a steep price in ecological validity. The remaining benchmarks exhibit various degrees of confounding.
-
-The starkest illustration comes from Ada-LEval's truncation experiment (`2024-06-ada-leval-length-adaptable-benchmark`, Table 10). When GPT-4-Turbo-1106 is tested on three benchmarks with progressive truncation:
-
-| Benchmark | 2K | 4K | 8K | Full | Drop (Full→2K) |
-|---|---|---|---|---|---|
-| BestAnswer | 11.0 | 20.0 | 31.5 | 44.0 | 33 points |
-| NarrativeQA | 24.7 | 25.6 | 29.7 | 33.1 | 8.4 points |
-| GovReport | 30.7 | 32.4 | 33.6 | 30.9 | **−2.7 (improves)** |
-
-GovReport -- a summarization benchmark from SCROLLS -- actually performs *better* when truncated to 8K tokens than when given the full document (~30K tokens). NarrativeQA loses only 8.4 points, suggesting that ~75% of its performance is achievable from a small fraction of the input. Only BestAnswer, which was specifically designed to require full-text reading, shows the expected pattern.
-
-This finding implies that most natural-document benchmarks from the early period (`2022-12-scrolls-long-language-sequences`, `2023-12-zeroscrolls-zero-shot-long-text`, `2024-08-l-eval-standardized-evaluation`) may not actually be measuring long-context capability in any meaningful sense -- the tasks can often be solved from truncated input, and longer contexts may introduce noise that degrades metric scores.
-
-Goldman et al. (`2024-11-genuinely-difficult-long-context`) provide the conceptual framework for understanding this. Their dispersion × scope taxonomy identifies two independent axes of difficulty that are conflated when benchmarks use only "context length" as their primary variable. A task can be long because the document is long (high scope, low dispersion -- summarize an entire book) or because a single fact is buried in noise (low scope, high dispersion -- needle in a haystack). Most benchmarks measure one axis while claiming to measure "long-context ability" generally. The hardest quadrant (high scope + high dispersion) is "severely under-explored" across the entire corpus.
-
-### What Benchmarks Actually Measure vs. What They Claim
-
-**Statement:** Each benchmark's length construction method implicitly defines what aspect of long-context capability it measures, and these aspects differ fundamentally from the generic "long-context understanding" most benchmarks claim to evaluate.
-
-**Heterogeneity check:** The table below synthesizes claims from each paper's abstract/introduction against what the experimental design actually measures. This analysis reflects interpretation of methodology, not pooled quantitative results.
-
-| Paper | Claims to Measure | Actually Measures |
-|---|---|---|
-| `2021-05-long-range-arena` | Long-range dependency modeling | Character composition + spatial reasoning on 1D sequences |
-| `2022-12-scrolls-long-language-sequences` | Long-text understanding via information synthesis | Fine-tuned seq2seq generation with n-gram overlap metrics; BART (1K tokens) nearly matches LED (16K) |
-| `2023-11-needle-in-a-haystack` | Full context window retrieval capability | Lexical token matching of a high-overlap fact (ROUGE-1=0.905) |
-| `2023-12-zeroscrolls-zero-shot-long-text` | Zero-shot long-text understanding | Task performance × format compliance interaction; all models capped at 8K tokens despite source documents up to 49K words |
-| `2024-02-lost-in-the-middle` | How models use long contexts | Position-dependent retrieval from distractor sets of varying size |
-| `2024-06-ada-leval-length-adaptable-benchmark` | Full-text comprehension at adaptive lengths | At ultra-long settings: instruction following (TSort) or answer selection from growing distractor pools (BestAnswer) |
-| `2024-08-flenqa-input-length-reasoning` | Input length effect on reasoning | Pure length-induced reasoning degradation (cleanest measure in corpus) |
-| `2024-08-infinitebench-long-context-evaluation` | 100K+ context understanding | Lexical retrieval (ROUGE-1=0.966 for QA) + entity-replaced novel comprehension |
-| `2024-08-l-eval-standardized-evaluation` | Standardized long-context evaluation | Evaluation methodology (metric-human correlation) rather than length effects per se |
-| `2024-08-longbench-bilingual-benchmark` | Bilingual long-context understanding | Broad task coverage with partially memorizable content (Wikipedia-based multi-doc QA) |
-| `2024-10-ruler-context-size` | Real context size beyond NIAH | Synthetic behavioral checks with lexical overlap cues; proxy relationship to real tasks unvalidated |
-| `2024-11-genuinely-difficult-long-context` | Genuine long-context difficulty | Conceptual taxonomy (no empirical benchmark) |
-| `2024-12-babilong-long-context-reasoning` | Reasoning in long contexts | Signal-in-noise filtering + simple bAbI reasoning; some tasks confound inherent difficulty with length |
-| `2025-03-longiclbench-long-in-context-learning` | Full-input comprehension via extreme-label ICL | Label-space complexity × context length × label granularity (entangled) |
-| `2025-07-longbench-v2` | Deep understanding and reasoning on realistic tasks | Human-calibrated difficulty on natural documents; but task distributions vary with length bins |
-| `2025-07-nolima-long-context-evaluation` | Long-context evaluation without literal matching | Latent associative reasoning degradation with context length (narrowly scoped: 58 question-needle pairs) |
-| `2025-11-context-length-hurts-performance` | Context length effects independent of retrieval | Positional displacement effects on single-evidence reasoning (cleanest causal design for this factor) |
-| `2025-04-longgenbench-long-form-generation` | Long-form generation quality | Instruction-following compliance in extended outputs (16K--32K tokens); correlates moderately with input-retrieval benchmarks (r=0.51--0.66), suggesting distinct capability |
-| `2026-01-longbench-pro` | Comprehensive long-context capability | Natural-document task performance at various lengths, with difficulty calibration; but length is not experimentally manipulated |
-
-#### Cross-paper analysis
-
-The gap between claimed and actual measurement is largest for early benchmarks and narrows over time as the field develops awareness of confounds. LRA (`2021-05-long-range-arena`) explicitly acknowledges that byte tokenization "conflates the compositional challenge of learning to compose bytes into words with the long-range dependency challenge." SCROLLS (`2022-12-scrolls-long-language-sequences`) avoids this confound but introduces another: the near-equivalence of BART-1024 and LED-16384 (29.01 vs. 29.16) suggests that long-context capability is not being discriminated.
-
-By 2024--2025, benchmarks become more honest about their scope. RULER (`2024-10-ruler-context-size`) authors explicitly state it should be used as "convenient behavioral checks" rather than preferred over realistic settings. NoLiMa (`2025-07-nolima-long-context-evaluation`) is precisely scoped to one specific confound (literal overlap) and does not claim to measure long-context understanding generally. FLenQA (`2024-08-flenqa-input-length-reasoning`) acknowledges its 3K-token ceiling.
-
-**Synthesis inference:** The trajectory suggests a Kuhnian progression from "long-context benchmarks measure long-context ability" (2021--2023) to "each benchmark measures a specific interaction between its construction method and model capabilities" (2024--2026). The implication is that no single benchmark score can serve as a proxy for "long-context capability" -- the concept itself decomposes into retrieval robustness, noise tolerance, reasoning stability under positional displacement, literal-match independence, and information aggregation capacity, each requiring distinct evaluation. The papers contributing to this inference are: `2024-08-flenqa-input-length-reasoning`, `2024-11-genuinely-difficult-long-context`, `2025-07-nolima-long-context-evaluation`, `2025-11-context-length-hurts-performance`.
+**Current state:** Benchmark interpretation should explicitly declare construct scope before model capability claims.
 
 ---
 
-## Consensus and Disagreements
+## Consensus and Active Disagreements
 
 ### Consensus
 
-**Claim:** Every length construction strategy introduces confounds that covary with the length dimension.
-**Supporting papers:** `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`, `2024-11-genuinely-difficult-long-context`, `2024-10-ruler-context-size`
+**Claim:** Benchmark construction choices strongly influence measured performance.
+**Supporting papers:** `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`, `2024-10-ruler-context-size`, `2026-01-longbench-pro`
 **Evidence strength:** strong
-**Qualification:** FLenQA and Du et al. demonstrate that length has an independent effect beyond these confounds, but no benchmark simultaneously controls for all of them in a realistic setting.
+**Qualification:** The direction is robust; effect size depends on task and metric choices.
 
-**Claim:** High literal overlap enables surface-level shortcuts that inflate long-context benchmark scores.
-**Supporting papers:** `2025-07-nolima-long-context-evaluation`, `2024-10-ruler-context-size`, `2024-08-infinitebench-long-context-evaluation`
+**Claim:** Literal overlap materially inflates retrieval-style long-context scores.
+**Supporting papers:** `2025-07-nolima-long-context-evaluation`, `2024-08-infinitebench-long-context-evaluation`, `2025-04-helmet-long-context-evaluation`
 **Evidence strength:** strong
-**Qualification:** NoLiMa provides the quantitative measurements and ablation experiments. The claim applies specifically to retrieval-style tasks; aggregation and generation tasks are less affected.
+**Qualification:** Best-supported for retrieval-heavy settings; less directly tested for generation.
 
-**Claim:** Benchmarks using naturally long documents cannot verify that their tasks require full-context comprehension without explicit truncation controls.
-**Supporting papers:** `2024-06-ada-leval-length-adaptable-benchmark`, `2022-12-scrolls-long-language-sequences`, `2024-08-l-eval-standardized-evaluation`
+**Claim:** Proxy metrics (perplexity or plain ROUGE/F1) are unreliable without additional controls.
+**Supporting papers:** `2021-11-long-range-models-use-context`, `2024-08-l-eval-standardized-evaluation`, `2024-12-babilong-long-context-reasoning`, `2024-08-flenqa-input-length-reasoning`
 **Evidence strength:** strong
-**Qualification:** Ada-LEval's truncation comparison is the definitive evidence (Table 10). Only 1 of 3 tested benchmarks showed the expected pattern of full-text necessity.
-
-**Claim:** Perplexity is unreliable as a proxy for long-context capability.
-**Supporting papers:** `2024-08-flenqa-input-length-reasoning`, `2024-12-babilong-long-context-reasoning`, `2021-11-long-range-models-use-context`
-**Evidence strength:** strong
-**Qualification:** Three independent lines of evidence: perplexity plateaus at 2K while models process 8K (Sun et al.); perplexity correlates negatively with reasoning accuracy (Levy et al., rho = -0.95); stable perplexity coexists with reasoning failure (Kuratov et al.).
-
-**Claim:** Synthetic benchmarks with controllable length offer superior experimental control but have unvalidated proxy relationships with realistic tasks.
-**Supporting papers:** `2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`, `2024-06-ada-leval-length-adaptable-benchmark`, `2025-07-longbench-v2`
-**Evidence strength:** moderate
-**Qualification:** RULER explicitly acknowledges this limitation (Section 8). LongBench v2 and LongBench Pro motivate their existence partly by this gap. No paper has validated the proxy relationships.
+**Qualification:** Does not imply these metrics are useless; only that they are insufficient as stand-alone long-context evidence.
 
 ### Active Disagreements
 
-**Claim:** Whether padding-based length construction measures context-length ability or noise tolerance.
-**Position A** (`2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`): Haystack padding tests whether models can identify relevant information in growing contexts, which is a core component of long-context capability.
-**Position B** (`2025-07-nolima-long-context-evaluation`, `2024-08-flenqa-input-length-reasoning`, `2024-11-genuinely-difficult-long-context`): Haystack padding primarily tests signal-to-noise filtering, which can be achieved via lexical matching. True long-context capability requires latent reasoning without surface cues.
-**Methodological differences:** Position A papers use synthetic benchmarks with lexical overlap (RULER R-1=0.571--0.809). Position B papers use controlled designs (FLenQA duplicate padding, NoLiMa R-1=0.069) that isolate length from lexical cues.
-**Assessment:** Both are partially correct. FLenQA's duplicate-padding experiment and Du et al.'s attention-masking experiment prove that length alone degrades performance. However, most padding benchmarks (RULER, BABILong) do not use these controls, leaving their results as a composite of length and noise effects.
-**Resolution path:** A study comparing the same task under duplicate-padding, noise-padding, and attention-masking conditions across multiple models would resolve this.
-**Status:** Partially resolved. FLenQA and Du et al. show length effects exist; the remaining question is their magnitude relative to noise effects in existing benchmarks.
+**Claim:** Which benchmark family should dominate model selection decisions?
+**Position A (realistic-first):** natural-document suites better match deployment (`2025-07-longbench-v2`, `2026-01-longbench-pro`).
+**Position B (control-first):** causal attribution requires synthetic/controlled manipulations (`2024-10-ruler-context-size`, `2024-06-ada-leval-length-adaptable-benchmark`, `2025-04-helmet-long-context-evaluation`).
+**Methodological differences:** external realism versus internal validity.
+**Assessment:** unresolved; portfolio evaluation remains the defensible compromise.
+**Resolution path:** benchmark programs that pair fixed realistic tasks with controlled length/overlap/noise interventions.
 
-**Claim:** Whether natural-document or synthetic benchmarks provide more valid evaluation.
-**Position A** (`2025-07-longbench-v2`, `2026-01-longbench-pro`, `2022-12-scrolls-long-language-sequences`): Natural documents reflect real usage and test holistic capability; synthetic tasks are too simple and artificial.
-**Position B** (`2024-10-ruler-context-size`, `2024-06-ada-leval-length-adaptable-benchmark`): Natural documents introduce uncontrollable confounds; only synthetic constructions allow attributing effects to specific variables.
-**Methodological differences:** Position A papers use curated documents without length manipulation. Position B papers generate synthetic inputs with controllable parameters. Neither approach can do what the other does -- natural documents cannot be length-controlled, and synthetic inputs may not generalize to realistic tasks.
-**Assessment:** Unresolved. Both positions are well-supported within their scope. Ada-LEval's truncation experiments (showing GovReport improves when truncated) validate Position B's concern. LongBench Pro's comprehensive task coverage and difficulty calibration validate Position A's goals. The fundamental limitation is that no benchmark yet combines natural text with experimental control over length.
-**Resolution path:** A benchmark embedding identical reasoning tasks within real documents at controlled lengths, using the document itself as padding material.
-**Status:** Unresolved.
+---
+
+## Effective Context Evaluation Validity Audit
+
+### Construct Validity
+
+| Paper | Operational definition of effective context |
+|---|---|
+| `2024-10-ruler-context-size` | thresholded multi-task synthetic score (85.6% benchmark-specific threshold) |
+| `2024-12-babilong-long-context-reasoning` | thresholded reasoning performance under haystack scaling |
+| `2025-07-nolima-long-context-evaluation` | thresholded fraction of per-model base score (85% criterion) |
+| `2025-04-helmet-long-context-evaluation` | cross-category downstream performance and correlation profiles |
+| `2026-01-longbench-pro` | application-level performance across length/context/difficulty labels |
+| `2025-04-longgenbench-long-form-generation` | long-output instruction compliance (CR/STIC/wAvg) |
+
+Construct validity is therefore mixed: different papers measure related but non-identical constructs.
+
+### Confound Audit
+
+| Length manipulation | Typical confound |
+|---|---|
+| haystack padding | overlap and noise increase with length |
+| natural length bins | task/domain distribution shift across bins |
+| distractor injection | ambiguity rises with length |
+| demonstration expansion | label-space complexity rises with length |
+| output-length scaling | generation stability mixed with instruction adherence |
+
+### Causal Evidence Ladder
+
+| Level | Definition | Papers |
+|---|---|---|
+| A | direct causal isolation controls | `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`, `2025-07-nolima-long-context-evaluation`, `2024-06-ada-leval-length-adaptable-benchmark` |
+| B | controlled but non-isolating synthetic comparisons | `2024-10-ruler-context-size`, `2024-12-babilong-long-context-reasoning`, `2025-03-longiclbench-long-in-context-learning` |
+| C | observational realistic benchmarking | `2022-12-scrolls-long-language-sequences`, `2024-08-longbench-bilingual-benchmark`, `2025-07-longbench-v2`, `2026-01-longbench-pro` |
+
+### External Validity Judgment
+
+- Strongest transfer signal: realistic suites (`2025-07-longbench-v2`, `2026-01-longbench-pro`).
+- Strongest attribution signal: controlled causal studies (`2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance`).
+- Practical implication: both signals are required to defend thesis-level conclusions about effective context behavior.
+
+---
+
+## Mechanistic Interpretability Evidence Synthesis
+
+| Mechanism | Papers | Evidence type | Causal strength | Explains | Open limits |
+|---|---|---|---|---|---|
+| Literal matching shortcut | `2025-07-nolima-long-context-evaluation` | interventional ablations (direct cue/distractor manipulations) | high | inflated retrieval scores under lexical overlap | transfer to non-retrieval tasks |
+| Positional displacement length effect | `2024-08-flenqa-input-length-reasoning`, `2025-11-context-length-hurts-performance` | controlled behavioral interventions (duplicate/whitespace/masking) | high | degradation without retrieval failure | mechanism inside network remains unresolved |
+| Position-frequency undertraining | `2025-04-effective-context-length-falls-short` | causal hypothesis with targeted interventions (STRING) | moderate | why tail positions underperform in long contexts | scope beyond tested model families |
+| Position-dependent retrieval bias | `2024-02-lost-in-the-middle`, `2024-06-ada-leval-length-adaptable-benchmark`, `2025-07-nolima-long-context-evaluation` | observational + controlled position manipulations | moderate | location-sensitive failures | interaction with task complexity and overlap |
+| Task-difficulty decomposition (dispersion/scope) | `2024-11-genuinely-difficult-long-context` | conceptual/theoretical taxonomy | moderate | why benchmarks disagree by design | lacks quantitative operationalization |
+
+Synthesis: mechanism claims are strongest where interventions exist (NoLiMa, FLenQA, Du et al.). Taxonomic claims are useful for interpretation but remain less causal.
 
 ---
 
 ## Methodological Patterns
 
-### Common Experimental Setups
+### Common Setups and Blind Spots
 
-**Length ranges by benchmark type:**
-- Synthetic benchmarks: typically 4K--128K, sometimes extending to 1M+ (`2024-12-babilong-long-context-reasoning` reaches 50M)
-- Natural-document benchmarks: determined by source material, typically 3K--256K+
-- Controlled-padding benchmarks: much shorter (250--30K) due to experimental constraints
-
-**Models most frequently evaluated:** GPT-4/4o (15 of 21 papers), Llama series (13 papers), Gemini 1.5/2.0 (10 papers), Mistral/Mixtral (8 papers), Claude (6 papers), Qwen series (7 papers).
+- Common setups: zero-shot or light prompting, fixed decoding, and broad model-family comparisons (`2024-08-l-eval-standardized-evaluation`, `2024-10-ruler-context-size`, `2025-07-longbench-v2`, `2026-01-longbench-pro`).
+- Blind spots: limited multilingual controlled studies, few variance/statistical uncertainty reports, and sparse within-task causal manipulation at realistic scale (`2024-08-flenqa-input-length-reasoning`, `2024-06-ada-leval-length-adaptable-benchmark`, `2025-04-helmet-long-context-evaluation`, `2026-01-longbench-pro`).
 
 ### Benchmark Coverage Matrix
 
-| Paper | NIAH-style | Multi-hop | Aggregation | Summarization | QA | Code | ICL | Classification |
-|---|---|---|---|---|---|---|---|---|
-| `2021-05-long-range-arena` | | | | | | | | x |
-| `2022-12-scrolls-long-language-sequences` | | | | x | x | | | x |
-| `2023-11-needle-in-a-haystack` | x | | | | | | | |
-| `2023-12-zeroscrolls-zero-shot-long-text` | | | x | x | x | | | |
-| `2024-02-lost-in-the-middle` | | | | | x | | | |
-| `2024-06-ada-leval-length-adaptable-benchmark` | | | | | | | | x |
-| `2024-08-flenqa-input-length-reasoning` | | | | | | | | x |
-| `2024-08-infinitebench-long-context-evaluation` | x | | | x | x | x | | |
-| `2024-08-l-eval-standardized-evaluation` | | | | x | x | x | | x |
-| `2024-08-longbench-bilingual-benchmark` | x | x | | x | x | x | x | |
-| `2024-10-ruler-context-size` | x | x | x | | x | | | |
-| `2024-12-babilong-long-context-reasoning` | x | x | | | | | | |
-| `2025-03-longiclbench-long-in-context-learning` | | | | | | | x | x |
-| `2025-07-longbench-v2` | | | | | x | x | x | |
-| `2025-07-nolima-long-context-evaluation` | x | x | | | | | | |
-| `2025-04-longgenbench-long-form-generation` | | | | | | | | x |
-| `2026-01-longbench-pro` | | | x | x | x | x | x | |
+| Benchmark family | Retrieval | Reasoning | Generation | Causal length controls | Realistic docs |
+|---|---|---|---|---|---|
+| NIAH / RULER / BABILong | high | medium | low | medium | low |
+| FLenQA / Du et al. controls | low | high | low | high | low |
+| LongBench v2 / Pro | medium | high | medium | low | high |
+| L-Eval / HELMET | medium | medium | medium | medium | medium |
+| LongGenBench | low | medium | high | medium (output length) | medium |
 
-### Methodological Strengths
+### Reproducibility Signals
 
-The strongest methodological contributions in the corpus:
-
-1. **Du et al.'s attention-masking experiment** (`2025-11-context-length-hurts-performance`): The strongest causal test in the corpus -- invisible tokens still degrade performance (7.9%--50% at 30K), isolating positional displacement as the mechanism. Three conditions (essay tokens, whitespace, attention masking) systematically eliminate alternative explanations.
-
-2. **FLenQA's duplicate-padding design** (`2024-08-flenqa-input-length-reasoning`): The first benchmark to fully disentangle length from noise, distraction, and task difficulty. Degradation from 0.92 to 0.68 accuracy with zero irrelevant content.
-
-3. **NoLiMa's ROUGE-1 quantification** (`2025-07-nolima-long-context-evaluation`): Transformed an intuitive concern (benchmarks may be too easy) into a measurable quantity across benchmarks. The 16x reduction in effective length when overlap is removed provides a concrete measure of the confound's magnitude.
-
-4. **Ada-LEval's truncation validation** (`2024-06-ada-leval-length-adaptable-benchmark`): Simple but decisive method for verifying whether tasks require full-text reading. The finding that GovReport improves when truncated challenges assumptions underlying all naturally-long-document benchmarks.
-
-5. **Goldman et al.'s dispersion × scope taxonomy** (`2024-11-genuinely-difficult-long-context`): Provided conceptual vocabulary for distinguishing dimensions of difficulty that length alone conflates. Enables systematic classification of what benchmarks actually measure.
-
-### Methodological Weaknesses
-
-Recurring limitations across the corpus:
-
-1. **No variance estimates.** 11 of 16 benchmark papers report single-run results without confidence intervals or significance testing. Results are point estimates at best, and the small evaluation subset sizes in some benchmarks (Ada-LEval uses only 50 samples for ultra-long evaluation) mean individual examples shift accuracy meaningfully.
-
-2. **Instruction-following confound.** Multiple benchmarks conflate task capability with instruction compliance. Ada-LEval (`2024-06-ada-leval-length-adaptable-benchmark`) cannot distinguish among open-source models because they all fail at instruction following. L-Eval (`2024-08-l-eval-standardized-evaluation`) shows that metric-human correlation collapses without generation length control. ZeroSCROLLS (`2023-12-zeroscrolls-zero-shot-long-text`) shows GPT-4 appears weaker than Claude on NarrativeQA by F1 but stronger by human judgment due to format non-compliance.
-
-3. **Narrow model coverage.** Many benchmark papers evaluate primarily 7B-parameter models plus one or two proprietary APIs, leaving the intermediate scale (13B--70B) underrepresented. LongBench Pro (`2026-01-longbench-pro`) is the exception, covering 46 models.
-
-4. **English dominance.** Of the 16 benchmark papers, only 4 include non-English evaluation (`2024-08-longbench-bilingual-benchmark`, `2024-08-infinitebench-long-context-evaluation`, `2026-01-longbench-pro`, `2025-03-longiclbench-long-in-context-learning` for some tasks). The literal overlap confound, position bias patterns, and length-difficulty interactions may differ across languages.
-
-5. **Generation tasks underrepresented.** 12 of 16 benchmarks are dominated by extractive or classificatory tasks. LongGenBench (`2025-04-longgenbench-long-form-generation`) is the first benchmark to specifically evaluate long-form generation at 16K--32K tokens using objective binary verification of instruction compliance rather than n-gram metrics. However, open-ended writing, creative composition, and logical reasoning in long outputs remain unevaluated by any benchmark with rigorous metrics.
+- Positive: multiple benchmark projects release code/data (`2024-10-ruler-context-size`, `2025-04-helmet-long-context-evaluation`, `2025-04-longgenbench-long-form-generation`).
+- **Synthesis inference:** a recurring weakness is single-run style reporting with limited variance estimates and limited cross-benchmark calibration (`2024-06-ada-leval-length-adaptable-benchmark`, `2024-08-flenqa-input-length-reasoning`, `2024-10-ruler-context-size`, `2025-07-longbench-v2`).
 
 ---
 
 ## Gaps and Open Questions
 
-1. **No benchmark combines experimental control with ecological validity.**
-   - **Description:** Controlled-padding designs (FLenQA, Du et al.) isolate length effects but test only simple tasks at short lengths (3K--30K tokens). Natural-document benchmarks test realistic tasks but cannot attribute effects to length. No benchmark uses realistic text with experimental manipulation of length.
-   - **Severity:** high
-   - **Potential approach:** A benchmark could embed identical reasoning tasks within real documents at controlled lengths, using the document itself as the padding material. Ada-LEval's approach of reusing questions across length settings is a step in this direction but introduces distractor-count confounds.
-   - **Related open questions:** `2024-10-ruler-context-size` open question on proxy task validity; `2024-08-flenqa-input-length-reasoning` open question on scaling beyond 3K.
+1. **Controlled realism gap (high):** no benchmark currently combines natural text realism with strict causal control over length, overlap, and noise in one framework.
+   **Minimal evidence needed:** paired realistic-task templates with controlled manipulations of one variable at a time.
 
-2. **Synthetic-to-realistic proxy relationships are unvalidated.**
-   - **Description:** RULER claims variable tracking proxies coreference resolution and CWE/FWE proxy summarization. BABILong claims bAbI tasks measure "reasoning in long contexts." These relationships are assumed, not tested.
-   - **Severity:** high
-   - **Potential approach:** Correlate synthetic benchmark scores with performance on matched realistic tasks (e.g., RULER VT vs. CoNLL coreference) across many models.
-   - **Related open questions:** `2024-10-ruler-context-size` open question 1; `2024-12-babilong-long-context-reasoning` open question 4.
+2. **Proxy validation gap (high):** synthetic proxy tasks are widely used but insufficiently validated against realistic task families.
+   **Minimal evidence needed:** cross-model correlation and intervention studies linking each proxy task to a matched realistic capability.
 
-3. **No study compares the same task under different length construction strategies.**
-   - **Description:** If the same underlying task were evaluated with haystack padding, distractor injection, and controlled padding, would models show the same degradation curves? This comparison would reveal whether "context length" is a single dimension or a family of dimensions.
-   - **Severity:** high
-   - **Potential approach:** Take a single task (e.g., multi-hop QA) and construct length via (a) irrelevant padding, (b) additional distractor documents, (c) duplicate-question padding, and (d) whitespace insertion.
-   - **Related open questions:** `2025-11-context-length-hurts-performance` open question 1; `2024-11-genuinely-difficult-long-context` open question 1.
+3. **Multilingual control gap (high):** controlled overlap/length studies are almost entirely English.
+   **Minimal evidence needed:** NoLiMa- and FLenQA-style controlled replications in non-English settings.
 
-4. **Generation tasks are poorly represented (partially addressed).**
-   - **Description:** Long-form generation (summarization, writing, planning) is evaluated in only 7 of 16 benchmark papers, mostly via ROUGE or model-based metrics that the corpus shows are unreliable (`2024-08-l-eval-standardized-evaluation`, `2025-07-longbench-v2`). LongGenBench (`2025-04-longgenbench-long-form-generation`) partially addresses this gap by evaluating instruction-following in 16K--32K token outputs using objective binary verification (100% agreement with human labels on 300 samples). Its key innovation is decomposing long-form generation into verifiable subtask constraints (single, range, and periodic instructions). However, it does not evaluate open-ended creative generation, logical reasoning coherence, or content diversity — and its four scenarios (diary writing, menu design, skyscraper design, urban planning) are narrow in domain. The finding that RULER scores correlate only moderately with LongGenBench scores (Pearson r=0.51 at 16K, r=0.66 at 32K) provides the first quantitative evidence that input comprehension and output generation are distinct dimensions of long-context capability.
-   - **Severity:** medium (reduced from previous assessment due to LongGenBench, but open-ended generation remains unaddressed)
-   - **Potential approach:** Extend LongGenBench's instruction-verification approach to additional domains and generation types; design benchmarks for open-ended generation quality with objective correctness criteria.
-   - **Related open questions:** `2022-12-scrolls-long-language-sequences` open question on model-based evaluation; `2025-04-longgenbench-long-form-generation` open question on evaluating creativity and reasoning in long-form generation.
+4. **Long-output quality gap (medium):** LongGenBench addresses instruction adherence but not broader open-ended quality dimensions.
+   **Minimal evidence needed:** objective evaluation protocols for long-output reasoning consistency, diversity, and factual stability.
 
-5. **Interaction between length construction and position bias is unexplored.**
-   - **Description:** The lost-in-the-middle effect (`2024-02-lost-in-the-middle`) has been studied under distractor-injection and haystack-padding settings. Whether the same U-shaped curve appears under controlled-padding (FLenQA) or natural-document (LongBench v2) settings is unknown. NoLiMa (`2025-07-nolima-long-context-evaluation`) shows that two-hop tasks produce a flat depth profile where context length dominates, suggesting the interaction depends on task type.
-   - **Severity:** medium
-   - **Potential approach:** Apply NoLiMa's aligned-depth analysis to other benchmarks with controllable needle positions.
-   - **Related open questions:** `2024-10-ruler-context-size` open question 3; `2025-07-nolima-long-context-evaluation` open question 2.
+5. **Joint position-length gap (medium):** position effects and pure length effects are usually studied separately.
+   **Minimal evidence needed:** unified benchmark protocols varying both depth and length with controlled overlap.
 
-6. **Multilingual evaluation of length effects is absent.**
-   - **Description:** Of controlled-length benchmarks (where length effects can be measured), none include non-English evaluation. LongBench (`2024-08-longbench-bilingual-benchmark`) and LongBench Pro (`2026-01-longbench-pro`) are bilingual but do not experimentally control length. Whether the literal-overlap confound, position bias, and length-alone degradation operate identically across languages is unknown.
-   - **Severity:** medium
-   - **Potential approach:** Replicate NoLiMa's design with non-English needles and haystacks; replicate FLenQA's design with non-English reasoning tasks.
+6. **Portfolio aggregation gap (medium):** no standard way to combine synthetic, realistic, and confound-specific scores into one defensible capability profile.
+   **Minimal evidence needed:** validated weighting/aggregation schemes with out-of-domain predictive checks.

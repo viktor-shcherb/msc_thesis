@@ -92,6 +92,9 @@ cross_references:
   - target: 2024-05-deepseek-v2-moe
     type: extended-by
     detail: "DeepSeek-V2 uses YaRN to extend context from 4K base to 128K, achieving continued perplexity decline at 128K with its Multi-head Latent Attention architecture"
+  - target: 2024-03-mistral-7b-v0.2
+    type: complementary
+    detail: "Mistral 7B v0.2 uses a simpler RoPE theta scaling approach (theta=1M) rather than YaRN's NTK-by-parts method to extend context from 8K to 32K"
   - target: 2024-12-deepseek-v3-technical-report
     type: extended-by
     detail: "DeepSeek-V3 uses YaRN for two-stage context extension (4K→32K→128K) with 119K H800 GPU hours, achieving perfect NIAH retrieval at 128K"
@@ -101,6 +104,18 @@ cross_references:
   - target: 2024-06-effective-long-context-scaling
     type: complementary
     detail: "Llama 2 Long evaluated against YaRN-7B-128k and YaRN-13B-128k on long-context benchmarks; Llama 2 Long 13B outperforms YaRN-13B-128k on NarrativeQA (25.6 vs 23.4), Qasper (31.2 vs 27.1), QuALITY (57.6 vs 46.4), and QMSum (15.7 vs 11.9)"
+  - target: 2025-03-gemma-3-technical-report
+    type: complementary
+    detail: "Gemma 3 uses RoPE rescaling (factor 8) with base frequency increase (10K to 1M) for 128K context extension, a different approach from YaRN's NTK-by-parts interpolation"
+  - target: 2026-01-ministral-3-cascade-distillation
+    type: extended-by
+    detail: "Ministral 3 applies YaRN for long-context extension from short-context distillation to 256K context during cascade pretraining"
+  - target: 2024-05-pose-positional-skip-wise-training
+    type: complementary
+    detail: "PoSE reduces long-context adaptation cost by simulating long positions during short-window training, while YaRN focuses on frequency-aware interpolation quality"
+  - target: 2025-07-smollm3-long-context-reasoner
+    type: extended-by
+    detail: "SmolLM3 uses YARN for extrapolation from 64K training context to 128K inference at 3B scale, following Qwen2.5's implementation"
 open_questions:
   - question: "Why does perplexity improvement from context extension not always translate to downstream task performance?"
     addressed_by: 2025-12-drope-dropping-positional-embeddings

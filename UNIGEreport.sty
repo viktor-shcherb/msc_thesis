@@ -15,6 +15,11 @@
 \usepackage[utf8]{inputenc}
 \usepackage[tracking=true,kerning=true,spacing=true]{microtype}
 \microtypecontext{spacing=nonfrench}
+% Silence TS1/futs spacing warnings under the nonfrench context.
+\SetExtraSpacing
+  [ context = nonfrench ]
+  { encoding = {TS1} }
+  { }
 \usepackage[DIV=12,BCOR=2mm,headinclude=true,footinclude=false]{typearea}
 
 % Bibliography
@@ -28,6 +33,12 @@
 \addbibresource{references.bib}
 \setcounter{biburllcpenalty}{7000}
 \setcounter{biburlucpenalty}{8000}
+% Citation usage guidelines:
+% - Default evidence citation: \cite{key} -> numeric key [n].
+% - If author name appears in prose, never hardcode names; use \citeauthor{key},
+%   typically paired with \cite{key} in the same sentence.
+% - Optional forms: \citeyear{key} for year-only, \textcite{key} for inline
+%   author+key rendering provided by biblatex.
 
 \usepackage{csquotes}
 \usepackage[french,english]{babel}
@@ -154,9 +165,8 @@ Geneva, \today
 \markboth{Acknowledgments}{Acknowledgments}
 \addcontentsline{toc}{chapter}{Acknowledgments}
 \@acknowledgments
-\bigskip
-\noindent\textit{Geneva, \today}
-\hfill \@author
+\par\bigskip\noindent
+\textit{Geneva, \today}\hfill\@author
 }
 
 % Abstract environments

@@ -5,7 +5,7 @@ Only references actually cited in the section notes are included below.
 ---
 
 **[1]** Training revision models with synthetic data. Coming soon, 2024.
-- Cited in 05_scaling-via-verifiers.md, 06_refining-proposal-distribution.md (recipe for pairing correct answers with incorrect ones for revision finetuning data), and 09_acknowledgements.md (edit distance based sampling).
+- Cited in 06_refining-proposal-distribution.md (recipe for pairing correct answers with incorrect ones for revision finetuning data) and 09_acknowledgements.md (edit distance based sampling).
 
 **[2]** C. Andrieu, N. De Freitas, A. Doucet, and M. I. Jordan. An introduction to MCMC for machine learning. 2003.
 - Cited in 02_unified-perspective.md as analogy to MCMC sampling from complex target distributions.
@@ -109,5 +109,50 @@ Only references actually cited in the section notes are included below.
 **[48]** S. Yao, D. Yu, J. Zhao, I. Shafran, T. L. Griffiths, Y. Cao, and K. Narasimhan. Tree of thoughts: Deliberate problem solving with large language models, 2023.
 - Cited in 01_introduction.md, 02_unified-perspective.md, and 05_scaling-via-verifiers.md (BFS-V beam search and tree search over solutions).
 
+**[11]** L. Gao, A. Madaan, S. Zhou, U. Alon, P. Liu, Y. Yang, J. Callan, and G. Neubig. PAL: Program-aided language models, 2023. URL https://arxiv.org/abs/2211.10435.
+- Cited in 10_appendix-a-related-work.md as an example of augmenting LMs with reasoning tools at test-time.
+
+**[12]** S. Goyal, Z. Ji, A. S. Rawat, A. K. Menon, S. Kumar, and V. Nagarajan. Think before you speak: Training language models with pause tokens, 2024. URL https://arxiv.org/abs/2310.02226.
+- Cited in 10_appendix-a-related-work.md as work on learning thought tokens in an unsupervised manner.
+
+**[16]** A. L. Jones. Scaling scaling laws with board games, 2021. URL https://arxiv.org/abs/2104.03113.
+- Cited in 10_appendix-a-related-work.md as prior work studying the tradeoff between train-time and test-time compute using MCTS on the board game Hex.
+
+**[19]** L. Kocsis and C. Szepesvari. Bandit based monte-carlo planning. In *European conference on machine learning*, pages 282-293. Springer, 2006.
+- Cited in 10_appendix-a-related-work.md as RL literature methods (MCTS) for navigating the tradeoff between test-time and training-time compute.
+
+**[20]** A. Lewkowycz, A. Andreassen, D. Dohan, E. Dyer, H. Michalewski, V. Ramasesh, A. Slone, C. Anil, I. Schlag, T. Gutman-Solo, Y. Wu, B. Neyshabur, G. Gur-Ari, and V. Misra. Solving quantitative reasoning problems with language models, 2022.
+- Cited in 10_appendix-a-related-work.md as work showing improved LLM performance on mathematical reasoning tasks.
+
+**[25]** OpenAI. GPT-4 technical report, 2024.
+- Cited in 10_appendix-a-related-work.md as work showing improved LLM performance on mathematical reasoning tasks.
+
+**[26]** Y. Qin, S. Liang, Y. Ye, K. Zhu, L. Yan, Y. Lu, Y. Lin, X. Cong, X. Tang, B. Qian, S. Zhao, L. Hong, R. Tian, R. Xie, J. Zhou, M. Gerstein, D. Li, Z. Liu, and M. Sun. Toolllm: Facilitating large language models to master 16000+ real-world apis, 2023. URL https://arxiv.org/abs/2307.16789.
+- Cited in 10_appendix-a-related-work.md as an example of augmenting LMs with reasoning tools at test-time.
+
+**[27]** C. Qu, S. Dai, X. Wei, H. Cai, S. Wang, D. Yin, J. Xu, and J.-R. Wen. Tool learning with large language models: A survey, 2024. URL https://arxiv.org/abs/2405.17935.
+- Cited in 10_appendix-a-related-work.md as an example of augmenting LMs with reasoning tools at test-time.
+
+**[32]** Z. Shao, P. Wang, Q. Zhu, R. Xu, J. Song, X. Bi, H. Zhang, M. Zhang, Y. K. Li, Y. Wu, and D. Guo. Deepseekmath: Pushing the limits of mathematical reasoning in open language models, 2024.
+- Cited in 10_appendix-a-related-work.md as work showing improved LLM performance on mathematical reasoning tasks and improving proposal distribution via targeted RL finetuning.
+
+**[39]** G. Team. Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context, 2024.
+- Cited in 10_appendix-a-related-work.md as work showing improved LLM performance on mathematical reasoning tasks.
+
+**[40]** Y. Tian, B. Peng, L. Song, L. Jin, D. Yu, H. Mi, and D. Yu. Toward self-improvement of llms via imagination, searching, and criticizing, 2024.
+- Cited in 10_appendix-a-related-work.md as work on enabling LLMs to benefit from additional test-time computation by finetuning verifiers.
+
+**[44]** P. Villalobos and D. Atkinson. Trading off compute in training and inference, 2023. URL https://epochai.org/blog/trading-off-compute-in-training-and-inference. Accessed: 2024-07-03.
+- Cited in 10_appendix-a-related-work.md as survey work analyzing the tradeoff between training and inference across multiple domains.
+
+**[46]** R. Wang, E. Zelikman, G. Poesia, Y. Pu, N. Haber, and N. D. Goodman. Hypothesis search: Inductive reasoning with language models, 2024. URL https://arxiv.org/abs/2309.05660.
+- Cited in 10_appendix-a-related-work.md as work conducting hierarchical hypothesis search to enable inductive reasoning capabilities.
+
+**[49]** Z. Yuan, H. Yuan, C. Li, G. Dong, K. Lu, C. Tan, C. Zhou, and J. Zhou. Scaling relationship on learning mathematical reasoning with large language models, 2023.
+- Cited in 10_appendix-a-related-work.md as work improving proposal distribution via targeted RL finetuning.
+
 **[50]** E. Zelikman, Y. Wu, J. Mu, and N. D. Goodman. Star: Bootstrapping reasoning with reasoning, 2022.
-- Cited in 02_unified-perspective.md as RL-inspired finetuning methods (STaR) for improving the proposal distribution.
+- Cited in 02_unified-perspective.md as RL-inspired finetuning methods (STaR) for improving the proposal distribution. Also cited in 10_appendix-a-related-work.md as work improving proposal distribution via targeted RL finetuning.
+
+**[51]** E. Zelikman, G. Harik, Y. Shao, V. Jayasiri, N. Haber, and N. D. Goodman. Quiet-star: Language models can teach themselves to think before speaking, 2024. URL https://arxiv.org/abs/2403.09629.
+- Cited in 10_appendix-a-related-work.md as work on learning thought tokens in an unsupervised manner.

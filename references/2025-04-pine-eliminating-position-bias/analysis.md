@@ -6,38 +6,52 @@ venue: "ICLR 2025"
 paper_type: conference-paper
 categories: ["position-bias", "attention-analysis", "mechanistic-interpretability"]
 scope: ["position bias", "causal attention", "positional encoding", "inference-time intervention", "LM-as-a-judge"]
-benchmarks_used: ["rewardbench", "natural-questions", "gsm8k"]
+benchmarks_used: ["rewardbench", "natural-questions", "gsm8k", "qm9"]
 models_introduced: []
-models_evaluated: ["llama-3-8b", "llama-3-70b", "qwen1.5-7b"]
+models_evaluated: ["llama-3-8b", "llama-3-70b", "qwen1.5-7b", "qwen1.5-1.8b", "qwen1.5-4b", "qwen1.5-32b", "qwen1.5-72b", "qwen1.5-110b", "qwen2.5-72b"]
 key_claims:
   - id: C1
     claim: "Position bias arises from two components: causal attention (favoring distant content) and positional encodings like RoPE (favoring nearby content)"
     evidence: "Section 3.2, Equation 1, Figure 1 lower left"
     status: supported
+    scope: "RoPE-based causal Transformers, retrieval-augmented QA with Llama-3-8B-Instruct"
+    magnitude: "qualitative — two opposing directional biases identified mechanistically"
   - id: C2
     claim: "PINE provably eliminates inter-document position bias by replacing causal with bidirectional inter-document attention and re-assigning positions by importance scores"
-    evidence: "Section 3.3, Lemma 1, Theorem 1"
+    evidence: "Section 3.3, Lemma 1, Theorem 1, Appendix B"
     status: supported
+    scope: "any PE-based causal Transformer, applied to every layer/head/token"
+    magnitude: "mathematical proof of position invariance"
   - id: C3
     claim: "PINE consistently provides 8-10 percentage point gains on RewardBench reasoning subset, making Llama-3-70B-Instruct (87.6%) outperform GPT-4-0125-preview (86.9%)"
     evidence: "Table 1, Section 4.2"
     status: supported
+    scope: "RewardBench reasoning subset, Llama-3-Instruct and Qwen-1.5-Chat families, temperature 0, greedy decoding"
+    magnitude: "+3.7 to +11.7 pp on reasoning subset across 8 model configurations; Llama-3-70B from 78.9% to 87.6%"
   - id: C4
     claim: "Position bias affects up to 48% of data points for smaller models and persists above 10% even for 110B-parameter models"
     evidence: "Table 4, Appendix C"
     status: supported
+    scope: "RewardBench, Llama-3-Instruct 8B/70B and Qwen-1.5-Chat 1.8B-110B"
+    magnitude: "up to 48.0% (Qwen-1.5-4B Chat subset); 14.9% average at 110B scale"
   - id: C5
-    claim: "Masking inter-document attention (PCW, NIA, SP) is substantially worse than bidirectional inter-document attention (PINE) because it loses contextual information"
+    claim: "Bidirectional inter-document attention (PINE) substantially outperforms masked inter-document attention (PCW, NIA, SP)"
     evidence: "Table 2, Section 4.2"
     status: supported
+    scope: "Llama-3-8B-Instruct and Qwen-1.5-7B-Chat on RewardBench"
+    magnitude: "PINE 73.4% vs PCW 56.5%, NIA 55.9%, SP 55.4% on reasoning (Llama-3-8B); +16.9 pp over best masked baseline"
   - id: C6
     claim: "Placing more important documents closer to the query (aligning with RoPE's recency bias) outperforms reverse placement"
     evidence: "Figure 4b, Section 4.3"
     status: supported
+    scope: "Llama-3-70B-Instruct, retrieval-augmented QA with 10 and 20 documents"
+    magnitude: "+0.3 accuracy over no re-assignment (10 docs), +1.5 (20 docs); reverse ordering is worst"
   - id: C7
     claim: "PINE's computational overhead is approximately 2x for k=2 documents and 8x for k=20 documents"
-    evidence: "Section 3.4"
+    evidence: "Section 3.4, Section 4.5"
     status: supported
+    scope: "unoptimized implementation with for-loop over documents, 8x A100 80G"
+    magnitude: "~2x wall time (k=2), ~8x wall time (k=20); extra big-O complexity O(nk log k)"
 cross_references:
   - target: 2024-02-lost-in-the-middle
     type: extends
@@ -109,10 +123,10 @@ The standard Transformer attention computation (Section 3.2, Equation 1) is:
 
 where PE denotes the positional encoding function, pos_Q and pos_K are position indices, 1_causal is the causal mask, and d is the hidden dimension. The authors identify two sources of position bias from this equation:
 
-1. **Positional encoding (PE):** Changes document positions produce different Q_PE and K_PE representations, altering attention scores. RoPE specifically exhibits recency bias -- attention weight decays with increasing relative distance (Su et al., 2024).
+1. **Positional encoding (PE):** Changes in document positions produce different Q_PE and K_PE representations, altering attention scores. RoPE specifically exhibits recency bias -- attention weight decays with increasing relative distance (Su et al., 2024).
 2. **Causal attention mask (1_causal):** Enforces unidirectional information flow. Later tokens can attend to all earlier tokens, but earlier tokens cannot attend to later ones. This asymmetry generally favors content that appears earlier in the sequence (distant from the generation point).
 
-PINE modifies both components to produce a position-invariant hidden state H_PINE.
+FFNs, QKV projections, and layer normalization do not cause position bias as they yield the same representations regardless of document positions (Section 3.2). PINE modifies both the attention mask and position encoding components to produce a position-invariant hidden state H_PINE.
 
 ### Key Technical Components
 
@@ -130,7 +144,7 @@ where Q, K have **not** been applied to positional encoding.
 
 > Importance(D_i, D_j) = sum_{m in D_i, n in D_j} Importance_token(m, n) / |D_j|
 
-The length normalization (dividing by |D_j|) prevents assigning higher importance to longer documents. Summation without normalization converts position bias to length bias; using maximum instead of averaging yields worse performance due to noise from unimportant tokens (footnote 3).
+The length normalization (dividing by |D_j|) prevents assigning higher importance to longer documents. In pilot experiments, summation without normalization converts position bias to length bias; using maximum instead of averaging yields worse performance due to noise from unimportant tokens (footnote 3, Section 3.3).
 
 *Step 3 -- Position assignment:* Documents are sorted by importance -- more important documents are placed at closer positions to the query when serving as keys.
 
@@ -148,13 +162,13 @@ The proof proceeds by showing that (1) SYS tokens are unaffected by PINE; (2) fo
 
 Proved by mathematical induction: the embedding layer is not position-dependent; by Lemma 1, attention hidden states at each layer are position-invariant; FFN, QKV projection, and layer normalization are element-wise operations that preserve position invariance (Appendix B).
 
-Both bidirectional attention **and** position re-assignment are required for the proof. PINE must be applied to every layer, every attention head, and every token. The method is not limited to RoPE -- it works with any positional encoding (Section 3.3).
+Both bidirectional attention **and** position re-assignment are required for the proof. PINE must be applied to every layer, every attention head, and every token. The method is not limited to RoPE -- it works with any positional encoding (Section 3.3). The lemma can also be understood as a corollary of the symmetry principle (Gross, 1996).
 
-**Inference cost.** Extra big-O complexity is O(nk log k), where n is the text length and k is the number of documents. Bidirectional attention adds no extra cost; position re-assignment adds O(k log k) per token for sorting. In practice, wall time is approximately 2x for LM-as-a-judge (k=2) and approximately 8x for retrieval-augmented QA with 20 documents (k=20). Memory overhead is small -- 70B models run on 3x A100 80G, same as vanilla inference (Section 3.4).
+**Inference cost.** Extra big-O complexity is O(nk log k), where n is the text length and k is the number of documents. Bidirectional attention adds no extra cost; position re-assignment adds O(k log k) per token for sorting. In practice, wall time is approximately 2x for LM-as-a-judge (k=2) and approximately 8x for retrieval-augmented QA with 20 documents (k=20). Memory overhead is small -- 70B models run on 3x A100 80G, same as vanilla inference (Section 3.4, Section 4.5).
 
 ### Comparison with Parallel Context Windows (PCW)
 
-PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **masks all** inter-document attention instead of making it bidirectional, losing contextual information; (2) PCW assigns all documents the **same** positions, confusing models. PCW performs poorly in language generation tasks as a result (Table 2).
+PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **masks all** inter-document attention instead of making it bidirectional, losing contextual information; (2) PCW assigns all documents the **same** positions, confusing models. PCW performs poorly in language generation tasks as a result (Table 2, Section 3.4).
 
 ### Experimental Setup
 
@@ -162,11 +176,15 @@ PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **ma
 
 **Retrieval-augmented QA (Section 4.3).** Follows Liu et al. (2024) setup, prompts, data, and evaluation scripts. NaturalQuestions data with 10 or 20 retrieved documents, one containing the correct answer. Model: Llama-3-70B-Instruct.
 
-**Molecule generation (Section 4.4).** Dataset: QM9 (Ramakrishnan et al., 2014), 130k+ molecules with six quantum properties (alpha, epsilon_HOMO, epsilon_LUMO, Delta_epsilon, mu, Cv). Custom 8-layer Llama model (8 heads, 768 hidden dimensions). Evaluation: 10,000 sampled 6-property conditions with randomized property order; MAE between target and predicted property values.
+**Molecule generation (Section 4.4).** Dataset: QM9 (Ramakrishnan et al., 2014), 130k+ molecules with six quantum properties (alpha, epsilon_HOMO, epsilon_LUMO, Delta_epsilon, mu, Cv). Custom 8-layer Llama model (8 heads, 768 hidden dimensions). Training: two 50k-sample subsets from QM9 -- one for the LM, one for an EGNN-based property prediction model (Satorras et al., 2021). Evaluation: 10,000 sampled 6-property conditions with randomized property order; MAE between target and predicted property values.
 
 **Math reasoning (Section 4.4).** Dataset: R-GSM (Chen et al., 2024a), a subset of GSM8K with interchangeable premises, further cleaned to 95 problems. Models: Qwen-1.5-Chat (7B, 110B). Prompts from OpenAI/simple-evals.
 
 **Baselines.** NIA (no inter-document attention, keeps RoPE), PCW (Ratner et al., 2023), SP (Structured Prompting, Hao et al., 2022), Permutation (Zheng et al., 2024a), Calibration (Zhao et al., 2021).
+
+**Hardware.** All experiments on a single node of 8x A100 80G with SXM connection. 70B and 110B models launched on 3x and 4x A100 respectively; smaller models on 1x A100 (Appendix E).
+
+**Reproducibility.** Code available at https://github.com/wzq016/PINE. Official RewardBench data splits, prompts, and evaluation code used. Liu et al. (2024) prompts and evaluation scripts used for retrieval-augmented QA. Temperature 0 for all experiments. No variance estimates reported (single run per configuration).
 
 ### Key Results
 
@@ -180,11 +198,12 @@ PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **ma
 | Qwen-1.5-4B-Chat | 54.1 | **61.0** | +6.9 |
 | Qwen-1.5-7B-Chat | 59.3 | **63.0** | +3.7 |
 | Qwen-1.5-32B-Chat | 66.8 | **76.7** | +9.9 |
-| Qwen-1.5-110B-Chat | 78.0 | **86.2** | +8.2 |
+| Qwen-1.5-72B-Chat | 68.2 | **69.0** | +0.8 |
 | Qwen-2.5-72B-Instruct | 85.5 | **91.3** | +5.8 |
+| Qwen-1.5-110B-Chat | 78.0 | **86.2** | +8.2 |
 
-- PINE moves Llama-3-70B-Instruct from 22nd to 7th rank among generative models on RewardBench, outperforming GPT-4-0125-preview (86.9%), GPT-4o-2024-08-06 (86.6%), and Llama-3.1-405B-Instruct-Turbo (87.1%) on the reasoning subset.
-- The one exception is Qwen-1.5-72B-Chat, which shows a slight decrease (-1.1 on the full set); the authors attribute this to the model being poorly trained, noting Qwen 2 reports 72B performing worse than 32B in reasoning.
+- PINE moves Llama-3-70B-Instruct from 22nd to 7th rank among generative models on RewardBench, outperforming GPT-4-0125-preview (86.9%), GPT-4o-2024-08-06 (86.6%), and Llama-3.1-405B-Instruct-Turbo (87.1%) on the reasoning subset (Section 4.2, leaderboard as of Sep 17, 2024).
+- The one exception is Qwen-1.5-72B-Chat, which shows a slight overall decrease (-1.1 on the full set); the authors attribute this to the model being poorly trained, noting Qwen 2 reports 72B performing worse than 32B in reasoning (Yang et al., 2024). Tested across 9 model configurations (strong evidence for reasoning gains).
 
 **RewardBench -- Full set (Table 1):**
 
@@ -192,29 +211,35 @@ PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **ma
 |---|---|---|---|
 | Llama-3-8B-Instruct | 64.8 | **66.7** | +1.9 |
 | Llama-3-70B-Instruct | 76.0 | **77.4** | +1.4 |
+| Qwen-1.5-1.8B-Chat | 50.3 | **52.9** | +2.6 |
+| Qwen-1.5-4B-Chat | 53.1 | **58.2** | +5.1 |
 | Qwen-1.5-7B-Chat | 60.9 | **61.5** | +0.6 |
+| Qwen-1.5-32B-Chat | 72.8 | **74.8** | +2.0 |
+| Qwen-1.5-72B-Chat | 72.8 | 71.8 | -1.0 |
+| Qwen-2.5-72B-Instruct | 83.4 | **84.5** | +1.1 |
 | Qwen-1.5-110B-Chat | 81.1 | **82.9** | +1.7 |
 
-- Full-set gains are more modest because the Chat and Safety subsets have less position bias and PINE can cause instruction-following degradation on these subsets.
+- Full-set gains are more modest because the Chat and Safety subsets have less position bias and PINE can cause instruction-following degradation on these subsets (Appendix D).
 
-**Baseline comparison (Table 2, Llama-3-8B-Instruct):**
+**Baseline comparison (Table 2, Llama-3-8B-Instruct and Qwen-1.5-7B-Chat):**
 
-| Method | Reasoning | Full |
-|---|---|---|
-| NIA | 55.9 | 61.9 |
-| PCW | 56.5 | 61.7 |
-| SP | 55.4 | 60.8 |
-| Permutation | 69.0 | 65.9 |
-| **PINE** | **73.4** | **66.7** |
+| Method | Llama-3-8B Reasoning | Llama-3-8B Full | Qwen-1.5-7B Reasoning | Qwen-1.5-7B Full |
+|---|---|---|---|---|
+| NIA | 55.9 | 61.9 | 51.4 | 56.8 |
+| PCW | 56.5 | 61.7 | 53.4 | 55.2 |
+| SP | 55.4 | 60.8 | 52.4 | 55.4 |
+| Permutation | 69.0 | 65.9 | 58.2 | 61.3 |
+| **PINE** | **73.4** | **66.7** | **63.0** | **61.5** |
 
-- PINE outperforms the best baseline (Permutation) by 4.4 percentage points on reasoning and 0.8 on the full set.
-- Calibration (Zhao et al., 2021) generates incoherent outputs in open-ended generation and is not applicable.
+- PINE outperforms the best baseline (Permutation) by 4.4 pp on Llama-3-8B reasoning and 4.8 pp on Qwen-1.5-7B reasoning. Tested across 2 model families (moderate evidence).
+- Calibration (Zhao et al., 2021) generates incoherent outputs in open-ended generation due to its uniform token distribution assumption and is not applicable.
 
 **Retrieval-augmented QA (Figure 4a, Llama-3-70B-Instruct):**
 
 - With 10 documents: PINE is slightly better than vanilla on average (+1.2 accuracy).
 - With 20 documents: PINE is slightly worse than vanilla on average (-2.0 accuracy).
 - PINE is position-invariant, avoiding worst-case performance dips seen in vanilla inference. All baselines (NIA, PCW, SP) are substantially worse than PINE.
+- Single model tested (Llama-3-70B-Instruct only; limited evidence for generalizability).
 
 **Molecule generation on QM9 (Table 3, MAE, lower is better):**
 
@@ -227,39 +252,62 @@ PCW (Ratner et al., 2023) differs from PINE in two ways (Figure 3): (1) PCW **ma
 | mu | **3.4112** | 3.4917 |
 | Cv | 4.3785 | **4.2886** |
 
-- PINE improves 5 out of 6 quantum property predictions. The only metric where vanilla is better is dipole moment (mu).
+- PINE improves 5 out of 6 quantum property predictions. The only metric where vanilla is better is dipole moment (mu). Single custom 8-layer model tested (limited evidence).
 
 **Math reasoning on R-GSM (Figure 5):**
 
 - Qwen-1.5-7B-Chat: PINE improves accuracy by +12.6% over vanilla.
 - Qwen-1.5-110B-Chat: PINE improves accuracy by +5.3% over vanilla.
+- Small dataset (95 problems after cleaning), 2 model sizes tested (limited evidence).
 
 ### Position Re-Assignment Ablation
 
-Three variants compared on retrieval-augmented QA with 10 documents (Figure 4b):
+Three variants compared on retrieval-augmented QA with 10 and 20 documents (Figure 4b):
 
 1. **PINE (default, closer = more important):** Best average performance.
 2. **PINE without position re-assignment:** Slightly worse (-0.3 with 10 docs, -1.5 with 20 docs). Still eliminates attention mask bias but not PE bias.
 3. **PINE with reverse re-assignment (farther = more important):** Worst of the three. Conflicts with RoPE's recency bias.
 
+Position re-assignment is required for the formal proof of position invariance, but PINE without re-assignment may suffice if one does not aim to fully eliminate position bias and cares more about efficiency (Section 4.3).
+
 ### Position Bias Prevalence
 
-Position bias can affect up to **48.0%** of data points (Qwen-1.5-4B-Chat on Chat). The Reasoning subset consistently shows high bias: 27.6% for Llama-3-8B, 15.2% for Llama-3-70B, 23.5-26.5% for Qwen-1.5-7B through 110B (Table 4, Appendix C). Larger models generally have less position bias but it persists above 10% on average even at 110B scale.
+Position bias can affect up to **48.0%** of data points (Qwen-1.5-4B-Chat on Chat). The Reasoning subset consistently shows high bias: 27.6% for Llama-3-8B, 15.2% for Llama-3-70B, 23.5-26.5% for Qwen-1.5-7B through 110B (Table 4, Appendix C). Larger models generally have less position bias but it persists above 10% on average even at 110B scale (14.9% average for Qwen-1.5-110B).
+
+| Model | Size | Chat | Chat-Hard | Safety | Reasoning | Avg. |
+|---|---|---|---|---|---|---|
+| Llama-3-Instruct | 8B | 10.3 | 21.5 | 11.4 | 27.6 | 17.7 |
+| Llama-3-Instruct | 70B | 3.6 | 16.0 | 5.8 | 15.2 | 10.2 |
+| Qwen-1.5-Chat | 1.8B | 33.5 | 37.3 | 24.7 | 13.3 | 27.4 |
+| Qwen-1.5-Chat | 4B | 48.0 | 38.6 | 57.1 | 12.7 | 39.2 |
+| Qwen-1.5-Chat | 7B | 17.0 | 20.6 | 10.9 | 26.5 | 18.8 |
+| Qwen-1.5-Chat | 32B | 7.8 | 20.0 | 9.6 | 26.4 | 16.0 |
+| Qwen-1.5-Chat | 72B | 10.9 | 22.6 | 9.6 | 24.7 | 17.0 |
+| Qwen-1.5-Chat | 110B | 8.7 | 16.0 | 11.5 | 23.5 | 14.9 |
 
 ### Per-Dataset Highlights
 
-PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8B HumanEval pass rates increase from 73.5-79.0 to 81.4-86.6 across languages (cpp, go, java, js, python, rust). Math-prm jumps from 66.4 to 80.5 for Llama-3-70B and from 74.5 to 84.8 for Qwen-2.5-72B (Tables 7-15, Appendix D).
+PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8B HumanEval pass rates increase from 73.5-79.0 to 81.4-86.6 across languages (cpp, go, java, js, python, rust; Table 7). Math-prm jumps from 66.4 to 80.5 for Llama-3-70B (Table 8) and from 74.5 to 84.8 for Qwen-2.5-72B (Table 14, Appendix D).
+
+However, PINE shows degradation on some adversarial subsets: llmbar-adver-manual drops from 53.3 to 47.8 for Llama-3-70B (Table 8) and llmbar-adver-neighbor drops from 32.8 to 28.7 (Table 8, Appendix D).
 
 ---
 
 ## Limitations and Failure Modes
 
-1. **Computational overhead.** PINE requires approximately 2x wall time for k=2 documents (LM-as-a-judge) and approximately 8x for k=20 documents (retrieval-augmented QA). The current implementation contains a for-loop over documents and has not been optimized (Section 3.4, Section 5).
+1. **Computational overhead.** PINE requires approximately 2x wall time for k=2 documents (LM-as-a-judge) and approximately 8x for k=20 documents (retrieval-augmented QA). The current implementation contains a for-loop over documents and has not been optimized (Section 3.4, Section 4.5, Section 5).
 2. **Instruction-following degradation.** PINE sometimes causes LLMs to solve the user's question directly instead of comparing two responses, or to fail to output answers in the requested format (e.g., "[[A]]" or "[[B]]"), causing parsing failures (Appendix D).
 3. **Safety over-helpfulness.** Under PINE, LMs sometimes overly focus on helpfulness in safety-critical prompts, leading to performance drops on the RewardBench Safety subset (Appendix D).
 4. **Degradation with many documents.** With 20 documents in retrieval-augmented QA, PINE is slightly worse than vanilla on average (-2.0 accuracy), suggesting importance score computation accuracy degrades with more documents (Section 4.3).
-5. **Adversarial subset sensitivity.** On specific RewardBench adversarial subsets (llmbar-adver-manual, llmbar-adver-neighbor), PINE sometimes underperforms vanilla -- e.g., Llama-3-70B manual: 53.3 to 47.8 (Appendix D).
-6. **Model-specific exceptions.** Qwen-1.5-72B-Chat shows a slight overall decrease (-1.1) with PINE; the authors attribute this to the model being poorly trained (Section 4.2).
+5. **Adversarial subset sensitivity.** On specific RewardBench adversarial subsets (llmbar-adver-manual, llmbar-adver-neighbor), PINE sometimes underperforms vanilla -- e.g., Llama-3-70B manual: 53.3 to 47.8; Llama-3-70B neighbor: 32.8 to 28.7 (Table 8, Appendix D).
+6. **Model-specific exceptions.** Qwen-1.5-72B-Chat shows a slight overall decrease (-1.1 on the full set) with PINE; the authors attribute this to the model being poorly trained (Section 4.2).
+7. **[Inferred]** No evaluation on non-English languages, limiting generalizability claims to English-only settings.
+8. **[Inferred]** All experiments use temperature 0 (greedy decoding). The interaction between PINE and sampling-based decoding strategies is unknown.
+
+#### Scope and Comparability
+
+- **What was not tested:** Models beyond Llama-3 and Qwen-1.5/2.5 families (e.g., no Mistral, GPT, or Claude models tested). No evaluation at context lengths beyond 20 documents. No evaluation on non-English data. No evaluation with sampling-based decoding (temperature > 0). The molecule generation uses a custom small Llama model (8 layers, 768 hidden dimensions), not a standard pretrained model. Math reasoning uses only 95 cleaned problems from R-GSM.
+- **Comparability notes:** RewardBench comparisons with GPT-4 and GPT-4o are based on the public leaderboard (as of Sep 17, 2024), not direct re-evaluation under identical conditions. The retrieval-augmented QA setup follows Liu et al. (2024) exactly, making those results directly comparable to "Lost in the Middle." Wall time measurements are from an unoptimized implementation, so computational overhead comparisons with other methods should account for potential optimization.
 
 ---
 
@@ -269,9 +317,9 @@ PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8
 
 1. **Mechanistic root-cause identification.** Attributes position bias to exactly two architectural components: causal attention (favoring distant content) and positional encodings like RoPE (favoring nearby content), with the two biases acting in opposing directions (Section 3.2).
 
-2. **Provably position-invariant inference.** Introduces PINE, a training-free zero-shot method that provably eliminates inter-document position bias via bidirectional inter-document attention and importance-based position re-assignment, with formal guarantees (Lemma 1, Theorem 1).
+2. **Provably position-invariant inference.** Introduces PINE, a training-free zero-shot method that provably eliminates inter-document position bias via bidirectional inter-document attention and importance-based position re-assignment, with formal guarantees (Lemma 1, Theorem 1, Appendix B).
 
-3. **Large gains on reasoning evaluation.** PINE consistently provides 8-10 percentage point improvements on the RewardBench reasoning subset, making Llama-3-70B-Instruct outperform GPT-4-0125-preview and GPT-4o on this benchmark (Table 1).
+3. **Large gains on reasoning evaluation.** PINE consistently provides 8-10 percentage point improvements on the RewardBench reasoning subset, making Llama-3-70B-Instruct outperform GPT-4-0125-preview and GPT-4o on this benchmark (Table 1). Tested across 9 model configurations.
 
 4. **Broad applicability.** Demonstrates position bias elimination across four distinct tasks: LM-as-a-judge, retrieval-augmented QA, molecule generation, and math reasoning, establishing position bias as a general phenomenon addressable by a single method (Sections 4.2-4.4).
 
@@ -283,35 +331,35 @@ PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8
 
 2. **Importance-based ordering as a general principle.** The finding that aligning position assignment with importance scores (closer = more important) respects RoPE's recency bias suggests a general design principle for inference-time interventions on RoPE-based models (Section 4.3).
 
-3. **VLM position bias.** The demonstration that vision-language models exhibit spatial position bias (Figure 1, Appendix A) suggests PINE-like methods may be needed for multimodal models, though this is not experimentally validated.
+3. **VLM position bias.** The demonstration that vision-language models exhibit spatial position bias (Figure 1, Appendix A, using GPT-4V on Andromeda Galaxy identification) suggests PINE-like methods may be needed for multimodal models, though this is not experimentally validated.
 
 ---
 
 ## Key Claims
 
-**C1. Position bias has two opposing mechanistic causes.** Causal attention favors distant (earlier) content because later tokens can attend to all earlier tokens but not vice versa. RoPE favors nearby (recent) content through attention decay with increasing relative distance. These opposing biases combine to produce the observed position-dependent performance (Section 3.2, Equation 1, Figure 1 lower left). Status: **supported**.
+**C1. Position bias has two opposing mechanistic causes.** Causal attention favors distant (earlier) content because later tokens can attend to all earlier tokens but not vice versa. RoPE favors nearby (recent) content through attention decay with increasing relative distance. These opposing biases combine to produce the observed position-dependent performance (Section 3.2, Equation 1, Figure 1 lower left). Scope: RoPE-based causal Transformers, demonstrated with Llama-3-8B-Instruct in retrieval-augmented QA. Status: **supported**.
 
-**C2. PINE provably eliminates inter-document position bias.** By replacing causal inter-document attention with bidirectional attention and re-assigning positions based on importance scores, PINE produces outputs that are mathematically invariant to document ordering. Both components are necessary for the proof (Section 3.3, Lemma 1, Theorem 1, Appendix B). Status: **supported**.
+**C2. PINE provably eliminates inter-document position bias.** By replacing causal inter-document attention with bidirectional attention and re-assigning positions based on importance scores, PINE produces outputs that are mathematically invariant to document ordering. Both components are necessary for the proof (Section 3.3, Lemma 1, Theorem 1, Appendix B). Scope: any PE-based causal Transformer, applied to every layer/head/token. Status: **supported**.
 
-**C3. 8-10 percentage point gains on reasoning evaluation.** PINE consistently provides 8-10 percentage point improvements on the RewardBench reasoning subset across most models tested. Llama-3-70B-Instruct achieves 87.6% with PINE, outperforming GPT-4-0125-preview (86.9%) and GPT-4o-2024-08-06 (86.6%) (Table 1, Section 4.2). Status: **supported**.
+**C3. 8-10 percentage point gains on reasoning evaluation.** PINE consistently provides 8-10 percentage point improvements on the RewardBench reasoning subset across most models tested. Llama-3-70B-Instruct achieves 87.6% with PINE, outperforming GPT-4-0125-preview (86.9%) and GPT-4o-2024-08-06 (86.6%) (Table 1, Section 4.2). Scope: RewardBench reasoning subset, Llama-3 and Qwen-1.5/2.5 families, temperature 0. Magnitude: +3.7 to +11.7 pp across 9 configurations, with most in the 8-10 pp range. Tested across 9 model configurations (strong evidence). Status: **supported**.
 
-**C4. Position bias prevalence at scale.** Position bias affects up to 48.0% of data points for smaller models (Qwen-1.5-4B-Chat on Chat) and persists above 10% on average for 110B-parameter models. The Reasoning subset is consistently the most affected, with 23.5-27.6% of data points showing bias (Table 4, Appendix C). Status: **supported**.
+**C4. Position bias prevalence at scale.** Position bias affects up to 48.0% of data points for smaller models (Qwen-1.5-4B-Chat on Chat) and persists at 14.9% average for 110B-parameter models. The Reasoning subset is consistently the most affected, with 23.5-27.6% of data points showing bias across Llama-3-8B and Qwen-1.5-7B through 110B (Table 4, Appendix C). Scope: RewardBench, 8 model configurations from 1.8B to 110B. Magnitude: 10.2-39.2% average bias across models. Status: **supported**.
 
-**C5. Bidirectional attention outperforms masked attention.** On Llama-3-8B-Instruct RewardBench reasoning, PINE (73.4%) outperforms PCW (56.5%), SP (55.4%), and NIA (55.9%) by 16.9+ percentage points. Masking inter-document attention loses contextual information critical for generation tasks (Table 2, Section 4.2). Status: **supported**.
+**C5. Bidirectional attention outperforms masked attention.** On Llama-3-8B-Instruct RewardBench reasoning, PINE (73.4%) outperforms PCW (56.5%), SP (55.4%), and NIA (55.9%) by 16.9+ percentage points. Masking inter-document attention loses contextual information critical for generation tasks (Table 2, Section 4.2). Scope: Llama-3-8B and Qwen-1.5-7B on RewardBench. Magnitude: +16.9 pp over best masked baseline (Llama-3-8B reasoning). Tested on 2 models (moderate evidence). Status: **supported**.
 
-**C6. Importance-aligned position re-assignment is optimal.** Placing more important documents closer to the query (+0.3 over no re-assignment with 10 docs, +1.5 with 20 docs) outperforms both no re-assignment and reverse re-assignment. This aligns with RoPE's inherent recency bias (Figure 4b, Section 4.3). Status: **supported**.
+**C6. Importance-aligned position re-assignment is optimal.** Placing more important documents closer to the query (+0.3 over no re-assignment with 10 docs, +1.5 with 20 docs) outperforms both no re-assignment and reverse re-assignment. This aligns with RoPE's inherent recency bias (Figure 4b, Section 4.3). Scope: Llama-3-70B, retrieval-augmented QA with 10 and 20 documents. Magnitude: +0.3 (10 docs), +1.5 (20 docs) over no re-assignment. Single model tested (limited evidence). Status: **supported**.
 
-**C7. Computational overhead scales with document count.** PINE's extra cost is O(nk log k) in theory, translating to approximately 2x wall time for k=2 and approximately 8x for k=20 in practice. Memory overhead is small (Section 3.4). Status: **supported**.
+**C7. Computational overhead scales with document count.** PINE's extra cost is O(nk log k) in theory, translating to approximately 2x wall time for k=2 and approximately 8x for k=20 in practice. Memory overhead is small -- 70B on 3x A100, same as vanilla (Section 3.4, Section 4.5). Scope: unoptimized implementation with for-loop. Magnitude: ~2x (k=2), ~8x (k=20). Status: **supported**.
 
 ---
 
 ## Open Questions
 
-1. **Can PINE's computational overhead be reduced?** The current implementation uses a for-loop over documents. Parallelized or batched implementations could potentially reduce the 2-8x overhead, but this is not explored.
+1. **Can PINE's computational overhead be reduced?** The current implementation uses a for-loop over documents. Parallelized or batched implementations could potentially reduce the 2-8x overhead, but this is not explored (Section 5).
 
-2. **Does bidirectional inter-document attention degrade instruction following in general?** PINE causes instruction-following failures on some RewardBench subsets (models solving the question instead of comparing responses). Whether this extends to other instruction-following tasks is unknown.
+2. **Does bidirectional inter-document attention degrade instruction following in general?** PINE causes instruction-following failures on some RewardBench subsets (models solving the question instead of comparing responses; Appendix D). Whether this extends to other instruction-following tasks is unknown.
 
-3. **Can PINE handle vision-language position bias?** The paper demonstrates spatial position bias in VLMs (Figure 1, Appendix A) but does not test PINE on multimodal models. Extending PINE to visual tokens would require defining "documents" in the image domain.
+3. **Can PINE handle vision-language position bias?** The paper demonstrates spatial position bias in VLMs (Figure 1, Appendix A, GPT-4V) but does not test PINE on multimodal models. Extending PINE to visual tokens would require defining "documents" in the image domain.
 
 4. **How does PINE scale beyond 20 documents?** PINE shows a slight accuracy drop with 20 documents (-2.0 vs. vanilla on average) compared to gains with 10 documents (+1.2). Whether this degradation continues at 50 or 100 documents is untested.
 
@@ -324,7 +372,6 @@ PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8
 - **Liu et al. (2024)** -- *Lost in the Middle: How Language Models Use Long Contexts.* Documents the U-shaped position bias in retrieval-augmented QA. PINE uses their experimental setup, prompts, data, and evaluation scripts for the retrieval-augmented QA experiments.
 - **Zheng et al. (2024b)** -- *Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.* Documents primacy bias in LM-as-a-judge evaluations. Motivates the LM-as-a-judge experiments and provides the permutation baseline.
 - **Zheng et al. (2024a)** -- *Large Language Models Are Not Robust Multiple Choice Selectors.* Documents position bias in multiple-choice QA and proposes the permutation-then-average elimination method with O(k!) cost.
-- **Hsieh et al. (2024)** -- *Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization.* Proposes inference-time attention calibration as an alternative approach to position bias mitigation.
 - **Chen et al. (2024b)** -- *Premise Order Matters in Reasoning with Large Language Models.* Documents position bias in math reasoning; introduces the R-GSM dataset used for evaluation.
 
 ### Position Encoding and Attention Mechanism
@@ -332,6 +379,10 @@ PINE substantially improves code evaluation benchmarks on RewardBench: Llama-3-8
 - **Su et al. (2024)** -- *RoFormer: Enhanced Transformer with Rotary Position Embedding.* Introduces RoPE, whose recency bias is identified as one of two causes of position bias.
 - **Vaswani et al. (2017)** -- *Attention Is All You Need.* Introduces the Transformer architecture with causal attention, identified as the other cause of position bias.
 - **Peysakhovich & Lerer (2023)** -- *Attention Sorting Combats Recency Bias in Long Context Language Models.* Proposes attention-based document sorting to mitigate recency bias. PINE builds on the idea of using attention values for document ordering but provides formal guarantees.
+
+### Inference-Time Position Bias Approaches
+
+- **Hsieh et al. (2024)** -- *Found in the Middle: Calibrating Positional Attention Bias Improves Long Context Utilization.* Proposes inference-time attention calibration as an alternative approach to position bias mitigation. PINE takes a different mechanistic approach with formal guarantees.
 
 ### Mechanical Approaches to Position Bias (Baselines)
 

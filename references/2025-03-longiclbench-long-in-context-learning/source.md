@@ -1,7 +1,7 @@
-# LongICLBench: Long-context LLMs Struggle with Long In-context Learning
+# Long-context LLMs Struggle with Long In-context Learning
 
 **Authors:** Tianle Li, Ge Zhang, Quy Duc Do, Xiang Yue, Wenhu Chen
-**Affiliations:** University of Waterloo, Carnegie Mellon University, Vector Institute (Toronto)
+**Affiliations:** Tianle Li (University of Waterloo; Vector Institute, Toronto), Ge Zhang (University of Waterloo; Vector Institute, Toronto), Quy Duc Do (University of Waterloo), Xiang Yue (Carnegie Mellon University), Wenhu Chen (University of Waterloo; Vector Institute, Toronto)
 
 ## Publication Status
 

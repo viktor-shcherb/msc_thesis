@@ -86,6 +86,9 @@ cross_references:
   - target: 2025-07-lv-eval-long-context-benchmark
     type: complementary
     detail: "LV-Eval provides a controlled long-context evaluation framework with knowledge-leakage mitigation, complementing the training methods proposed in this paper"
+  - target: 2025-03-survey-transformer-context-extension
+    type: complementary
+    detail: "Survey taxonomizes Llama 2 Long's continual pretraining approach within its four-category framework for long context methods"
 open_questions:
   - question: "Why does the power-law exponent beta increase with model size (0.45 for 7B to 0.51 for 70B)?"
     addressed_by: null

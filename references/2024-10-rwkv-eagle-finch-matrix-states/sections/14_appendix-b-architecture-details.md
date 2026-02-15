@@ -63,3 +63,26 @@ def rwkv_5_or_6_recurrent(r, k, v, w, u, wkv_state):
 | 3 | r_3·(diag(u)·k_3^T·v_3 + k_2^T·v_2 + diag(w_2)·k_1^T·v_1 + diag(w_2 ⊙ w_1)·k_0^T·v_0) |
 
 Caption: Evolution of the RWKV Formula
+
+---
+[p. 31 continued]
+
+## Eagle Overall Architecture Diagram
+
+**Figure 10** (p. 31): "Eagle Overall Architecture."
+
+Description: Architecture diagram showing the complete Eagle model structure
+- Key elements: The diagram shows a vertical flow from Input Embedding at bottom to Output Embedding at top, with RWKV Block × L indicating multiple stacked layers
+- Components shown:
+  - **Input/Output Embeddings:** Bottom shows Input Embedding with softmax dimension V; top shows Output Embedding with Layer Norm and weight matrices W, b
+  - **RWKV Block structure:** Each block contains:
+    - Layer Norm (w, b) modules
+    - Channel Mix module (shown in yellow/beige box at top) with parameter matrices W_r', W_v', μ_r', μ_v' and element-wise operations
+    - Time Mix module (shown in green box at bottom) with:
+      - Layer Norm with parameters l_j, b_j
+      - WKV Heads (dim 64×64) component
+      - Four parameter groups μ_r', μ_k', μ_v', μ_w' and corresponding weight matrices W_r, W_o, W_k, W_v
+  - **Data flow:** Input x_0^L passes through Time Mix, then Channel Mix, then to next layer; residual connections (⊕) shown connecting between modules
+  - **State:** Recurrent state s_0^L shown entering and exiting the Time Mix module
+- Notable patterns: Clear separation of Time Mix (temporal processing) and Channel Mix (feature processing); use of layer normalization before each major component; matrix dimensions labeled throughout
+- Supports claim: Illustrates the complete architecture described in Section 3 and 4, showing how Eagle combines linear attention (Time Mix) with feedforward layers (Channel Mix) in a recurrent structure

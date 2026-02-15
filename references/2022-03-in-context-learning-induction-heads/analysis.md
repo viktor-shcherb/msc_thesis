@@ -77,6 +77,12 @@ cross_references:
   - target: 2024-05-mamba-selective-state-spaces
     type: extended-by
     detail: "Mamba uses induction heads as a key synthetic benchmark to demonstrate that selective SSMs can perform associative recall, extrapolating perfectly to 1M+ tokens while attention fails beyond 16K"
+  - target: 2024-10-rwkv-eagle-finch-matrix-states
+    type: extended-by
+    detail: "Eagle/Finch's token shift mechanism enables induction head formation within a single RNN layer; MQAR benchmark used to show Finch achieves near-perfect associative recall"
+  - target: 2022-09-transformerlens-library-mechanistic-interpretability
+    type: complementary
+    detail: "TransformerLens provides practical tooling for activation access and intervention patterns used in induction-head style mechanistic analysis workflows"
 open_questions:
   - question: "Do induction heads account for the majority of in-context learning in large models with MLPs, or do additional mechanisms (other composition heads, MLP-attention interactions) contribute substantially?"
     addressed_by: null

@@ -83,6 +83,12 @@ cross_references:
   - target: 2020-04-compressive-transformer-pg19
     type: uses-benchmark
     detail: "Uses PG-19 (introduced by Rae et al., 2020) as the primary long-sequence perplexity benchmark for evaluating context window extension"
+  - target: 2024-05-pose-positional-skip-wise-training
+    type: extended-by
+    detail: "PoSE keeps PI-style RoPE stabilization but decouples train length from target length by simulating long positions in short-window fine-tuning"
+  - target: 2024-03-mistral-7b-v0.2
+    type: complementary
+    detail: "Mistral 7B v0.2 uses RoPE base frequency scaling (theta=1M) rather than position interpolation to extend context from 8K to 32K tokens"
 open_questions:
   - question: "Does position interpolation lose high-frequency information critical for local token distinctions?"
     addressed_by: 2023-06-rope-ntk

@@ -65,6 +65,9 @@ cross_references:
   - target: 2026-01-longbench-pro
     type: complementary
     detail: "LongBench Pro compares against RULER, noting its synthetic-only text and limited task coverage"
+  - target: 2025-04-helmet-long-context-evaluation
+    type: extended-by
+    detail: "HELMET uses selected RULER tasks as its synthetic recall subset and demonstrates that RULER's full average score does not reliably predict downstream performance"
   - target: 2025-07-longbench-v2
     type: complementary
     detail: "LongBench v2 cites RULER as representative of synthetic benchmarks that fail to test deep understanding; provides complementary natural-document evaluation with human-verified difficulty"
@@ -92,6 +95,9 @@ cross_references:
   - target: 2025-05-100-longbench-long-context-benchmarks
     type: complementary
     detail: "100-LongBench applies LongScore to RULER data (Table 5), showing that traditional RULER rankings are heavily influenced by base ability and may not reflect true long-context capability"
+  - target: 2024-11-genuinely-difficult-long-context
+    type: complementary
+    detail: "Goldman et al. classify RULER tasks across multiple quadrants of their scope-dispersion taxonomy: single-hop QA and S-NIAH as low-scope low-dispersion, MV-NIAH and MQ-NIAH as high-dispersion low-scope, and aggregation tasks as high-dispersion"
 open_questions:
   - question: "Do RULER's synthetic proxy tasks (variable tracking, frequent words extraction) correlate with performance on realistic long-context NLP tasks?"
     addressed_by: null
@@ -175,15 +181,15 @@ where N is the total number of words (determined by context size) and zeta(alpha
 | Qwen2 (72B) | 128K | 32K | 96.9 | 96.1 | 94.9 | 94.1 | 79.8 | 53.7 | 85.9 | 79.6 (9th) | 92.3 (4th) |
 | Command-R-plus (104B) | 128K | 32K | 95.6 | 95.2 | 94.2 | 92.0 | 84.3 | 63.1 | 87.4 | 82.7 (7th) | 92.1 (5th) |
 | GLM4 (9B) | 1M | 64K | 94.7 | 92.8 | 92.1 | 89.9 | 86.7 | 83.1 | 89.9 | 88.0 (3rd) | 91.7 (6th) |
-| Llama3.1 (8B) | 128K | 32K | 95.5 | 93.8 | 91.6 | 87.4 | 84.7 | 77.0 | 88.3 | 85.4 (5th) | 91.3 (7th) |
+| Llama3.1 (8B) | 128K | 32K | 95.5 | 93.8 | 91.6 | 87.2 | 84.7 | 77.0 | 88.3 | 85.4 (5th) | 91.3 (7th) |
 | GradientAI/Llama3 (70B) | 1M | 16K | 95.1 | 94.4 | 90.8 | 85.4 | 80.9 | 72.1 | 86.5 | 82.8 (6th) | 90.3 (8th) |
 | Mixtral-8x22B (39B/141B) | 64K | 32K | 95.6 | 94.9 | 93.4 | 90.9 | 84.7 | 31.7 | 81.9 | 73.5 (11th) | 90.3 (9th) |
 | Yi (34B) | 200K | 32K | 93.3 | 92.2 | 91.3 | 87.5 | 83.2 | 77.3 | 87.5 | 84.8 (8th) | 90.1 (10th) |
-| Phi3-medium (14B) | 128K | 32K | 93.3 | 93.2 | 91.1 | 86.8 | 78.6 | 46.1 | 81.5 | 74.8 (10th) | 88.3 (11th) |
+| Phi3-medium (14B) | 128K | 32K | 93.3 | 93.2 | 91.1 | 85.8 | 78.6 | 46.1 | 81.5 | 74.8 (10th) | 88.3 (11th) |
 | Mistral-v0.2 (7B) | 32K | 16K | 93.6 | 91.2 | 87.2 | 75.4 | 49.0 | 13.8 | 68.4 | 55.6 (13th) | 81.2 (12th) |
 | LWM (7B) | 1M | <4K | 82.3 | 78.4 | 73.7 | 69.1 | 68.1 | 65.0 | 72.8 | 69.9 (12th) | 75.7 (13th) |
 | DBRX (36B/132B) | 32K | 8K | 95.1 | 93.8 | 83.6 | 63.1 | 2.4 | 0.0 | 56.3 | 38.0 (14th) | 74.7 (14th) |
-| Together (7B) | 32K | 4K | 88.2 | 81.1 | 69.4 | 63.0 | 0.0 | 0.0 | 50.3 | 33.8 (15th) | 66.7 (15th) |
+| Together (7B) | 32K | 4K | 88.2 | 81.9 | 69.4 | 63.0 | 0.0 | 0.0 | 50.3 | 33.8 (15th) | 66.7 (15th) |
 | LongChat (7B) | 32K | <4K | 84.7 | 79.9 | 70.8 | 59.3 | 0.0 | 0.0 | 49.1 | 33.1 (16th) | 65.2 (16th) |
 | LongAlpaca (13B) | 32K | <4K | 60.6 | 57.0 | 56.6 | 43.6 | 0.0 | 0.0 | 36.3 | 24.7 (17th) | 47.9 (17th) |
 

@@ -87,14 +87,17 @@ cross_references:
     type: extended-by
     detail: "Llama 3 compares against Mistral 7B as a baseline open-weight model"
   - target: 2026-01-ministral-3-cascade-distillation
-    type: extended-by
-    detail: "Ministral 3 builds on Mistral architecture with GQA (32 query / 8 KV heads), derived via Cascade Distillation from Mistral Small 3.1"
+    type: complementary
+    detail: "Ministral 3 shares Mistral-family architectural lineage and adds cascade distillation to produce a multi-size open model family"
   - target: 2024-03-gemma-open-models
     type: extended-by
     detail: "Gemma 7B outperforms Mistral 7B on math benchmarks (GSM8K +11 points, MATH +11.6 points) and coding (HumanEval +6.1 points)"
   - target: 2025-04-longgenbench-long-form-generation
     type: extended-by
     detail: "LongGenBench evaluates Mistral 7B v0.2 on long-form generation; achieves 81.8% CR but only 20.4% STIC-2 at 16K tokens"
+  - target: 2024-03-mistral-7b-v0.2
+    type: extended-by
+    detail: "Direct successor; extends context from 8K to 32K tokens via RoPE theta scaling (10K to 1M) and removes sliding window attention"
 open_questions:
   - question: "What is the training data mixture and total token count for Mistral 7B? The paper discloses no pretraining details."
     addressed_by: null

@@ -1,0 +1,116 @@
+\section{Training Dynamics}
+\label{sec:training-dynamics-results}
+
+The cross-model results provide a static picture of how different architectures
+shape attention geometry. To understand how this geometry develops, we trace
+SmolLM3-3B across 10 training checkpoints spanning pre-training and long-context
+extension (Section~\ref{sec:training-dynamics-study}). This section integrates
+all three analyses along the temporal axis.
+
+\subsection{Position Structure Emerges Early}
+
+PCA reveals that positional structure develops rapidly during early pre-training.
+The query position correlation $|r_q^{(0)}|$ on PC0 jumps from 0.67 at step
+40K to 0.82 by step 1.2M. Key correlation increases more gradually. Head
+taxonomy evolves in parallel: position-dominated heads grow from 34\% to 55\%
+within stage~1, while content-focused heads virtually disappear
+(Figures~\ref{fig:smollm-taxonomy} and~\ref{fig:smollm-rq-rk-grid} in Appendix~\ref{app:supplementary}).
+
+By step 1.2M, the structural fingerprint---which heads are positional, which are
+mixed---is largely set. Subsequent pre-training and the annealing phase refine
+but do not restructure the head roles.
+
+\subsection{Bias Grows During Pre-Training, Collapses During LC Extension}
+
+The rotation analysis tracks the parametric evolution of positional bias across
+training (Table~\ref{tab:smollm-trajectory}).
+
+\begin{table}[t]
+\centering
+\small
+\caption{Joint rotation and plasticity metrics across SmolLM3-3B training
+checkpoints. Bias strength doubles during pre-training then collapses 10$\times$
+during long-context extension, while position correlation ($|r_k^{(a)}|$)
+remains high throughout.}
+\label{tab:smollm-trajectory}
+\begin{tabular}{@{}llrrrrrr@{}}
+\toprule
+Phase & Checkpoint & bias\_str & $|\alpha_K|$ & $|r_k^{(a)}|$ &
+  AP$_{\text{overall}}$ & AP$_{\text{first\,20\%}}$ & AP$_{\text{drop}}$ \\
+\midrule
+Pre-train & stg1 40K   & 0.0092 & 3.19e-3 & 0.861 & 0.585 & 0.609 & 0.040 \\
+Pre-train & stg1 1.2M  & 0.0160 & 3.23e-3 & 0.886 & 0.542 & 0.579 & 0.062 \\
+Pre-train & stg1 2.4M  & 0.0165 & 3.32e-3 & 0.893 & 0.545 & 0.582 & 0.061 \\
+Pre-train & stg1 3.44M & 0.0166 & 3.34e-3 & 0.894 & 0.545 & 0.579 & 0.057 \\
+Pre-train & stg2 4.2M  & 0.0168 & 3.33e-3 & 0.893 & 0.548 & 0.585 & 0.062 \\
+Anneal    & stg3 4.72M & 0.0194 & 4.08e-3 & 0.918 & 0.516 & 0.552 & 0.058 \\
+\addlinespace
+LC 4K$\to$32K & step 4K  & 0.0032 & 5.01e-4 & 0.911 & 0.507 & 0.585 & 0.153 \\
+LC 4K$\to$32K & step 20K & 0.0032 & 5.07e-4 & 0.913 & 0.507 & 0.582 & 0.147 \\
+LC 32K$\to$64K & step 4K  & 0.0018 & 2.68e-4 & 0.906 & 0.502 & 0.590 & 0.168 \\
+LC 32K$\to$64K & step 20K & 0.0018 & 2.69e-4 & 0.905 & 0.503 & 0.588 & 0.161 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+During pre-training, bias strength doubles from 0.009 to 0.019, driven by
+growth in the key drift slope $\alpha_K$. The model progressively learns to
+encode position in key vectors.
+
+At long-context extension onset (stage~3 $\to$ LC 4K$\to$32K), bias strength
+drops 6$\times$ within the first 4K training steps. It drops a further
+1.8$\times$ during the 32K$\to$64K phase, for a total $\sim$10$\times$
+reduction. The collapse mechanism
+is specific: $\alpha_K$ drops 93\% (the key position gradient flattens), while
+$|r_k^{(a)}|$ holds above 0.90 (keys still encode position with high fidelity,
+but the encoding becomes more uniform across positions). Simultaneously, Q/K
+separation strength increases 14\%---the representations become more
+geometrically distinct, not less.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/qk-rotation/10_smollm_bias_decomposition/figure.png}
+\caption{Decomposition of bias strength during SmolLM3-3B training.
+$\mu_Q^a$ (query centroid projection) increases during LC extension while
+$\alpha_K$ (key drift slope) collapses, producing the net bias reduction.
+The collapse is driven entirely by key slope flattening.}
+\label{fig:smollm-bias-decomposition}
+\end{figure}
+
+\subsection{Bias Collapse Is Necessary but Not Sufficient}
+
+The plasticity columns of Table~\ref{tab:smollm-trajectory} reveal a
+dissociation between bias reduction and distant-position flexibility.
+
+Near-position plasticity ($\text{AP}_{\text{first\,20\%}}$) recovers from 0.552
+(end of annealing) to 0.588 during LC extension---back to early stage~1 levels.
+Bias reduction works locally: reducing the positional term in the score
+difference restores content-driven key selection at nearby positions.
+
+However, distant-position plasticity ($\text{AP}_{\text{last\,20\%}}$) drops to
+0.427---far below the 0.569 the model achieved at 3.5K--4K positions during
+pre-training at comparable bias levels. Despite a 10$\times$ bias collapse,
+$\text{AP}_{\text{drop}}$ \emph{triples} from $\sim$0.06 to $\sim$0.16. The
+plasticity gradient steepens as the context window grows.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/attention-plasticity/09_smollm3_trajectory/figure.png}
+\caption{SmolLM3-3B plasticity trajectory across training. Near-position
+plasticity (AP$_{\text{first\,20\%}}$) recovers during LC extension, but
+distant-position plasticity (AP$_{\text{last\,20\%}}$) continues to decline.
+The gap ($\text{AP}_{\text{drop}}$) triples despite a 10$\times$ reduction
+in bias strength.}
+\label{fig:smollm-plasticity-trajectory}
+\end{figure}
+
+The excess $\text{AP}_{\text{drop}}$ after bias collapse
+($\sim$0.16 $-$ 0.06 $=$ 0.10) reflects content signal decay at distance: after
+positional bias is nearly zeroed, content variance in the complement subspace
+loses strength at distant positions, so even minimal residual bias dominates.
+Per-position plasticity values during the LC extension phases
+(Table~\ref{tab:smollm-perposition-lc} in Appendix~\ref{app:supplementary})
+confirm that near-position plasticity holds steady while distant positions show
+progressively lower values as the context window expands.
+The implications of this finding are discussed in
+Chapter~\ref{chap:discussion}.

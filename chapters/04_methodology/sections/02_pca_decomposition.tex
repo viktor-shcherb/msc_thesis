@@ -1,0 +1,68 @@
+\section{PCA Decomposition}
+\label{sec:pca-decomposition}
+
+The first analysis applies principal component analysis (PCA) to the captured
+Q/K vectors. PCA finds the directions of maximum variance without assumptions
+about what those directions represent, providing a model-agnostic structural
+fingerprint of each attention head.
+
+\subsection{Procedure}
+
+For each attention head, we concatenate all captured query vectors and key
+vectors into a single point cloud. Each vector $x_i \in \mathbb{R}^d$ is
+annotated with its type (Q or K) and its token position $t_i$. This combined
+pool lets PCA discover directions that separate Q from K as well as directions
+that encode position---both contribute to variance in the attention head's
+representation space.
+
+For each principal component $\text{PC}_j$ with eigenvector $v_j$, we compute
+the Pearson correlation between the projection $x_i^\top v_j$ and the token
+position $t_i$, separately for query vectors ($r_q^{(j)}$) and key vectors
+($r_k^{(j)}$). We sign-canonicalize so the dominant correlation (the one with
+larger absolute value) is positive.
+
+\subsection{Head Taxonomy}
+
+Based on the correlations $(r_q^{(0)}, r_k^{(0)})$ on the first principal
+component, we classify heads into categories using thresholds of 0.3 (low) and
+0.7 (high):
+%
+\begin{itemize}
+    \item \textbf{Position-dominated}: both $|r_q^{(0)}|$ and $|r_k^{(0)}|$
+    exceed 0.7 (position is the primary variance driver for both Q and~K).
+    \item \textbf{Q-positional}: $|r_q^{(0)}|$ exceeds 0.7 but
+    $|r_k^{(0)}|$ does not (the Q cluster encodes position more than K on
+    PC0).
+    \item \textbf{Content-focused}: both below 0.3 (position is not the
+    dominant variance direction).
+    \item \textbf{Mixed}: all remaining heads.
+\end{itemize}
+%
+This taxonomy is descriptive---it summarizes what PCA reveals about variance
+structure. It is not a causal classification: a head classified as
+``position-dominated'' may still perform content-dependent retrieval if the
+content signal, though lower-variance, is sufficient to determine key
+preference in the dot product.
+
+\subsection{Limitations and the Q/K Confound}
+\label{sec:pca-confound}
+
+PCA maximizes total variance, which on the first component typically captures
+two confounded sources: the Q/K cluster offset (queries and keys occupy
+different regions of embedding space) and the position gradient (vectors at
+different positions spread along a consistent direction).
+
+This confound inflates $r_q^{(0)}$ relative to $r_k^{(0)}$. Because the Q
+cluster centroid happens to align with the position gradient direction, the
+query projection onto PC0 shows a stronger position correlation than the key
+projection---even though keys are the vectors whose positional encoding most
+directly enters the attention score via
+RoPE~\cite{2024-01-roformer-rope}.
+
+PCA can discover that position structure exists and is pervasive, can reveal
+that Q/K separability and positional encoding co-occur on the same principal
+component, and can provide cross-model structural comparisons. However, PCA
+cannot isolate position from Q/K identity, cannot provide a parametric bias
+term, and cannot determine whether position dominates content in the attention
+score. These limitations motivate the targeted rotation analysis in the
+following section.

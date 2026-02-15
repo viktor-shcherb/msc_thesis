@@ -1,6 +1,6 @@
 # add_reference — Orchestrator Instructions
 
-You orchestrate subagents to add references. Your job is **mechanical**: spawn agents in sequence, use their return summaries to route to the next step. Do NOT verify, check, or validate — the verify_reading subagent does that.
+YOU are the orchestrator. You directly spawn one subagent per pipeline step and use its return summary to decide the next step. You never delegate multiple steps to a single subagent. Your job is **mechanical**: spawn, wait, route. Do NOT verify, check, or validate — the verify_reading subagent does that.
 
 ## Pipeline
 
@@ -164,48 +164,103 @@ Report to user: `✅ Reference <SLUG> added successfully`
 
 ## Slot Mode: N Concurrent Papers
 
-Process a queue of papers using N independent **slots** (N specified by user).
-Each slot runs the full single-reference pipeline (Steps 1-3) for one paper
-at a time. When a slot finishes a paper, it immediately picks the next paper
-from the queue.
+Process a queue of papers using N concurrent **slots** (N specified by user).
 
-### How it works (example with 3 slots)
+**CRITICAL: A "slot" is NOT a subagent.** A slot is a label you use to track
+which paper is at which pipeline stage. YOU (the orchestrator) directly spawn
+every subagent for every slot. You never delegate an entire pipeline to a
+single subagent.
+
+### What you do
+
+You maintain a simple state table:
 
 ```
-Queue: [A, B, C, D, E, F, G, ...]
+Slot 1: paper A → currently at step 2A.1 (window 3 of 7) → task_id: abc123
+Slot 2: paper B → currently at step 1 (init running) → task_id: def456
+```
 
-Slot 1: A ────────→ D ──────→ G → ...
-Slot 2:  B ──────────→ E ────→ ...
-Slot 3:   C ─────→ F ──────→ ...
-                 ↑
-         Slots do NOT wait for each other
+You spawn subagents yourself — one Task call per step. You use **background
+tasks** so you never block waiting for one slot while another could make
+progress.
+
+### Anti-pattern (DO NOT DO THIS)
+
+```
+❌ WRONG: Spawn a subagent and tell it "run Steps 1-3 for paper A"
+❌ WRONG: Spawn a "slot manager" agent
+❌ WRONG: Delegate the pipeline to any single subagent
+❌ WRONG: Spawn 2 blocking tasks and wait for both before continuing
+```
+
+### Correct pattern: background tasks + polling
+
+**Step 1 — Spawn with `run_in_background: true`:**
+
+All cross-slot subagents MUST use `run_in_background: true`. This returns
+immediately with a `task_id` so you can continue working on other slots.
+
+```
+✅ Spawn "init for paper A" (Task, model: opus, run_in_background: true) → task_id_1
+✅ Spawn "init for paper B" (Task, model: opus, run_in_background: true) → task_id_2
+```
+
+**Step 2 — Poll with `TaskOutput(block: false)`:**
+
+Check each task's status without blocking:
+
+```
+✅ TaskOutput(task_id_1, block: false) → completed? Read summary, spawn next step for slot 1
+✅ TaskOutput(task_id_2, block: false) → still running? Skip, check again later
+```
+
+**Step 3 — React immediately:**
+
+As soon as ANY slot's task completes, spawn the next step for that slot
+right away. Do NOT wait for other slots.
+
+```
+✅ Slot 1 init done → immediately spawn "read window 1-6 for A" in background
+✅ Slot 2 init still running → leave it, check again next loop
 ```
 
 ### Setup
 
-1. Build the queue (ordered list of SLUGs to process).
+1. Build the queue (ordered list of papers to process).
 2. Pop the first N papers from the queue.
 3. Assign one paper per slot.
-4. Start all slots.
+4. Spawn Step 1 (init) for all N slots with `run_in_background: true`.
 
-### Per-slot procedure
+### Running the slots
 
-Each slot runs the Single Reference Procedure (Steps 1-3) independently,
-with one modification:
+After setup, loop until all slots are done:
 
-**write_analysis (2A.3 or 2B.3) requires a lock.** Before spawning
-write_analysis, check if another slot is currently running write_analysis.
-If so, wait for it to finish. Only one write_analysis may run at a time —
-cross-reference updates conflict.
+1. **Poll each active slot's task** using `TaskOutput(task_id, block: false)`.
+   If no slot has completed, use `TaskOutput(task_id, block: true, timeout: 30000)`
+   on any one task to wait briefly.
+2. **For each completed task:** read its summary, determine the next step
+   for that slot using the Single Reference Procedure (Steps 1→2A/2B→3).
+3. **Spawn the next step** for that slot with `run_in_background: true`.
+   Update your state table with the new task_id.
+4. **When a slot finishes Step 3:** update the checklist, pop the next
+   paper from the queue, spawn Step 1 for the new paper in background.
+   If queue is empty, the slot is done.
 
-### Slot completion
+**Exception:** Within a single slot, read_paper windows are sequential.
+After window N completes, spawn window N+1 immediately (still in
+background so other slots aren't blocked).
 
-When a slot finishes Step 3 for its current paper:
+**Constraint:** Only one write_analysis (2A.3 or 2B.3) may run at a time
+across all slots. If another slot is running write_analysis, wait for it
+before spawning yours.
 
-1. Update the checklist: mark paper as `[x] [x] [x] | ✓`
-2. Pop the next paper from the queue
-3. If queue is empty → slot is done
-4. If queue has a paper → start it immediately
+### Parallelism rules
+
+- **init** for different papers → CAN run in parallel
+- **read_paper windows** for the SAME paper → MUST be sequential
+- **read_paper windows** for DIFFERENT papers → CAN run in parallel
+- **verify_reading** for different papers → CAN run in parallel
+- **write_analysis** → only ONE at a time across all slots
 
 ### Queue exhaustion
 

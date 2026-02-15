@@ -35,14 +35,22 @@ Attention-Plasticity consumes this exact format:
 
 ### Storage Layout Compatibility
 
+Each model's data lives on its own Hub branch (`hf_branch`):
+
 ```
-data/{model_name}/
+data/attention-plasticity/          # data_root
 ├── l00h00q/data.parquet    ← QK-Sniffer writes, Attention-Plasticity reads
 ├── l00h00k/data.parquet
 ├── l00h01q/data.parquet
 ├── l00h01k/data.parquet
 ...
 └── README.md
+```
+
+To load a specific model's data:
+```python
+ds = load_dataset("viktoroo/sniffed-qk", "l00h00q",
+                   revision="qwen3-8b-longbench-pro-128k-plus")
 ```
 
 Both tools use identical path conventions for seamless integration.
@@ -58,8 +66,10 @@ $$\text{bucket}_i = \max(i_{\min}, \lfloor \log_2(p + 1) \rfloor)$$
 
 This creates geometrically-spaced buckets: [1], [2-3], [4-7], [8-15], ...
 
-**Uniform Sampler**:
+**Uniform Sampler** (used in production):
 $$\text{bucket}_i = \lfloor p / \text{bucket\_size} \rfloor$$
+
+Production config: `min_bucket_size: 8192`, `base_rate: 1.0`
 
 ### Attention-Plasticity: Bucket Usage
 
@@ -71,9 +81,9 @@ Plasticity computation uses buckets for:
 
 ## Sliding Window Handling
 
-Models with local attention (e.g., Qwen with ALiBi) have limited context windows.
+Models with local attention (e.g., Ministral with sliding window) have limited context windows.
 
-**QK-Sniffer**: Records `sliding_window` column per query token
+**QK-Sniffer**: Records `sliding_window` column per vector
 **Attention-Plasticity**: Uses this to filter key buckets:
 
 ```python
@@ -99,9 +109,9 @@ This ensures plasticity is computed only for valid attention pairs.
 
 ## Grouped Query Attention (GQA)
 
-**QK-Sniffer**: Captures all query heads and all key heads separately
-- Queries: `l{L}h{Q}q` for each query head Q
-- Keys: `l{L}h{K}k` for each key head K (fewer in GQA)
+**QK-Sniffer**: Captures sampled query heads and their corresponding key heads
+- Queries: `l{L}h{Q}q` for each sampled query head Q
+- Keys: `l{L}h{K}k` for each corresponding key head K (fewer in GQA)
 
 **Attention-Plasticity**: Maps query heads to key heads:
 ```python
@@ -119,11 +129,16 @@ Example (Qwen3-8B: 32 query heads, 8 key heads):
 ```yaml
 capture:
   sampler:
-    type: log_uniform
-    base_rate: 0.1
-    min_bucket: 0
+    type: uniform
+    base_rate: 1.0
+  min_bucket_size: 8192
   capture_queries: true
   capture_keys: true
+  head_sampling:
+    count: 300
+    seed: 0
+  full_attention_only: true
+  capture_pre_rope: false
 ```
 
 ### Attention-Plasticity Config (analysis)
@@ -138,13 +153,13 @@ analysis:
 ## Pipeline Execution Order
 
 ```
-1. Run QK-Sniffer on corpus
-   └── python sniff.py --config configs/model.yaml
-   └── Output: data/{model}/*.parquet uploaded to HF Hub
+1. Run QK-Sniffer on corpus (B200 GPU on Vast.ai)
+   └── sniff-qk --config configs/attention-plasticity/qwen3-8b.yaml
+   └── Output: data/attention-plasticity/*.parquet uploaded to HF Hub (model's branch)
 
 2. Run Attention-Plasticity analysis
    └── python analyze.py --config configs/model.yaml
-   └── Input: Downloads from HF Hub (same dataset)
+   └── Input: Downloads from HF Hub (same dataset, specific branch/revision)
    └── Output: CSV files with plasticity metrics
 ```
 
@@ -152,9 +167,9 @@ analysis:
 
 Both projects use:
 - **PyArrow/Parquet**: Columnar storage format
-- **Hugging Face Hub**: Dataset hosting and versioning
+- **Hugging Face Hub**: Dataset hosting and versioning (branch-per-model)
 - **NumPy**: Array operations
-- **Bucket conventions**: Log-uniform or uniform bucketing
+- **Bucket conventions**: Uniform bucketing (production)
 
 ## Summary Table
 
@@ -165,8 +180,8 @@ Both projects use:
 | **Output** | Parquet files (Q/K vectors) | CSV files (plasticity metrics) |
 | **Bucket use** | Sampling probability | Statistics aggregation |
 | **example_id use** | Document tracking | Same-sequence key pairing |
-| **sliding_window use** | Recorded per token | Filters valid attention pairs |
-| **Execution** | During inference | Post-hoc analysis |
+| **sliding_window use** | Recorded per vector | Filters valid attention pairs |
+| **Execution** | During inference (B200 GPU) | Post-hoc analysis |
 
 ## Key Insight
 

@@ -7,8 +7,11 @@ Only references cited in the section notes are included below.
 - **Agarwal et al., 2024** — Rishabh Agarwal, Avi Singh, Lei M Zhang, Bernd Bohnet, Stephanie Chan, Ankesh Anand, Zaheer Abbas, Azade Nova, John D Co-Reyes, Eric Chu, et al. "Many-shot in-context learning." *arXiv preprint arXiv:2404.11018*, 2024.
   - Cited in 02_related-work.md as an example of many-shot in-context learning research for long contexts.
 
+- **Abdin et al., 2024** — Marah Abdin, Sam Ade Jacobs, et al. "Phi-3 technical report: A highly capable language model locally on your phone." *arXiv preprint arXiv:2404.14219*, 2024.
+  - Cited in 09_appendix-a-models.md as the Phi3-medium model.
+
 - **AI21, 2024** — AI21. "Introducing jamba: Ai21's groundbreaking ssm-transformer model." 2024. URL https://www.ai21.com/blog/announcing-jamba.
-  - Cited in 01_introduction.md as a prior work using synthetic tasks (passkey retrieval, NIAH) for evaluating long-context LMs.
+  - Cited in 01_introduction.md as a prior work using synthetic tasks (passkey retrieval, NIAH) for evaluating long-context LMs. Cited in 09_appendix-a-models.md for Jamba-base model.
 
 - **An et al., 2024** — Chenxin An, Shansan Gong, Ming Zhong, Mukai Li, Jun Zhang, Lingpeng Kong, and Xipeng Qiu. "L-eval: Instituting standardized evaluation for long context language models." In *ICLR*, 2024.
   - Cited in 02_related-work.md as the L-Eval benchmark using realistic data filtered manually to ensure quality.
@@ -50,7 +53,13 @@ Only references cited in the section notes are included below.
 - **Child et al., 2019** — Rewon Child, Scott Gray, Alec Radford, and Ilya Sutskever. "Generating long sequences with sparse Transformers." *arXiv:1904.10509*, 2019.
   - Cited in 02_related-work.md as an early sparse attention mechanism.
 
+- **Cohere, 2024** — Cohere. "Command R+." 2024. URL https://docs.cohere.com/docs/command-r-plus#model-details.
+  - Cited in 09_appendix-a-models.md as the Command-R-plus model.
+
 ## D
+
+- **Databricks, 2024** — Databricks. "Introducing DBRX: A new state-of-the-art open LLM." 2024. URL https://www.databricks.com/blog/introducing-dbrx-new-state-of-the-art-open-llm.
+  - Cited in 09_appendix-a-models.md as the DBRX model.
 
 - **Dao et al., 2022** — Tri Dao, Daniel Y. Fu, Stefano Ermon, Atri Rudra, and Christopher Re. "FlashAttention: Fast and memory-efficient exact attention with IO-awareness." In *NeurIPS*, 2022.
   - Cited in 01_introduction.md and 02_related-work.md as a key engineering advancement enabling long-context scaling.
@@ -79,6 +88,9 @@ Only references cited in the section notes are included below.
   - Cited in 01_introduction.md as an AI system engineering advancement enabling context length scaling.
 
 ## G
+
+- **GLM et al., 2024** — Team GLM, Aohan Zeng, Bin Xu, et al. "ChatGLM: A family of large language models from glm-130b to glm-4 all tools." 2024.
+  - Cited in 09_appendix-a-models.md as the GLM4 model.
 
 - **Goldman et al., 2024** — Omer Goldman, Alon Jacovi, Aviv Slobodkin, Aviya Maimon, Ido Dagan, and Reut Tsarfaty. "Is it really long context if all you need is retrieval? towards genuinely difficult long context nlp." *arXiv preprint arXiv:2407.00402*, 2024.
   - Cited in 03_ruler-benchmark.md for comprehensive discussion on evaluation task design for long-context language models.
@@ -116,6 +128,9 @@ Only references cited in the section notes are included below.
 - **Jiang et al., 2023** — Huiqiang Jiang et al. "LongLLMLingua: Accelerating and enhancing LLMs in long context scenarios via prompt compression." *arXiv:2310.06839*, 2023.
   - Cited in 02_related-work.md as preserving salient information via compression.
 
+- **Jiang et al., 2024** — Albert Q Jiang et al. "Mixtral of experts." *arXiv:2401.04088*, 2024.
+  - Cited in 09_appendix-a-models.md as the Mixtral-8x22B and Mixtral-base models.
+
 ## K
 
 - **Kamradt, 2023** — Gregory Kamradt. "Needle In A Haystack - pressure testing LLMs." *Github*, 2023. URL https://github.com/gkamradt/LLMTest_NeedleInAHaystack/tree/main.
@@ -145,7 +160,7 @@ Only references cited in the section notes are included below.
   - Cited in 02_related-work.md and 08_limitations.md as FlenQA, demonstrating degrading performance when increasing task input length to a few thousand tokens.
 
 - **Li et al., 2023a** — Dacheng Li, Rulin Shao, et al. "How long can open-source LLMs truly promise on context length?" 2023a. URL https://lmsys.org/blog/2023-06-29-longchat.
-  - Cited in 02_related-work.md as retrieval-based synthetic task research.
+  - Cited in 02_related-work.md as retrieval-based synthetic task research. Cited in 09_appendix-a-models.md as the LongChat model.
 
 - **Li et al., 2023b** — Jiaqi Li, Mengmeng Wang, Zilong Zheng, and Muhan Zhang. "Loogle: Can long-context language models understand long contexts?" *arXiv:2311.04939*, 2023b.
   - Cited in 02_related-work.md as proposing to use extremely low-resource materials to isolate parametric knowledge.
@@ -154,7 +169,7 @@ Only references cited in the section notes are included below.
   - Cited in 02_related-work.md as Ring Attention for reducing memory footprint.
 
 - **Liu et al., 2024a** — Hao Liu, Wilson Yan, Matei Zaharia, and Pieter Abbeel. "World model on million-length video and language with Ring Attention." *arXiv:2402.08268*, 2024a.
-  - Cited in 01_introduction.md as enabling scaling up context length; cited in 03_ruler-benchmark.md (footnote) for the needle format; cited in 05_task-error-analysis.md for consistency with previous works on incomplete retrieval; cited in 06_model-analysis.md as the LargeWorldModels (LWM) suite.
+  - Cited in 01_introduction.md as enabling scaling up context length; cited in 03_ruler-benchmark.md (footnote) for the needle format; cited in 05_task-error-analysis.md for consistency with previous works on incomplete retrieval; cited in 06_model-analysis.md as the LargeWorldModels (LWM) suite; cited in 09_appendix-a-models.md as the LWM and LWM-base models.
 
 - **Liu et al., 2024b** — Jiaheng Liu et al. "E2-LLM: Efficient and extreme length extension of large language models." *arXiv:2401.06951*, 2024b.
   - Cited in 02_related-work.md as a RoPE variant for length extrapolation.
@@ -166,6 +181,18 @@ Only references cited in the section notes are included below.
   - Cited in 02_related-work.md and 08_limitations.md for the lost-in-the-middle phenomenon.
 
 ## M
+
+- **Meta AI, 2024a** — Meta AI. "Llama 3 model card." 2024a. URL https://github.com/meta-llama/llama3/blob/main/MODEL_CARD.md.
+  - Cited in 09_appendix-a-models.md as the GradientAI/Llama3 model.
+
+- **Meta AI, 2024b** — Meta AI. "Llama 3.1 model card." 2024b. URL https://github.com/meta-llama/llama-models/blob/main/models/llama3_1/MODEL_CARD.md.
+  - Cited in 09_appendix-a-models.md as the Llama3.1 (70B) and Llama3.1 (8B) models.
+
+- **Mistral AI, 2023** — Mistral AI. "La plateforme." 2023. URL https://mistral.ai/news/la-plateforme/.
+  - Cited in 09_appendix-a-models.md as the Mistral-base model.
+
+- **Mistral AI, 2024a** — Mistral AI. "Mistral-7B-Instruct-v0.2." 2024a.
+  - Cited in 09_appendix-a-models.md as the Mistral-v0.2 model.
 
 - **Martins et al., 2022** — Pedro Henrique Martins, Zita Marinho, and Andre Martins. "Infinity-former: Infinite memory Transformer." In *Proc. of the 60th Annual Meeting of the ACL (Volume 1: Long Papers)*, 2022.
   - Cited in 02_related-work.md as a recurrence-based method for caching previous context.
@@ -233,6 +260,15 @@ Only references cited in the section notes are included below.
 
 ## T
 
+- **Together AI, 2023a** — Together AI. "Preparing for the era of 32k context: Early learnings and explorations." 2023a. URL https://www.together.ai/blog/llama-2-7b-32k.
+  - Cited in 09_appendix-a-models.md as the Together-base model.
+
+- **Together AI, 2023b** — Together AI. "Llama-2-7b-32k-instruct -- and fine-tuning for llama-2 models with together api." 2023b. URL https://www.together.ai/blog/llama-2-7b-32k-instruct.
+  - Cited in 09_appendix-a-models.md as the Together (aligned) model.
+
+- **Touvron et al., 2023** — Hugo Touvron et al. "Llama 2: Open foundation and fine-tuned chat models." *arXiv:2307.09288*, 2023.
+  - Cited in 09_appendix-a-models.md as the Llama2 (base) and Llama2 (chat) models.
+
 - **Tanzer et al., 2024** — Garrett Tanzer, Mirac Suzgun, Eline Visser, Dan Jurafsky, and Luke Melas-Kyriazi. "A benchmark for learning to translate a new language from one grammar book." In *ICLR*, 2024.
   - Cited in 02_related-work.md as leveraging extremely low-resource materials to isolate parametric knowledge.
 
@@ -249,6 +285,9 @@ Only references cited in the section notes are included below.
 
 - **Vaswani et al., 2017** — Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Lukasz Kaiser, and Illia Polosukhin. "Attention is all you need." In *NeurIPS*, 2017.
   - Cited in 02_related-work.md as the original Transformer architecture.
+
+- **Wolf et al., 2019** — Thomas Wolf et al. "HuggingFace's Transformers: State-of-the-art natural language processing." *arXiv:1910.03771*, 2019.
+  - Cited in 09_appendix-a-models.md in the Table 4 header for the HuggingFace model hub column.
 
 ## W
 
@@ -283,8 +322,11 @@ Only references cited in the section notes are included below.
 - **Yang et al., 2018** — Zhilin Yang, Peng Qi, Saizheng Zhang, Yoshua Bengio, William Cohen, Ruslan Salakhutdinov, and Christopher D. Manning. "HotpotQA: A dataset for diverse, explainable multi-hop question answering." In *EMNLP*, 2018.
   - Cited in 03_ruler-benchmark.md as a short-context QA dataset.
 
+- **Yang et al., 2024** — An Yang, Baosong Yang, Binyuan Hui, et al. "Qwen2 technical report." *arXiv preprint arXiv:2407.10671*, 2024.
+  - Cited in 09_appendix-a-models.md as the Qwen2 model.
+
 - **Young et al., 2024** — Alex Young et al. "Yi: Open foundation models by 01.AI." *arXiv:2403.04652*, 2024.
-  - Cited in 01_introduction.md as enabling scaling up context length.
+  - Cited in 01_introduction.md as enabling scaling up context length. Cited in 09_appendix-a-models.md as the Yi model.
 
 - **Yuan et al., 2024** — Tao Yuan, Xuefei Ning, Dong Zhou, Zhijie Yang, Shiyao Li, Minghui Zhuang, Zheyue Tan, Zhuyu Yao, Dahua Lin, Boxun Li, et al. "Lv-eval: A balanced long-context benchmark with 5 length levels up to 256k." *arXiv preprint arXiv:2402.05136*, 2024.
   - Cited in 02_related-work.md and 08_limitations.md as LV-Eval, for question answering and depth-level evaluation.

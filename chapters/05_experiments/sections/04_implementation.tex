@@ -1,0 +1,49 @@
+\section{Implementation}
+\label{sec:implementation}
+
+\subsection{Capture Protocol}
+
+All Q/K captures were performed on a single NVIDIA B200 GPU (192\,GB VRAM,
+bfloat16 precision) rented through Vast.ai.
+The capture protocol is uniform across all cross-model configurations. Input
+text is drawn from a 500-example subset of LongBench-Pro containing samples
+with 128K+ token context~\cite{2026-01-longbench-pro}. Models process inputs in
+bfloat16 precision with a maximum sequence length of 131{,}072 tokens (128K).
+Token positions are sampled using uniform bucket sampling with a minimum bucket
+size of 8{,}192, yielding 16 position buckets across the full context window.
+
+For each model, 300 query heads are sampled uniformly at random (seed~0) from
+the set of all query heads across eligible layers. If a model has fewer than 300
+total query heads, all are captured. Key heads are derived from selected query
+heads via the GQA mapping: $h_k = \lfloor h_q \,/\, (n_q / n_{kv}) \rfloor$,
+where $n_q$ and $n_{kv}$ are the number of query and key-value heads per layer.
+Only full-attention layers are captured; sliding-window layers (if present) are
+excluded.
+
+All vectors are captured post-RoPE---after the rotary positional embedding has
+been applied to the query and key projections. For NoPE layers (SmolLM3 and
+Llama-3.2-11B cross-attention layers), the captured vectors are the raw linear
+projections, since no positional encoding is applied.
+
+\subsection{Family-Specific Notes}
+
+Three model families require specific handling during capture:
+
+\begin{itemize}
+    \item \textbf{Qwen-3.} The YaRN RoPE scaling configuration is applied via
+    config override (factor~4.0, original context
+    32K)~\cite{2024-05-yarn-context-extension} to enable 128K inference. Query
+    and key vectors are RMS-normalized per head before the rotary embedding is
+    applied~\cite{2025-05-qwen3-technical-report}.
+    \item \textbf{Llama-3.2-11B-Vision.} As a vision-language model, Q/K
+    vectors are captured from the text self-attention path only, excluding
+    vision encoder and cross-attention components.
+    \item \textbf{SmolLM3.} NoPE layers (every 4th layer) skip the rotary
+    embedding step entirely; the post-RoPE capture point for these layers
+    yields raw projected vectors identical to pre-RoPE.
+\end{itemize}
+
+Three analyses---PCA structure, rotation, and plasticity---are applied to the
+same set of captured Q/K vectors. Each produces per-head metrics that are
+aggregated into layer-level and model-level summaries. The methodology for each
+analysis is described in Chapter~\ref{chap:methodology}.

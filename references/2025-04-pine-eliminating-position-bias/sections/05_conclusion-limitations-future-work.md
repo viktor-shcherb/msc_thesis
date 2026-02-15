@@ -1,0 +1,3 @@
+# 5 CONCLUSION, LIMITATIONS AND FUTURE WORK [p. 10]
+
+A novel train-free zero-shot approach is proposed to eliminate the position bias mechanically [p. 10]. The core idea is to make every input documents equally affected by the attention mask and position embedding [p. 10]. However, PINE requires extra computation [p. 10]. The authors believe there is room to improve the efficiency with more efficient implementation, and leave this as future work [p. 10].

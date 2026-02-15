@@ -1,0 +1,21 @@
+# 2 Background [p. 3–4]
+
+In this work, the authors study a class of Transformers which they believe forms the basis for a large number of current LLMs. They let $\mathbf{Q}, \mathbf{K}, \mathbf{V} \in \mathbb{R}^{n \times d}$ be the query, key, and value matrices respectively on $n$ tokens and $d$ dimensions. They denote with $\mathbf{q}_i, \mathbf{k}_i, \mathbf{v}_i \in \mathbb{R}^d$ the $d$-dimensional query, key, and value vectors of the $i$-th token. They let $\mathbf{p}_{ij} \in \mathbb{R}^{2e}$ be the $2e$-dimensional positional encoding information between tokens $i$ and $j$. The authors focus on the case in which the positional encodings are bounded, which is the case for the large majority of positional encodings used in practice [26, 30]. The Transformer model they consider computes the values, for a single head, of the $i$-th token at the $\ell$-th Transformer layer $\mathbf{v}_i^{(\ell)}$ as$^2$
+
+$$\mathbf{z}_i^{(\ell)} = \sum_{j \leqslant i} \alpha_{ij}^{(\ell)} \text{norm}_1^{(\ell)} \left( \mathbf{v}_j^{(\ell)} \right) + \mathbf{v}_i^{(\ell)}, \text{ with } \alpha_{ij}^{(\ell)} = \frac{\exp \left( k \left( \mathbf{q}_i^{(\ell)}, \mathbf{k}_j^{(\ell)}, \mathbf{p}_{ij} \right) \right)}{\sum_{w \leqslant i} \exp \left( k \left( \mathbf{q}_i^{(\ell)}, \mathbf{k}_w^{(\ell)}, \mathbf{p}_{iw} \right) \right)}$$
+
+$$\mathbf{v}_i^{(\ell+1)} = \boldsymbol{\psi}^{(\ell)} \left( \text{norm}_2^{(\ell)} \left( \mathbf{z}_i^{(\ell)} \right) \right) + \mathbf{z}_i^{(\ell)}$$
+
+for a function $k : \mathbb{R}^d \times \mathbb{R}^d \times \mathbb{R}^{2e} \to \mathbb{R}$ mapping queries, key, and positional encoding information to a scalar value, an MLP $\boldsymbol{\psi} : \mathbb{R}^d \to \mathbb{R}^d$, and normalization functions at the $\ell$-th layer $\text{norm}_1^{(\ell)}$ and $\text{norm}_2^{(\ell)}$. This specific interleaving of components is often referred to as a Pre-LN Transformer [34]. The authors can view the output of the $\ell$-th layer of a Transformer as a sequence of $d$-dimensional vectors $\mathbf{v}^{(\ell)} = (\mathbf{v}_1^{(\ell)}, \ldots, \mathbf{v}_n^{(\ell)})$. Importantly, due to the causal attention mechanism, the vector $\mathbf{v}_j^{(\ell)}$ will only depend on elements $\mathbf{v}_i^{(\ell-1)}$ for $i \leqslant j$. The authors can group the attention weights into an attention matrix at the $\ell$-th layer which they define element-wise as $\Lambda_{ij}^{(\ell)} = \alpha_{ij}^{(\ell)}$. This is a row-stochastic triangular matrix that can also be interpreted as a probabilistic directed graph. After the last transformer block a normalization is applied to the token representations:
+
+$$\mathbf{y}_i = \text{norm}_3 \left( \mathbf{v}_i^{(L)} \right)$$
+
+The authors note that the next-token prediction usually depends purely on $\mathbf{y}_n$—the final representation of the last token.
+
+## Existing theory on Transformers
+
+The theoretical representational capacity of Transformers has become a popular area of study, providing interesting results on what classes of problems they are able to model. For instance, it has been pointed out that Transformers are not Turing-complete, but one can apply modifications which make Transformers Turing-complete under certain assumptions [6]. Works have also shown that Transformers using 'hard attention' which replaces softmax with one-hot vectors alongside the use of infinite precision makes Transformers Turing-complete [22]. This contrasts with the current work, which focuses on the more standard setting of Transformers using soft-attention and finite precision, and shows the limitations imposed by it.
+
+Works have also tried to study transformers capabilities through the lens of formal languages, such as Weiss et al. [33], which develops a computational model of what transformers can represent in an analogous way to how Recurrent Neural Networks are associated with finite automata, and then derive an implementable programming language that represents
+
+$^2$Note that the authors rely on an abuse of notation. They ignore the linear projections used to compute the value $\mathbf{v}_i^{(\ell)}$ from the output of layer below $\ell - 1$. This will not change the derivations, but would otherwise make notations more cumbersome.
