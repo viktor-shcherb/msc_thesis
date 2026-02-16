@@ -7,7 +7,7 @@ the effect on downstream retrieval accuracy. If high-plasticity heads are
 necessary for long-context performance, ablating them should degrade
 performance selectively at distant positions. Conversely, clamping
 $\text{bias\_strength}$ to zero in specific heads should improve
-distant-position plasticity if the bias mechanism is causal.
+long-context plasticity if the bias mechanism is causal.
 
 \paragraph{Characterizing content signal decay.}
 The residual $\text{AP}_{\text{drop}}$ after bias collapse is attributed to
@@ -22,10 +22,10 @@ parameters, context length, and initial-token presence.
 The framework should be extended to architecturally diverse models:
 mixture-of-experts models~\cite{2024-05-deepseek-v2-moe,
 2024-12-deepseek-v3-technical-report} where expert routing may interact with
-plasticity; state-space models~\cite{2024-05-mamba-selective-state-spaces,
-2024-10-rwkv-eagle-finch-matrix-states} as a comparison class without
-explicit attention; and larger scales (70B+) to test whether the plasticity
-profile changes qualitatively.
+plasticity; hybrid architectures that interleave attention with state-space
+layers~\cite{2024-05-mamba-selective-state-spaces}, where plasticity applies to
+the attention layers and the SSM layers provide a natural contrast; and larger
+scales (70B+) to test whether the plasticity profile changes qualitatively.
 
 \paragraph{Per-length benchmark validation.}
 Obtaining per-length LongBench-Pro scores for the remaining 6 matched models

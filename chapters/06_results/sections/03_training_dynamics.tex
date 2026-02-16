@@ -80,14 +80,14 @@ The collapse is driven entirely by key slope flattening.}
 \subsection{Bias Collapse Is Necessary but Not Sufficient}
 
 The plasticity columns of Table~\ref{tab:smollm-trajectory} reveal a
-dissociation between bias reduction and distant-position flexibility.
+dissociation between bias reduction and long-context flexibility.
 
-Near-position plasticity ($\text{AP}_{\text{first\,20\%}}$) recovers from 0.552
+Short-context plasticity ($\text{AP}_{\text{first\,20\%}}$) recovers from 0.552
 (end of annealing) to 0.588 during LC extension---back to early stage~1 levels.
 Bias reduction works locally: reducing the positional term in the score
 difference restores content-driven key selection at nearby positions.
 
-However, distant-position plasticity ($\text{AP}_{\text{last\,20\%}}$) drops to
+However, long-context plasticity ($\text{AP}_{\text{last\,20\%}}$) drops to
 0.427---far below the 0.569 the model achieved at 3.5K--4K positions during
 pre-training at comparable bias levels. Despite a 10$\times$ bias collapse,
 $\text{AP}_{\text{drop}}$ \emph{triples} from $\sim$0.06 to $\sim$0.16. The
@@ -96,9 +96,9 @@ plasticity gradient steepens as the context window grows.
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/attention-plasticity/09_smollm3_trajectory/figure.png}
-\caption{SmolLM3-3B plasticity trajectory across training. Near-position
+\caption{SmolLM3-3B plasticity trajectory across training. Short-context
 plasticity (AP$_{\text{first\,20\%}}$) recovers during LC extension, but
-distant-position plasticity (AP$_{\text{last\,20\%}}$) continues to decline.
+long-context plasticity (AP$_{\text{last\,20\%}}$) continues to decline.
 The gap ($\text{AP}_{\text{drop}}$) triples despite a 10$\times$ reduction
 in bias strength.}
 \label{fig:smollm-plasticity-trajectory}
@@ -110,7 +110,7 @@ positional bias is nearly zeroed, content variance in the complement subspace
 loses strength at distant positions, so even minimal residual bias dominates.
 Per-position plasticity values during the LC extension phases
 (Table~\ref{tab:smollm-perposition-lc} in Appendix~\ref{app:supplementary})
-confirm that near-position plasticity holds steady while distant positions show
+confirm that short-context plasticity holds steady while distant positions show
 progressively lower values as the context window expands.
 The implications of this finding are discussed in
 Chapter~\ref{chap:discussion}.

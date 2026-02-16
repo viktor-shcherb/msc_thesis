@@ -15,7 +15,7 @@ correlation $|r_k^{(a)}|$ remains above 0.90. Keys still encode position with
 high fidelity, but the encoding becomes more uniform---positions are
 distinguished without being preferentially weighted.
 
-The collapse recovers near-position plasticity
+The collapse recovers short-context plasticity
 ($\text{AP}_{\text{first\,20\%}}$: 0.552 $\to$ 0.588), returning it to
 early stage~1 levels. Locally, bias reduction works: removing the positional
 term from the score difference restores content-driven key selection at nearby
@@ -26,7 +26,7 @@ model achieved at 3.5K--4K during pre-training at comparable bias levels.
 Despite a 10$\times$ bias collapse, $\text{AP}_{\text{drop}}$ \emph{triples}
 from $\sim$0.06 to $\sim$0.16 (Figure~\ref{fig:smollm-plasticity-trajectory}).
 A factor beyond positional bias---plausibly content signal decay---constrains
-distant-position flexibility.
+long-context flexibility.
 
 \subsection{Content Signal Decay}
 
@@ -50,7 +50,7 @@ Two candidate mechanisms may drive this content signal decay:
     disproportionate attention weight through the attention sink
     phenomenon~\cite{2024-05-attention-sinks-streaming,
     2025-04-attention-sink-emerges}. This concentration reduces the effective
-    attention budget available for distant-position content, even when the
+    attention budget available for long-context content, even when the
     per-head bias mechanism is weakened.
 \end{itemize}
 

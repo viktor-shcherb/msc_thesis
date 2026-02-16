@@ -7,7 +7,7 @@ beyond current position-extension methods.
 \paragraph{Evaluate with positional profiles, not aggregates.}
 Perplexity on long documents is a standard evaluation metric during
 long-context training. But perplexity averages over all positions, masking
-distant-position degradation. The SmolLM3 trajectory
+long-context degradation. The SmolLM3 trajectory
 (Table~\ref{tab:smollm-trajectory}) shows that $\text{AP}_{\text{drop}}$
 triples during LC extension even as the model successfully processes longer
 inputs. Per-position plasticity profiles---or any position-resolved
@@ -23,7 +23,7 @@ the bias component but not the content-decay component. Potential approaches
 to the latter include:
 %
 \begin{itemize}
-    \item Training objectives that explicitly reward distant-position
+    \item Training objectives that explicitly reward long-context
     retrieval, rather than relying on next-token prediction which averages
     over all positions.
     \item Architectural modifications that preserve content signal fidelity

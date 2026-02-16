@@ -55,9 +55,10 @@ axis is by design. The non-trivial finding is how the signal distributes between
 Q and K: the PCA asymmetry reverses, with
 $|r_k^{(a)}| \approx 0.87 > |r_q^{(a)}| \approx 0.74$. Keys encode position
 more strongly than queries on the mechanistically relevant axis. This is a
-substantive correction: it changes which vector carries the position signal and
-is consistent with RoPE's role in encoding key positions for attention
-scoring~\cite{2024-01-roformer-rope}.
+substantive correction: it changes which vector carries the position signal.
+Since RoPE applies identical rotations to both Q and
+K~\cite{2024-01-roformer-rope}, the asymmetry is not prescribed by the encoding
+scheme but is a learned property of the model weights.
 
 \begin{figure}[t]
 \centering
