@@ -177,26 +177,24 @@ the model ranks by position rather than by content relevance.
 % ============================================================
 \begin{frame}{Attention Plasticity: The Functional Test}
 
-\textbf{Key idea:} Attention is a reranking mechanism. Pairwise comparison is
-the atomic unit of ranking.
-
-\bigskip
-Given a random query $q$ and two keys $k_i, k_j$, does the query
-\emph{content} determine which key ranks higher?
+Given query $q$ and two keys $k_i, k_j$, does \emph{content} determine
+which key ranks higher? Score difference $D = q^\top(k_i - k_j) \sim \mathcal{N}(\mu, v)$.
 
 \begin{align*}
 p &= \Phi\!\left(\frac{\mu}{\sqrt{v}}\right),
 & \text{PP} &= 4\,p\,(1-p)
 \end{align*}
 
+\vspace{-0.8em}
 \begin{itemize}
     \item $\text{PP} \to 1$: content determines the ranking (plastic)
     \item $\text{PP} \to 0$: position locks the ordering (rigid)
 \end{itemize}
 
 \medskip
-\textbf{Theorem:} Under linear positional drift, $\text{AP}_t$ decays with
-query position $t$. The \emph{rate} of decay is diagnostic.
+\textbf{Theorem:} Under linear positional drift, $\text{AP}_t \to 0$ as
+$t \to \infty$. How much it drops \emph{within} the context window is
+model-dependent.
 
 \end{frame}
 

@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1771204320.03388 "/Users/Viktor/PycharmProjects/msc_thesis/presentation/presentation.tex" "presentation.pdf" "presentation" 1771204323.61136 0
+["pdflatex"] 1771225440.28491 "/Users/Viktor/PycharmProjects/msc_thesis/presentation/presentation.tex" "presentation.pdf" "presentation" 1771225443.97484 0
   "../figures/UNIGElogo.pdf" 1768839571.23566 9398 2158b7c7526e9369a85e9d3b2d73cd82 ""
   "../figures/attention-plasticity/01_bucket_heatmap_ministral3_14b/figure.png" 1771185886.21474 113085 ebd212587515f263814b0aefc3d45bb6 ""
   "../figures/attention-plasticity/02_bucket_heatmap_qwen3_14b/figure.png" 1771185886.21709 115105 7c5a38156191d3010f256cff3b8c4395 ""
@@ -14,7 +14,7 @@
   "../figures/qk-pca/06_collage_example/figure.png" 1771115864.36182 1279114 0999ef9fe6bf860e2807849482ab42e3 ""
   "../figures/qk-rotation/02_rq_rk_drift_bars/figure.png" 1771169813.6699 59090 80d3d87100837b9e2f3ba7decd870d09 ""
   "../figures/qk-rotation/10_smollm_bias_decomposition/figure.png" 1771169813.69755 89564 b2797549c21ddd6a5d1ef9e738eeb89e ""
-  "/Users/Viktor/PycharmProjects/msc_thesis/presentation/presentation.tex" 1771204319.80023 14782 b010b5c655a0a127b8347ca1b0a4c6da ""
+  "/Users/Viktor/PycharmProjects/msc_thesis/presentation/presentation.tex" 1771225440.01119 13932 1fa3b19f0812b33b0639121ecc57e5b0 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcss0900.tfm" 1136768653 1536 ba0169ee8bc017972775b933313cbbb0 ""
@@ -295,10 +295,10 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1768840407 5467155 19efa205003f9ecad95fbbaa6ff24da1 ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1741450574 3345740 46b66fdb0378f7bf5921b5eabf1762b8 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "presentation.aux" 1771204323.5153 2926 4efd475456db14b3c8035896d44accbe "pdflatex"
-  "presentation.nav" 1771204323.51602 1946 cc1d57bc897673374b837eab8153475a "pdflatex"
-  "presentation.out" 1771204320.82898 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "presentation.tex" 1771204319.80023 14782 b010b5c655a0a127b8347ca1b0a4c6da ""
+  "presentation.aux" 1771225443.87202 2797 e1a0a67d50652917c4afde7c8bba9ac4 "pdflatex"
+  "presentation.nav" 1771225443.87275 1853 3d3af853e0752fc75bf550a83110b9cc "pdflatex"
+  "presentation.out" 1771225441.13519 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "presentation.tex" 1771225440.01119 13932 1fa3b19f0812b33b0639121ecc57e5b0 ""
   (generated)
   "presentation.aux"
   "presentation.log"
